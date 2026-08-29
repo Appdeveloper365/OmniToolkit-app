@@ -1,911 +1,2684 @@
 [
   {
+    "areaCode": "201",
+    "city": "Bayonne",
+    "state": "NJ",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.83885,
+    "lng": -74.045678125
+  },
+  {
     "areaCode": "202",
     "city": "Washington",
     "state": "DC",
-    "county": "District of Columbia",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 38.9109,
-    "lng": -77.0163
+    "lat": 38.89511,
+    "lng": -77.03637
   },
   {
     "areaCode": "203",
     "city": "Bridgeport",
     "state": "CT",
-    "county": "Fairfield County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 41.1792,
-    "lng": -73.1894
+    "lat": 41.291798125,
+    "lng": -73.122453125
   },
   {
     "areaCode": "205",
-    "city": "Birmingham",
+    "city": "Alabaster",
     "state": "AL",
-    "county": "Jefferson County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 33.5207,
-    "lng": -86.8025
+    "lat": 33.427671111111,
+    "lng": -86.886473333333
   },
   {
     "areaCode": "206",
-    "city": "Seattle",
+    "city": "Bainbridge Island",
     "state": "WA",
-    "county": "King County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 47.6101,
-    "lng": -122.3344
+    "lat": 47.564027142857,
+    "lng": -122.34897571429
   },
   {
     "areaCode": "207",
-    "city": "Portland",
+    "city": "Auburn",
     "state": "ME",
-    "county": "Cumberland County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 43.6591,
-    "lng": -70.2568
+    "lat": 44.000005,
+    "lng": -69.987965
   },
   {
     "areaCode": "208",
     "city": "Boise",
     "state": "ID",
-    "county": "Ada County",
+    "county": null,
     "timezone": "America/Denver",
-    "lat": 43.615,
-    "lng": -116.2023
+    "lat": 44.415674,
+    "lng": -115.558462
+  },
+  {
+    "areaCode": "209",
+    "city": "Atwater",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 37.604049,
+    "lng": -120.999087
   },
   {
     "areaCode": "210",
     "city": "San Antonio",
     "state": "TX",
-    "county": "Bexar County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 29.4652,
-    "lng": -98.5157
+    "lat": 29.42412,
+    "lng": -98.49363
   },
   {
     "areaCode": "212",
-    "city": "New York",
+    "city": "New York City",
     "state": "NY",
-    "county": "New York County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 40.7454,
-    "lng": -73.9994
+    "lat": 40.71427,
+    "lng": -74.00597
   },
   {
     "areaCode": "213",
     "city": "Los Angeles",
     "state": "CA",
-    "county": "Los Angeles County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 33.9731,
-    "lng": -118.2479
+    "lat": 34.05223,
+    "lng": -118.24368
   },
   {
     "areaCode": "214",
-    "city": "Dallas",
+    "city": "Allen",
     "state": "TX",
-    "county": "Dallas County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 32.7876,
-    "lng": -96.7996
+    "lat": 32.863500833333,
+    "lng": -96.837767916667
   },
   {
     "areaCode": "215",
-    "city": "Philadelphia",
+    "city": "Levittown",
     "state": "PA",
-    "county": "Philadelphia County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 39.9523,
-    "lng": -75.1638
+    "lat": 40.05372,
+    "lng": -74.99628
+  },
+  {
+    "areaCode": "216",
+    "city": "Brook Park",
+    "state": "OH",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 41.4749,
+    "lng": -81.616895454545
+  },
+  {
+    "areaCode": "217",
+    "city": "Champaign",
+    "state": "IL",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 39.917895714286,
+    "lng": -88.895028571429
+  },
+  {
+    "areaCode": "218",
+    "city": "Andover",
+    "state": "MN",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 46.29681,
+    "lng": -94.05581
+  },
+  {
+    "areaCode": "219",
+    "city": "East Chicago",
+    "state": "IN",
+    "county": null,
+    "timezone": "America/Indiana/Indianapolis",
+    "lat": 41.566263333333,
+    "lng": -87.2636
+  },
+  {
+    "areaCode": "220",
+    "city": "Athens",
+    "state": "OH",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 39.74919875,
+    "lng": -82.66145
+  },
+  {
+    "areaCode": "224",
+    "city": "Algonquin",
+    "state": "IL",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 42.14730875,
+    "lng": -87.947605625
+  },
+  {
+    "areaCode": "225",
+    "city": "Baton Rouge",
+    "state": "LA",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 30.45075,
+    "lng": -91.15455
+  },
+  {
+    "areaCode": "228",
+    "city": "Biloxi",
+    "state": "MS",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 30.388626666667,
+    "lng": -88.845213333333
+  },
+  {
+    "areaCode": "229",
+    "city": "Albany",
+    "state": "GA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 31.205925,
+    "lng": -83.71803
+  },
+  {
+    "areaCode": "231",
+    "city": "Muskegon",
+    "state": "MI",
+    "county": null,
+    "timezone": "America/Detroit",
+    "lat": 43.02465,
+    "lng": -85.181773333333
+  },
+  {
+    "areaCode": "234",
+    "city": "Akron",
+    "state": "OH",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 41.063504444444,
+    "lng": -81.314626111111
+  },
+  {
+    "areaCode": "239",
+    "city": "Bonita Springs",
+    "state": "FL",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 26.456114285714,
+    "lng": -81.800608571429
+  },
+  {
+    "areaCode": "240",
+    "city": "Aspen Hill",
+    "state": "MD",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 39.047505,
+    "lng": -77.121279285714
+  },
+  {
+    "areaCode": "248",
+    "city": "West Bloomfield Township",
+    "state": "MI",
+    "county": null,
+    "timezone": "America/Detroit",
+    "lat": 42.543724615385,
+    "lng": -83.262428461538
+  },
+  {
+    "areaCode": "251",
+    "city": "Mobile",
+    "state": "AL",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 30.71658,
+    "lng": -88.06097
+  },
+  {
+    "areaCode": "252",
+    "city": "Greenville",
+    "state": "NC",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 35.42039,
+    "lng": -77.43325
+  },
+  {
+    "areaCode": "253",
+    "city": "Auburn",
+    "state": "WA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 47.228641,
+    "lng": -122.365951
+  },
+  {
+    "areaCode": "254",
+    "city": "Copperas Cove",
+    "state": "TX",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 31.204726,
+    "lng": -97.579188
+  },
+  {
+    "areaCode": "256",
+    "city": "Anniston",
+    "state": "AL",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 34.418243333333,
+    "lng": -86.638881666667
+  },
+  {
+    "areaCode": "260",
+    "city": "Fort Wayne",
+    "state": "IN",
+    "county": null,
+    "timezone": "America/Indiana/Indianapolis",
+    "lat": 41.1306,
+    "lng": -85.12886
+  },
+  {
+    "areaCode": "262",
+    "city": "Brookfield",
+    "state": "WI",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 42.991375,
+    "lng": -88.039892
   },
   {
     "areaCode": "267",
-    "city": "Philadelphia",
+    "city": "Levittown",
     "state": "PA",
-    "county": "Philadelphia County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 39.9523,
-    "lng": -75.1638
+    "lat": 40.05372,
+    "lng": -74.99628
+  },
+  {
+    "areaCode": "269",
+    "city": "Battle Creek",
+    "state": "MI",
+    "county": null,
+    "timezone": "America/Detroit",
+    "lat": 42.270053333333,
+    "lng": -85.448463333333
+  },
+  {
+    "areaCode": "270",
+    "city": "Bowling Green",
+    "state": "KY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 37.44057,
+    "lng": -87.006631428571
+  },
+  {
+    "areaCode": "272",
+    "city": "Back Mountain",
+    "state": "PA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 41.238118,
+    "lng": -76.10365
+  },
+  {
+    "areaCode": "276",
+    "city": "Richmond",
+    "state": "VA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 37.55376,
+    "lng": -77.46026
   },
   {
     "areaCode": "281",
-    "city": "Houston",
+    "city": "Alvin",
     "state": "TX",
-    "county": "Harris County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 29.7752,
-    "lng": -95.3654
+    "lat": 29.709178888889,
+    "lng": -95.300398888889
+  },
+  {
+    "areaCode": "301",
+    "city": "Aspen Hill",
+    "state": "MD",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 39.047505,
+    "lng": -77.121279285714
   },
   {
     "areaCode": "302",
-    "city": "Wilmington",
+    "city": "Dover",
     "state": "DE",
-    "county": "New Castle County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 39.7391,
-    "lng": -75.5398
+    "lat": 39.52928,
+    "lng": -75.606873333333
   },
   {
     "areaCode": "303",
-    "city": "Denver",
+    "city": "Arvada",
     "state": "CO",
-    "county": "Denver County",
+    "county": null,
     "timezone": "America/Denver",
-    "lat": 39.7502,
-    "lng": -104.9963
+    "lat": 39.77755625,
+    "lng": -105.00266666667
   },
   {
     "areaCode": "304",
-    "city": "Charleston",
+    "city": "South Charleston",
     "state": "WV",
-    "county": "Kanawha County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 38.3498,
-    "lng": -81.6326
+    "lat": 39.361145,
+    "lng": -81.162093333333
   },
   {
     "areaCode": "305",
-    "city": "Miami",
+    "city": "Aventura",
     "state": "FL",
-    "county": "Miami-Dade County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 25.7743,
-    "lng": -80.1937
+    "lat": 25.740417037037,
+    "lng": -80.35898037037
   },
   {
     "areaCode": "307",
-    "city": "Cheyenne",
+    "city": "Casper",
     "state": "WY",
-    "county": "Laramie County",
+    "county": null,
     "timezone": "America/Denver",
-    "lat": 41.14,
-    "lng": -104.8202
+    "lat": 42.4022675,
+    "lng": -105.5566625
+  },
+  {
+    "areaCode": "308",
+    "city": "Grand Island",
+    "state": "NE",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 40.91612,
+    "lng": -99.396303333333
+  },
+  {
+    "areaCode": "309",
+    "city": "Bloomington",
+    "state": "IL",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 40.93229,
+    "lng": -89.855943333333
   },
   {
     "areaCode": "310",
     "city": "Beverly Hills",
     "state": "CA",
-    "county": "Los Angeles County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 34.0901,
-    "lng": -118.4065
+    "lat": 33.899128125,
+    "lng": -118.352904375
   },
   {
     "areaCode": "312",
-    "city": "Chicago",
+    "city": "West Chicago",
     "state": "IL",
-    "county": "Cook County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 41.8858,
-    "lng": -87.6229
+    "lat": 41.88475,
+    "lng": -88.20396
   },
   {
     "areaCode": "313",
-    "city": "Detroit",
+    "city": "Allen Park",
     "state": "MI",
-    "county": "Wayne County",
+    "county": null,
     "timezone": "America/Detroit",
-    "lat": 42.3486,
-    "lng": -83.0567
+    "lat": 42.312228888889,
+    "lng": -83.201191111111
   },
   {
     "areaCode": "314",
-    "city": "St. Louis",
+    "city": "Kirkwood",
     "state": "MO",
-    "county": "St. Louis City",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 38.632,
-    "lng": -90.1994
+    "lat": 38.649496666667,
+    "lng": -90.323053333333
+  },
+  {
+    "areaCode": "315",
+    "city": "Auburn",
+    "state": "NY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 43.253676,
+    "lng": -75.862524
   },
   {
     "areaCode": "316",
     "city": "Wichita",
     "state": "KS",
-    "county": "Sedgwick County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 37.6872,
-    "lng": -97.3301
+    "lat": 37.69224,
+    "lng": -97.33754
   },
   {
     "areaCode": "317",
-    "city": "Indianapolis",
+    "city": "Carmel",
     "state": "IN",
-    "county": "Marion County",
+    "county": null,
     "timezone": "America/Indiana/Indianapolis",
-    "lat": 39.7818,
-    "lng": -86.118
+    "lat": 39.866706666667,
+    "lng": -86.071743333333
+  },
+  {
+    "areaCode": "318",
+    "city": "Alexandria",
+    "state": "LA",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 32.278824,
+    "lng": -92.942602
+  },
+  {
+    "areaCode": "319",
+    "city": "Burlington",
+    "state": "IA",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 41.921948333333,
+    "lng": -91.778878333333
+  },
+  {
+    "areaCode": "320",
+    "city": "Saint Cloud",
+    "state": "MN",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 45.5608,
+    "lng": -94.16249
+  },
+  {
+    "areaCode": "321",
+    "city": "Altamonte Springs",
+    "state": "FL",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 28.3756865,
+    "lng": -81.1535335
   },
   {
     "areaCode": "323",
-    "city": "Los Angeles",
+    "city": "Bell",
     "state": "CA",
-    "county": "Los Angeles County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 33.9731,
-    "lng": -118.2479
+    "lat": 33.987178181818,
+    "lng": -118.21200545455
   },
   {
-    "areaCode": "332",
-    "city": "New York",
-    "state": "NY",
-    "county": "New York County",
-    "timezone": "America/New_York",
-    "lat": 40.7454,
-    "lng": -73.9994
+    "areaCode": "325",
+    "city": "Abilene",
+    "state": "TX",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 31.956255,
+    "lng": -100.08509
   },
   {
-    "areaCode": "380",
-    "city": "Columbus",
+    "areaCode": "330",
+    "city": "Akron",
     "state": "OH",
-    "county": "Franklin County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 39.9862,
-    "lng": -83.0068
+    "lat": 41.063504444444,
+    "lng": -81.314626111111
+  },
+  {
+    "areaCode": "331",
+    "city": "Addison",
+    "state": "IL",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 41.8771732,
+    "lng": -88.0948236
+  },
+  {
+    "areaCode": "334",
+    "city": "Auburn",
+    "state": "AL",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 32.187855,
+    "lng": -85.86078875
+  },
+  {
+    "areaCode": "336",
+    "city": "Asheboro",
+    "state": "NC",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 35.986358,
+    "lng": -79.858592
+  },
+  {
+    "areaCode": "337",
+    "city": "Lafayette",
+    "state": "LA",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 30.242168,
+    "lng": -92.500372
+  },
+  {
+    "areaCode": "339",
+    "city": "Arlington",
+    "state": "MA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 42.389215652174,
+    "lng": -71.100365652174
+  },
+  {
+    "areaCode": "346",
+    "city": "Alvin",
+    "state": "TX",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 29.709178888889,
+    "lng": -95.300398888889
+  },
+  {
+    "areaCode": "347",
+    "city": "The Bronx",
+    "state": "NY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.691608,
+    "lng": -73.959668
+  },
+  {
+    "areaCode": "351",
+    "city": "Beverly",
+    "state": "MA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 42.603682857143,
+    "lng": -71.226208571429
+  },
+  {
+    "areaCode": "352",
+    "city": "Gainesville",
+    "state": "FL",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 28.372005,
+    "lng": -81.7805925
+  },
+  {
+    "areaCode": "360",
+    "city": "Bellingham",
+    "state": "WA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 47.411182222222,
+    "lng": -122.57029111111
+  },
+  {
+    "areaCode": "361",
+    "city": "Corpus Christi",
+    "state": "TX",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 28.040573333333,
+    "lng": -97.418696666667
+  },
+  {
+    "areaCode": "364",
+    "city": "Bowling Green",
+    "state": "KY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 37.44057,
+    "lng": -87.006631428571
+  },
+  {
+    "areaCode": "385",
+    "city": "American Fork",
+    "state": "UT",
+    "county": null,
+    "timezone": "America/Denver",
+    "lat": 40.653856428571,
+    "lng": -111.88019214286
+  },
+  {
+    "areaCode": "386",
+    "city": "Daytona Beach",
+    "state": "FL",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 29.167798571429,
+    "lng": -81.110851428571
   },
   {
     "areaCode": "401",
-    "city": "Providence",
+    "city": "Bristol",
     "state": "RI",
-    "county": "Providence County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 41.824,
-    "lng": -71.4128
+    "lat": 41.773583,
+    "lng": -71.418123
   },
   {
     "areaCode": "402",
-    "city": "Omaha",
+    "city": "Bellevue",
     "state": "NE",
-    "county": "Douglas County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 41.2565,
-    "lng": -95.9345
+    "lat": 41.238971428571,
+    "lng": -96.881062857143
   },
   {
     "areaCode": "404",
     "city": "Atlanta",
     "state": "GA",
-    "county": "Fulton County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 33.755,
-    "lng": -84.39
+    "lat": 33.734668888889,
+    "lng": -84.372366666667
   },
   {
     "areaCode": "405",
-    "city": "Oklahoma City",
+    "city": "Bethany",
     "state": "OK",
-    "county": "Oklahoma County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 35.4676,
-    "lng": -97.5164
+    "lat": 35.504228,
+    "lng": -97.413675
   },
   {
     "areaCode": "406",
     "city": "Billings",
     "state": "MT",
-    "county": "Yellowstone County",
+    "county": null,
     "timezone": "America/Denver",
-    "lat": 45.7833,
-    "lng": -108.5007
+    "lat": 46.40531,
+    "lng": -111.567485
+  },
+  {
+    "areaCode": "407",
+    "city": "Altamonte Springs",
+    "state": "FL",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 28.393690666667,
+    "lng": -81.308249333333
   },
   {
     "areaCode": "408",
-    "city": "San Jose",
+    "city": "Campbell",
     "state": "CA",
-    "county": "Santa Clara County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 37.3382,
-    "lng": -121.8863
+    "lat": 37.267165555556,
+    "lng": -121.88483222222
+  },
+  {
+    "areaCode": "409",
+    "city": "Beaumont",
+    "state": "TX",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 29.66411,
+    "lng": -94.436145
   },
   {
     "areaCode": "410",
-    "city": "Baltimore",
+    "city": "Annapolis",
     "state": "MD",
-    "county": "Baltimore City",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 39.2949,
-    "lng": -76.6158
+    "lat": 39.249978709677,
+    "lng": -76.587990645161
+  },
+  {
+    "areaCode": "412",
+    "city": "Bethel Park",
+    "state": "PA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.399266666667,
+    "lng": -79.919527777778
+  },
+  {
+    "areaCode": "413",
+    "city": "Agawam",
+    "state": "MA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 42.19644625,
+    "lng": -72.713425
   },
   {
     "areaCode": "414",
-    "city": "Milwaukee",
+    "city": "Franklin",
     "state": "WI",
-    "county": "Milwaukee County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 43.0432,
-    "lng": -87.9099
+    "lat": 42.946165714286,
+    "lng": -87.950007142857
   },
   {
     "areaCode": "415",
-    "city": "San Francisco",
+    "city": "Novato",
     "state": "CA",
-    "county": "San Francisco County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 37.7749,
-    "lng": -122.4194
+    "lat": 37.927565,
+    "lng": -122.517545
+  },
+  {
+    "areaCode": "417",
+    "city": "Joplin",
+    "state": "MO",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 37.14978,
+    "lng": -93.90576
+  },
+  {
+    "areaCode": "419",
+    "city": "Ashland",
+    "state": "OH",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 41.128782857143,
+    "lng": -83.21476
+  },
+  {
+    "areaCode": "423",
+    "city": "Bristol",
+    "state": "TN",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 35.841677142857,
+    "lng": -83.68173
   },
   {
     "areaCode": "424",
     "city": "Beverly Hills",
     "state": "CA",
-    "county": "Los Angeles County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 34.0901,
-    "lng": -118.4065
+    "lat": 33.899128125,
+    "lng": -118.352904375
+  },
+  {
+    "areaCode": "425",
+    "city": "Bellevue",
+    "state": "WA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 47.733239285714,
+    "lng": -121.86407785714
+  },
+  {
+    "areaCode": "432",
+    "city": "Big Spring",
+    "state": "TX",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 32.030033333333,
+    "lng": -102.01847
+  },
+  {
+    "areaCode": "434",
+    "city": "Charlottesville",
+    "state": "VA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 37.339493333333,
+    "lng": -79.016593333333
+  },
+  {
+    "areaCode": "435",
+    "city": "Cedar City",
+    "state": "UT",
+    "county": null,
+    "timezone": "America/Denver",
+    "lat": 39.270445,
+    "lng": -112.68724
+  },
+  {
+    "areaCode": "440",
+    "city": "Ashtabula",
+    "state": "OH",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 41.479659333333,
+    "lng": -81.697331333333
+  },
+  {
+    "areaCode": "442",
+    "city": "La Quinta",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 33.669568095238,
+    "lng": -116.75811238095
   },
   {
     "areaCode": "443",
-    "city": "Baltimore",
+    "city": "Annapolis",
     "state": "MD",
-    "county": "Baltimore City",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 39.2949,
-    "lng": -76.6158
+    "lat": 39.249978709677,
+    "lng": -76.587990645161
+  },
+  {
+    "areaCode": "458",
+    "city": "Albany",
+    "state": "OR",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 43.77279625,
+    "lng": -123.19441625
   },
   {
     "areaCode": "469",
-    "city": "Dallas",
+    "city": "Allen",
     "state": "TX",
-    "county": "Dallas County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 32.7876,
-    "lng": -96.7996
+    "lat": 32.869057826087,
+    "lng": -96.826015652174
   },
   {
-    "areaCode": "470",
-    "city": "Atlanta",
+    "areaCode": "478",
+    "city": "Macon",
     "state": "GA",
-    "county": "Fulton County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 33.755,
-    "lng": -84.39
+    "lat": 32.730835,
+    "lng": -83.61615
   },
   {
-    "areaCode": "475",
-    "city": "Bridgeport",
-    "state": "CT",
-    "county": "Fairfield County",
+    "areaCode": "479",
+    "city": "Fayetteville",
+    "state": "AR",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 35.849136,
+    "lng": -93.987424
+  },
+  {
+    "areaCode": "480",
+    "city": "Apache Junction",
+    "state": "AZ",
+    "county": null,
+    "timezone": "America/Phoenix",
+    "lat": 33.431751428571,
+    "lng": -111.79106428571
+  },
+  {
+    "areaCode": "484",
+    "city": "Allentown",
+    "state": "PA",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 41.1792,
-    "lng": -73.1894
+    "lat": 40.251023,
+    "lng": -75.457804
   },
   {
     "areaCode": "501",
-    "city": "Little Rock",
+    "city": "Benton",
     "state": "AR",
-    "county": "Pulaski County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 34.7465,
-    "lng": -92.2896
+    "lat": 34.768187142857,
+    "lng": -92.421822857143
   },
   {
     "areaCode": "502",
-    "city": "Louisville",
+    "city": "Frankfort",
     "state": "KY",
-    "county": "Jefferson County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 38.2527,
-    "lng": -85.7585
+    "lat": 38.227575,
+    "lng": -85.316345
   },
   {
     "areaCode": "503",
-    "city": "Portland",
+    "city": "Aloha",
     "state": "OR",
-    "county": "Multnomah County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 45.5122,
-    "lng": -122.6587
+    "lat": 45.347859333333,
+    "lng": -122.79654266667
   },
   {
     "areaCode": "504",
-    "city": "New Orleans",
+    "city": "Chalmette",
     "state": "LA",
-    "county": "Orleans Parish",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 29.955,
-    "lng": -90.0751
+    "lat": 29.941272857143,
+    "lng": -90.092177142857
   },
   {
     "areaCode": "505",
     "city": "Albuquerque",
     "state": "NM",
-    "county": "Bernalillo County",
+    "county": null,
     "timezone": "America/Denver",
-    "lat": 35.0844,
-    "lng": -106.6504
+    "lat": 35.545173333333,
+    "lng": -107.14879333333
+  },
+  {
+    "areaCode": "507",
+    "city": "Austin",
+    "state": "MN",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 44.048388333333,
+    "lng": -92.93543
+  },
+  {
+    "areaCode": "508",
+    "city": "Attleboro",
+    "state": "MA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 42.006992727273,
+    "lng": -71.224194545455
+  },
+  {
+    "areaCode": "509",
+    "city": "Kennewick",
+    "state": "WA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 46.765124444444,
+    "lng": -118.73412111111
+  },
+  {
+    "areaCode": "510",
+    "city": "Alameda",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 37.43248,
+    "lng": -121.80745230769
   },
   {
     "areaCode": "512",
     "city": "Austin",
     "state": "TX",
-    "county": "Travis County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 30.2711,
-    "lng": -97.7437
+    "lat": 30.359314,
+    "lng": -97.772174
+  },
+  {
+    "areaCode": "513",
+    "city": "Cincinnati",
+    "state": "OH",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 39.349302857143,
+    "lng": -84.498834285714
   },
   {
     "areaCode": "515",
-    "city": "Des Moines",
+    "city": "Ames",
     "state": "IA",
-    "county": "Polk County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 41.5868,
-    "lng": -93.625
+    "lat": 41.840495,
+    "lng": -93.75476
+  },
+  {
+    "areaCode": "516",
+    "city": "Baldwin",
+    "state": "NY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.701854736842,
+    "lng": -73.598140526316
+  },
+  {
+    "areaCode": "517",
+    "city": "Adrian",
+    "state": "MI",
+    "county": null,
+    "timezone": "America/Detroit",
+    "lat": 42.487028333333,
+    "lng": -84.137551666667
+  },
+  {
+    "areaCode": "518",
+    "city": "West Albany",
+    "state": "NY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 42.819186,
+    "lng": -73.833068
+  },
+  {
+    "areaCode": "520",
+    "city": "Casa Grande",
+    "state": "AZ",
+    "county": null,
+    "timezone": "America/Phoenix",
+    "lat": 32.118015714286,
+    "lng": -110.97648428571
+  },
+  {
+    "areaCode": "530",
+    "city": "Chico",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 39.338822857143,
+    "lng": -121.56659428571
   },
   {
     "areaCode": "531",
-    "city": "Omaha",
+    "city": "Bellevue",
     "state": "NE",
-    "county": "Douglas County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 41.2565,
-    "lng": -95.9345
+    "lat": 41.238971428571,
+    "lng": -96.881062857143
   },
   {
-    "areaCode": "572",
-    "city": "Oklahoma City",
+    "areaCode": "539",
+    "city": "Bartlesville",
     "state": "OK",
-    "county": "Oklahoma County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 35.4676,
-    "lng": -97.5164
+    "lat": 36.1754425,
+    "lng": -95.783525
+  },
+  {
+    "areaCode": "540",
+    "city": "Blacksburg",
+    "state": "VA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 37.829541428571,
+    "lng": -79.504057142857
+  },
+  {
+    "areaCode": "541",
+    "city": "Albany",
+    "state": "OR",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 43.77279625,
+    "lng": -123.19441625
+  },
+  {
+    "areaCode": "551",
+    "city": "Bayonne",
+    "state": "NJ",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.83885,
+    "lng": -74.045678125
+  },
+  {
+    "areaCode": "559",
+    "city": "Clovis",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 36.50766,
+    "lng": -119.5360325
+  },
+  {
+    "areaCode": "561",
+    "city": "Boca Del Mar",
+    "state": "FL",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 26.555793333333,
+    "lng": -80.135440833333
+  },
+  {
+    "areaCode": "562",
+    "city": "Bellflower",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 33.897952857143,
+    "lng": -118.08427714286
+  },
+  {
+    "areaCode": "563",
+    "city": "Bettendorf",
+    "state": "IA",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 41.763524,
+    "lng": -90.59797
+  },
+  {
+    "areaCode": "567",
+    "city": "Ashland",
+    "state": "OH",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 41.128782857143,
+    "lng": -83.21476
+  },
+  {
+    "areaCode": "570",
+    "city": "Back Mountain",
+    "state": "PA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 41.238118,
+    "lng": -76.10365
+  },
+  {
+    "areaCode": "571",
+    "city": "Alexandria",
+    "state": "VA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 38.8324725,
+    "lng": -77.270965
+  },
+  {
+    "areaCode": "573",
+    "city": "Cape Girardeau",
+    "state": "MO",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 38.278096666667,
+    "lng": -91.341913333333
+  },
+  {
+    "areaCode": "574",
+    "city": "Elkhart",
+    "state": "IN",
+    "county": null,
+    "timezone": "America/Indiana/Indianapolis",
+    "lat": 41.672602,
+    "lng": -86.066116
   },
   {
     "areaCode": "575",
-    "city": "Albuquerque",
+    "city": "Alamogordo",
     "state": "NM",
-    "county": "Bernalillo County",
+    "county": null,
     "timezone": "America/Denver",
-    "lat": 35.0844,
-    "lng": -106.6504
+    "lat": 33.022383333333,
+    "lng": -104.63893833333
+  },
+  {
+    "areaCode": "580",
+    "city": "Altus",
+    "state": "OK",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 35.170991666667,
+    "lng": -97.964955
+  },
+  {
+    "areaCode": "585",
+    "city": "Brighton",
+    "state": "NY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 43.171913333333,
+    "lng": -77.581943333333
+  },
+  {
+    "areaCode": "586",
+    "city": "Clinton",
+    "state": "MI",
+    "county": null,
+    "timezone": "America/Detroit",
+    "lat": 42.539758571429,
+    "lng": -82.970317142857
   },
   {
     "areaCode": "601",
-    "city": "Jackson",
+    "city": "Clinton",
     "state": "MS",
-    "county": "Hinds County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 32.2988,
-    "lng": -90.1848
+    "lat": 32.197054285714,
+    "lng": -89.961072857143
   },
   {
     "areaCode": "602",
     "city": "Phoenix",
     "state": "AZ",
-    "county": "Maricopa County",
+    "county": null,
     "timezone": "America/Phoenix",
-    "lat": 33.4484,
-    "lng": -112.074
+    "lat": 33.44838,
+    "lng": -112.07404
   },
   {
     "areaCode": "603",
-    "city": "Manchester",
+    "city": "East Concord",
     "state": "NH",
-    "county": "Hillsborough County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 42.9956,
-    "lng": -71.4548
+    "lat": 43.04893875,
+    "lng": -71.33472
   },
   {
     "areaCode": "605",
-    "city": "Sioux Falls",
+    "city": "Aberdeen",
     "state": "SD",
-    "county": "Minnehaha County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 43.5446,
-    "lng": -96.7311
+    "lat": 44.472588,
+    "lng": -99.176772
+  },
+  {
+    "areaCode": "606",
+    "city": "Ashland",
+    "state": "KY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 38.47841,
+    "lng": -82.63794
+  },
+  {
+    "areaCode": "607",
+    "city": "Binghamton",
+    "state": "NY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 42.209706666667,
+    "lng": -76.407436666667
+  },
+  {
+    "areaCode": "608",
+    "city": "Beloit",
+    "state": "WI",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 43.042495,
+    "lng": -89.563915
+  },
+  {
+    "areaCode": "609",
+    "city": "Atlantic City",
+    "state": "NJ",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 39.9697625,
+    "lng": -74.7087
+  },
+  {
+    "areaCode": "610",
+    "city": "Allentown",
+    "state": "PA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.251023,
+    "lng": -75.457804
   },
   {
     "areaCode": "612",
-    "city": "Minneapolis",
+    "city": "Crystal",
     "state": "MN",
-    "county": "Hennepin County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 44.9829,
-    "lng": -93.268
+    "lat": 44.9708,
+    "lng": -93.32084
   },
   {
     "areaCode": "614",
     "city": "Columbus",
     "state": "OH",
-    "county": "Franklin County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 39.9862,
-    "lng": -83.0068
+    "lat": 40.008745,
+    "lng": -83.0058775
   },
   {
     "areaCode": "615",
-    "city": "Nashville",
+    "city": "Brentwood",
     "state": "TN",
-    "county": "Davidson County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 36.1715,
-    "lng": -86.7842
+    "lat": 36.10672375,
+    "lng": -86.5878425
+  },
+  {
+    "areaCode": "616",
+    "city": "Forest Hills",
+    "state": "MI",
+    "county": null,
+    "timezone": "America/Detroit",
+    "lat": 42.915765,
+    "lng": -85.73082
   },
   {
     "areaCode": "617",
-    "city": "Boston",
+    "city": "Belmont",
     "state": "MA",
-    "county": "Suffolk County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 42.3588,
-    "lng": -71.0567
+    "lat": 42.348581818182,
+    "lng": -71.100127272727
+  },
+  {
+    "areaCode": "618",
+    "city": "East Alton",
+    "state": "IL",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 38.56595375,
+    "lng": -89.9325675
   },
   {
     "areaCode": "619",
-    "city": "San Diego",
+    "city": "Chula Vista",
     "state": "CA",
-    "county": "San Diego County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 32.7157,
-    "lng": -117.1611
+    "lat": 32.720583333333,
+    "lng": -117.04660416667
+  },
+  {
+    "areaCode": "620",
+    "city": "Dodge City",
+    "state": "KS",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 38.0473075,
+    "lng": -98.7502925
   },
   {
     "areaCode": "623",
-    "city": "Phoenix",
+    "city": "Avondale",
     "state": "AZ",
-    "county": "Maricopa County",
+    "county": null,
     "timezone": "America/Phoenix",
-    "lat": 33.4484,
-    "lng": -112.074
+    "lat": 33.5849,
+    "lng": -112.29812166667
+  },
+  {
+    "areaCode": "626",
+    "city": "Alhambra",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 34.0783752,
+    "lng": -118.0051808
   },
   {
     "areaCode": "628",
-    "city": "San Francisco",
+    "city": "Novato",
     "state": "CA",
-    "county": "San Francisco County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 37.7749,
-    "lng": -122.4194
+    "lat": 37.927565,
+    "lng": -122.517545
   },
   {
     "areaCode": "629",
-    "city": "Nashville",
+    "city": "Brentwood",
     "state": "TN",
-    "county": "Davidson County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 36.1715,
-    "lng": -86.7842
+    "lat": 36.10672375,
+    "lng": -86.5878425
+  },
+  {
+    "areaCode": "630",
+    "city": "Addison",
+    "state": "IL",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 41.8771732,
+    "lng": -88.0948236
+  },
+  {
+    "areaCode": "631",
+    "city": "North Bay Shore",
+    "state": "NY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.79404826087,
+    "lng": -73.20643
+  },
+  {
+    "areaCode": "636",
+    "city": "Ballwin",
+    "state": "MO",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 38.705978333333,
+    "lng": -90.598965
+  },
+  {
+    "areaCode": "641",
+    "city": "Marshalltown",
+    "state": "IA",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 42.074336666667,
+    "lng": -92.840106666667
   },
   {
     "areaCode": "646",
-    "city": "New York",
+    "city": "New York City",
     "state": "NY",
-    "county": "New York County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 40.7454,
-    "lng": -73.9994
+    "lat": 40.71427,
+    "lng": -74.00597
   },
   {
-    "areaCode": "659",
-    "city": "Birmingham",
-    "state": "AL",
-    "county": "Jefferson County",
+    "areaCode": "650",
+    "city": "Belmont",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 37.53483375,
+    "lng": -122.284655625
+  },
+  {
+    "areaCode": "651",
+    "city": "Apple Valley",
+    "state": "MN",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 33.5207,
-    "lng": -86.8025
+    "lat": 44.912425714286,
+    "lng": -93.084087857143
+  },
+  {
+    "areaCode": "657",
+    "city": "Anaheim",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 33.804700666667,
+    "lng": -117.92452266667
+  },
+  {
+    "areaCode": "660",
+    "city": "Sedalia",
+    "state": "MO",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 38.70446,
+    "lng": -93.22826
+  },
+  {
+    "areaCode": "661",
+    "city": "Bakersfield",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 35.117865714286,
+    "lng": -118.77457857143
+  },
+  {
+    "areaCode": "662",
+    "city": "Clarksdale",
+    "state": "MS",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 34.109314285714,
+    "lng": -89.632332857143
+  },
+  {
+    "areaCode": "667",
+    "city": "Annapolis",
+    "state": "MD",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 39.249978709677,
+    "lng": -76.587990645161
   },
   {
     "areaCode": "669",
-    "city": "San Jose",
+    "city": "Campbell",
     "state": "CA",
-    "county": "Santa Clara County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 37.3382,
-    "lng": -121.8863
+    "lat": 37.267165555556,
+    "lng": -121.88483222222
   },
   {
     "areaCode": "678",
-    "city": "Atlanta",
+    "city": "Alpharetta",
     "state": "GA",
-    "county": "Fulton County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 33.755,
-    "lng": -84.39
+    "lat": 33.814474782609,
+    "lng": -84.360855217391
   },
   {
     "areaCode": "681",
-    "city": "Charleston",
+    "city": "South Charleston",
     "state": "WV",
-    "county": "Kanawha County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 38.3498,
-    "lng": -81.6326
+    "lat": 39.361145,
+    "lng": -81.162093333333
   },
   {
     "areaCode": "682",
-    "city": "Fort Worth",
+    "city": "Arlington",
     "state": "TX",
-    "county": "Tarrant County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 32.7555,
-    "lng": -97.3308
+    "lat": 32.759575333333,
+    "lng": -97.223403333333
   },
   {
     "areaCode": "701",
-    "city": "Fargo",
+    "city": "Bismarck",
     "state": "ND",
-    "county": "Cass County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 46.8772,
-    "lng": -96.7898
+    "lat": 47.4602675,
+    "lng": -99.003305
   },
   {
     "areaCode": "702",
-    "city": "Las Vegas",
+    "city": "Henderson",
     "state": "NV",
-    "county": "Clark County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 36.175,
-    "lng": -115.1372
+    "lat": 36.140527142857,
+    "lng": -115.11436428571
+  },
+  {
+    "areaCode": "703",
+    "city": "Alexandria",
+    "state": "VA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 38.8324725,
+    "lng": -77.270965
   },
   {
     "areaCode": "704",
     "city": "Charlotte",
     "state": "NC",
-    "county": "Mecklenburg County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 35.2271,
-    "lng": -80.8431
+    "lat": 35.367685555556,
+    "lng": -80.747737777778
+  },
+  {
+    "areaCode": "706",
+    "city": "Athens",
+    "state": "GA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 33.639484285714,
+    "lng": -83.94034
+  },
+  {
+    "areaCode": "707",
+    "city": "Benicia",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 38.514229090909,
+    "lng": -122.52735727273
+  },
+  {
+    "areaCode": "708",
+    "city": "Bellwood",
+    "state": "IL",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 41.705734761905,
+    "lng": -87.72693047619
+  },
+  {
+    "areaCode": "712",
+    "city": "Council Bluffs",
+    "state": "IA",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 41.880965,
+    "lng": -96.13057
   },
   {
     "areaCode": "713",
-    "city": "Houston",
+    "city": "Alvin",
     "state": "TX",
-    "county": "Harris County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 29.7752,
-    "lng": -95.3654
+    "lat": 29.709178888889,
+    "lng": -95.300398888889
+  },
+  {
+    "areaCode": "714",
+    "city": "Anaheim",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 33.804700666667,
+    "lng": -117.92452266667
+  },
+  {
+    "areaCode": "715",
+    "city": "Eau Claire",
+    "state": "WI",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 45.25371,
+    "lng": -90.7018125
+  },
+  {
+    "areaCode": "716",
+    "city": "Buffalo",
+    "state": "NY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 42.87564,
+    "lng": -78.89547375
+  },
+  {
+    "areaCode": "717",
+    "city": "Harrisburg",
+    "state": "PA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.1537775,
+    "lng": -76.582255
+  },
+  {
+    "areaCode": "718",
+    "city": "The Bronx",
+    "state": "NY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.691608,
+    "lng": -73.959668
+  },
+  {
+    "areaCode": "719",
+    "city": "Colorado Springs",
+    "state": "CO",
+    "county": null,
+    "timezone": "America/Denver",
+    "lat": 38.64372,
+    "lng": -104.75283333333
   },
   {
     "areaCode": "720",
-    "city": "Denver",
+    "city": "Arvada",
     "state": "CO",
-    "county": "Denver County",
+    "county": null,
     "timezone": "America/Denver",
-    "lat": 39.7502,
-    "lng": -104.9963
+    "lat": 39.77755625,
+    "lng": -105.00266666667
+  },
+  {
+    "areaCode": "724",
+    "city": "Monroeville",
+    "state": "PA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.565275,
+    "lng": -79.9919975
   },
   {
     "areaCode": "725",
-    "city": "Las Vegas",
+    "city": "Henderson",
     "state": "NV",
-    "county": "Clark County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 36.175,
-    "lng": -115.1372
+    "lat": 36.140527142857,
+    "lng": -115.11436428571
   },
   {
-    "areaCode": "726",
-    "city": "San Antonio",
-    "state": "TX",
-    "county": "Bexar County",
+    "areaCode": "727",
+    "city": "Bayonet Point",
+    "state": "FL",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 28.006899,
+    "lng": -82.736329
+  },
+  {
+    "areaCode": "731",
+    "city": "Jackson",
+    "state": "TN",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 29.4652,
-    "lng": -98.5157
+    "lat": 35.61452,
+    "lng": -88.81395
+  },
+  {
+    "areaCode": "732",
+    "city": "Carteret",
+    "state": "NJ",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.420721428571,
+    "lng": -74.323679285714
+  },
+  {
+    "areaCode": "734",
+    "city": "Ann Arbor",
+    "state": "MI",
+    "county": null,
+    "timezone": "America/Detroit",
+    "lat": 42.251202727273,
+    "lng": -83.413476363636
   },
   {
     "areaCode": "737",
     "city": "Austin",
     "state": "TX",
-    "county": "Travis County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 30.2711,
-    "lng": -97.7437
+    "lat": 30.359314,
+    "lng": -97.772174
+  },
+  {
+    "areaCode": "740",
+    "city": "Athens",
+    "state": "OH",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 39.74919875,
+    "lng": -82.66145
+  },
+  {
+    "areaCode": "743",
+    "city": "Asheboro",
+    "state": "NC",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 35.986358,
+    "lng": -79.858592
+  },
+  {
+    "areaCode": "747",
+    "city": "Agoura Hills",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 34.186115,
+    "lng": -118.43554333333
+  },
+  {
+    "areaCode": "754",
+    "city": "Coconut Creek",
+    "state": "FL",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 26.143138421053,
+    "lng": -80.201925263158
   },
   {
     "areaCode": "757",
-    "city": "Virginia Beach",
+    "city": "Chesapeake",
     "state": "VA",
-    "county": "Virginia Beach City",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 36.8529,
-    "lng": -75.978
+    "lat": 36.870171428571,
+    "lng": -76.313514285714
+  },
+  {
+    "areaCode": "760",
+    "city": "Apple Valley",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 33.669568095238,
+    "lng": -116.75811238095
+  },
+  {
+    "areaCode": "762",
+    "city": "Athens",
+    "state": "GA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 33.639484285714,
+    "lng": -83.94034
+  },
+  {
+    "areaCode": "763",
+    "city": "Blaine",
+    "state": "MN",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 45.098514444444,
+    "lng": -93.359148888889
+  },
+  {
+    "areaCode": "765",
+    "city": "Anderson",
+    "state": "IN",
+    "county": null,
+    "timezone": "America/Indiana/Indianapolis",
+    "lat": 40.289168571429,
+    "lng": -85.937961428571
   },
   {
     "areaCode": "769",
-    "city": "Jackson",
+    "city": "Clinton",
     "state": "MS",
-    "county": "Hinds County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 32.2988,
-    "lng": -90.1848
+    "lat": 32.197054285714,
+    "lng": -89.961072857143
+  },
+  {
+    "areaCode": "770",
+    "city": "Alpharetta",
+    "state": "GA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 33.8336605,
+    "lng": -84.3569235
+  },
+  {
+    "areaCode": "772",
+    "city": "Fort Pierce South",
+    "state": "FL",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 27.37194,
+    "lng": -80.3461
+  },
+  {
+    "areaCode": "773",
+    "city": "West Chicago",
+    "state": "IL",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 41.88475,
+    "lng": -88.20396
+  },
+  {
+    "areaCode": "774",
+    "city": "Attleboro",
+    "state": "MA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 42.006992727273,
+    "lng": -71.224194545455
+  },
+  {
+    "areaCode": "775",
+    "city": "Carson City",
+    "state": "NV",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 38.6091575,
+    "lng": -118.82945
+  },
+  {
+    "areaCode": "779",
+    "city": "Belvidere",
+    "state": "IL",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 42.050869166667,
+    "lng": -88.6227275
+  },
+  {
+    "areaCode": "781",
+    "city": "Arlington",
+    "state": "MA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 42.389215652174,
+    "lng": -71.100365652174
+  },
+  {
+    "areaCode": "785",
+    "city": "Hays",
+    "state": "KS",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 38.984614,
+    "lng": -96.88463
   },
   {
     "areaCode": "786",
-    "city": "Miami",
+    "city": "Aventura",
     "state": "FL",
-    "county": "Miami-Dade County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 25.7743,
-    "lng": -80.1937
+    "lat": 25.740417037037,
+    "lng": -80.35898037037
   },
   {
     "areaCode": "801",
-    "city": "Salt Lake City",
+    "city": "American Fork",
     "state": "UT",
-    "county": "Salt Lake County",
+    "county": null,
     "timezone": "America/Denver",
-    "lat": 40.7659,
-    "lng": -111.8911
+    "lat": 40.653856428571,
+    "lng": -111.88019214286
   },
   {
     "areaCode": "802",
-    "city": "Burlington",
+    "city": "South Burlington",
     "state": "VT",
-    "county": "Chittenden County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 44.4759,
-    "lng": -73.2121
+    "lat": 44.363525,
+    "lng": -72.873175
   },
   {
     "areaCode": "803",
-    "city": "Columbia",
+    "city": "Aiken",
     "state": "SC",
-    "county": "Richland County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 34.0007,
-    "lng": -81.0348
+    "lat": 34.08893,
+    "lng": -81.057868
+  },
+  {
+    "areaCode": "804",
+    "city": "Hopewell",
+    "state": "VA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 37.456984,
+    "lng": -77.415816
+  },
+  {
+    "areaCode": "805",
+    "city": "Atascadero",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 34.60204125,
+    "lng": -119.696259375
+  },
+  {
+    "areaCode": "806",
+    "city": "Amarillo",
+    "state": "TX",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 34.328216666667,
+    "lng": -101.79777
   },
   {
     "areaCode": "808",
-    "city": "Honolulu",
+    "city": "Hilo",
     "state": "HI",
-    "county": "Honolulu County",
+    "county": null,
     "timezone": "Pacific/Honolulu",
-    "lat": 21.3069,
-    "lng": -157.8583
+    "lat": 20.956035555556,
+    "lng": -157.23792666667
+  },
+  {
+    "areaCode": "810",
+    "city": "Burton",
+    "state": "MI",
+    "county": null,
+    "timezone": "America/Detroit",
+    "lat": 42.994286666667,
+    "lng": -83.242903333333
+  },
+  {
+    "areaCode": "812",
+    "city": "Bloomington",
+    "state": "IN",
+    "county": null,
+    "timezone": "America/Indiana/Indianapolis",
+    "lat": 38.66688,
+    "lng": -86.391257142857
+  },
+  {
+    "areaCode": "813",
+    "city": "Brandon",
+    "state": "FL",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 28.047438888889,
+    "lng": -82.427858888889
+  },
+  {
+    "areaCode": "814",
+    "city": "Altoona",
+    "state": "PA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.9420075,
+    "lng": -78.8154425
+  },
+  {
+    "areaCode": "815",
+    "city": "Belvidere",
+    "state": "IL",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 42.050869166667,
+    "lng": -88.6227275
   },
   {
     "areaCode": "816",
-    "city": "Kansas City",
+    "city": "Belton",
     "state": "MO",
-    "county": "Jackson County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 39.1141,
-    "lng": -94.5872
+    "lat": 39.104366,
+    "lng": -94.500676
   },
   {
     "areaCode": "817",
-    "city": "Fort Worth",
+    "city": "Arlington",
     "state": "TX",
-    "county": "Tarrant County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 32.7555,
-    "lng": -97.3308
+    "lat": 32.759575333333,
+    "lng": -97.223403333333
+  },
+  {
+    "areaCode": "818",
+    "city": "Agoura Hills",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 34.186115,
+    "lng": -118.43554333333
+  },
+  {
+    "areaCode": "828",
+    "city": "Asheville",
+    "state": "NC",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 35.66707,
+    "lng": -81.94761
+  },
+  {
+    "areaCode": "830",
+    "city": "Del Rio",
+    "state": "TX",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 29.478228,
+    "lng": -99.325156
+  },
+  {
+    "areaCode": "831",
+    "city": "Hollister",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 36.758607142857,
+    "lng": -121.77046571429
   },
   {
     "areaCode": "832",
-    "city": "Houston",
+    "city": "Alvin",
     "state": "TX",
-    "county": "Harris County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 29.7752,
-    "lng": -95.3654
+    "lat": 29.709178888889,
+    "lng": -95.300398888889
   },
   {
-    "areaCode": "839",
-    "city": "Columbia",
+    "areaCode": "843",
+    "city": "North Charleston",
     "state": "SC",
-    "county": "Richland County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 34.0007,
-    "lng": -81.0348
+    "lat": 33.0913225,
+    "lng": -79.901955
+  },
+  {
+    "areaCode": "845",
+    "city": "Kingston",
+    "state": "NY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 41.47292,
+    "lng": -74.064123333333
+  },
+  {
+    "areaCode": "847",
+    "city": "Algonquin",
+    "state": "IL",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 42.14730875,
+    "lng": -87.947605625
+  },
+  {
+    "areaCode": "848",
+    "city": "Carteret",
+    "state": "NJ",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.420721428571,
+    "lng": -74.323679285714
+  },
+  {
+    "areaCode": "850",
+    "city": "Bellview",
+    "state": "FL",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 30.418668888889,
+    "lng": -86.61346
+  },
+  {
+    "areaCode": "854",
+    "city": "North Charleston",
+    "state": "SC",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 33.0913225,
+    "lng": -79.901955
+  },
+  {
+    "areaCode": "856",
+    "city": "Bridgeton",
+    "state": "NJ",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 39.737218571429,
+    "lng": -75.053785714286
   },
   {
     "areaCode": "857",
-    "city": "Boston",
+    "city": "Belmont",
     "state": "MA",
-    "county": "Suffolk County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 42.3588,
-    "lng": -71.0567
+    "lat": 42.348581818182,
+    "lng": -71.100127272727
   },
   {
     "areaCode": "858",
-    "city": "San Diego",
+    "city": "Poway",
     "state": "CA",
-    "county": "San Diego County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 32.7157,
-    "lng": -117.1611
+    "lat": 32.96282,
+    "lng": -117.03586
+  },
+  {
+    "areaCode": "859",
+    "city": "Covington",
+    "state": "KY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 38.4547925,
+    "lng": -84.4768825
+  },
+  {
+    "areaCode": "860",
+    "city": "Bristol",
+    "state": "CT",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 41.674009166667,
+    "lng": -72.641041666667
   },
   {
     "areaCode": "862",
-    "city": "Newark",
+    "city": "Belleville",
     "state": "NJ",
-    "county": "Essex County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 40.7357,
-    "lng": -74.1724
+    "lat": 40.825112857143,
+    "lng": -74.216403333333
   },
   {
-    "areaCode": "872",
-    "city": "Chicago",
-    "state": "IL",
-    "county": "Cook County",
+    "areaCode": "863",
+    "city": "Lakeland",
+    "state": "FL",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 28.030855,
+    "lng": -81.84133
+  },
+  {
+    "areaCode": "864",
+    "city": "Anderson",
+    "state": "SC",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 34.720858333333,
+    "lng": -82.294563333333
+  },
+  {
+    "areaCode": "865",
+    "city": "Knoxville",
+    "state": "TN",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 41.8858,
-    "lng": -87.6229
+    "lat": 35.9344575,
+    "lng": -84.10762
+  },
+  {
+    "areaCode": "870",
+    "city": "El Dorado",
+    "state": "AR",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 34.654171666667,
+    "lng": -91.682218333333
+  },
+  {
+    "areaCode": "878",
+    "city": "Bethel Park",
+    "state": "PA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.459707,
+    "lng": -79.962276
+  },
+  {
+    "areaCode": "901",
+    "city": "Bartlett",
+    "state": "TN",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 35.120715,
+    "lng": -89.849395
+  },
+  {
+    "areaCode": "903",
+    "city": "Corsicana",
+    "state": "TX",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 33.012011111111,
+    "lng": -95.526376666667
   },
   {
     "areaCode": "904",
     "city": "Jacksonville",
     "state": "FL",
-    "county": "Duval County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 30.3322,
-    "lng": -81.6557
+    "lat": 30.252276666667,
+    "lng": -81.605646666667
   },
   {
     "areaCode": "907",
     "city": "Anchorage",
     "state": "AK",
-    "county": "Anchorage Municipality",
+    "county": null,
     "timezone": "America/Anchorage",
-    "lat": 61.2181,
-    "lng": -149.9003
+    "lat": 60.268353333333,
+    "lng": -141.136315
+  },
+  {
+    "areaCode": "908",
+    "city": "Cranford",
+    "state": "NJ",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.662897272727,
+    "lng": -74.289773636364
+  },
+  {
+    "areaCode": "909",
+    "city": "Chino",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 34.074295,
+    "lng": -117.54055722222
+  },
+  {
+    "areaCode": "910",
+    "city": "Fayetteville",
+    "state": "NC",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 34.757956,
+    "lng": -78.453958
+  },
+  {
+    "areaCode": "912",
+    "city": "Hinesville",
+    "state": "GA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 32.126403333333,
+    "lng": -81.492983333333
+  },
+  {
+    "areaCode": "913",
+    "city": "Kansas City",
+    "state": "KS",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 39.0303175,
+    "lng": -94.718015
+  },
+  {
+    "areaCode": "914",
+    "city": "Harrison",
+    "state": "NY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 41.026625,
+    "lng": -73.8051675
+  },
+  {
+    "areaCode": "915",
+    "city": "El Paso",
+    "state": "TX",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 31.70664,
+    "lng": -106.39512
+  },
+  {
+    "areaCode": "916",
+    "city": "Arden-Arcade",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 38.540042352941,
+    "lng": -121.39831588235
+  },
+  {
+    "areaCode": "917",
+    "city": "The Bronx",
+    "state": "NY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.695385,
+    "lng": -73.967385
+  },
+  {
+    "areaCode": "918",
+    "city": "Bartlesville",
+    "state": "OK",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 36.1754425,
+    "lng": -95.783525
   },
   {
     "areaCode": "919",
-    "city": "Raleigh",
+    "city": "Apex",
     "state": "NC",
-    "county": "Wake County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 35.7796,
-    "lng": -78.6382
+    "lat": 35.726142857143,
+    "lng": -78.77469
+  },
+  {
+    "areaCode": "920",
+    "city": "Appleton",
+    "state": "WI",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 43.948076,
+    "lng": -88.281434
+  },
+  {
+    "areaCode": "925",
+    "city": "Antioch",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 37.891776666667,
+    "lng": -121.935052
+  },
+  {
+    "areaCode": "928",
+    "city": "Bullhead City",
+    "state": "AZ",
+    "county": null,
+    "timezone": "America/Phoenix",
+    "lat": 34.3190475,
+    "lng": -113.5519425
+  },
+  {
+    "areaCode": "929",
+    "city": "The Bronx",
+    "state": "NY",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 40.691608,
+    "lng": -73.959668
+  },
+  {
+    "areaCode": "930",
+    "city": "Bloomington",
+    "state": "IN",
+    "county": null,
+    "timezone": "America/Indiana/Indianapolis",
+    "lat": 38.66688,
+    "lng": -86.391257142857
+  },
+  {
+    "areaCode": "931",
+    "city": "Clarksville",
+    "state": "TN",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 36.10256,
+    "lng": -86.632123333333
+  },
+  {
+    "areaCode": "936",
+    "city": "Conroe",
+    "state": "TX",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 30.99429,
+    "lng": -95.097855
+  },
+  {
+    "areaCode": "937",
+    "city": "Beavercreek",
+    "state": "OH",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 39.854266923077,
+    "lng": -84.115557692308
+  },
+  {
+    "areaCode": "940",
+    "city": "Denton",
+    "state": "TX",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 33.391593333333,
+    "lng": -97.54021
+  },
+  {
+    "areaCode": "941",
+    "city": "South Bradenton",
+    "state": "FL",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 27.202133333333,
+    "lng": -82.344351666667
+  },
+  {
+    "areaCode": "947",
+    "city": "West Bloomfield Township",
+    "state": "MI",
+    "county": null,
+    "timezone": "America/Detroit",
+    "lat": 42.543724615385,
+    "lng": -83.262428461538
+  },
+  {
+    "areaCode": "949",
+    "city": "Aliso Viejo",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 33.573486153846,
+    "lng": -117.73371615385
+  },
+  {
+    "areaCode": "951",
+    "city": "Banning",
+    "state": "CA",
+    "county": null,
+    "timezone": "America/Los_Angeles",
+    "lat": 33.819667,
+    "lng": -117.258786
+  },
+  {
+    "areaCode": "952",
+    "city": "Bloomington",
+    "state": "MN",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 44.838195,
+    "lng": -93.4117575
+  },
+  {
+    "areaCode": "954",
+    "city": "Coconut Creek",
+    "state": "FL",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 26.143138421053,
+    "lng": -80.201925263158
+  },
+  {
+    "areaCode": "956",
+    "city": "Brownsville",
+    "state": "TX",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 26.299599,
+    "lng": -98.138061
+  },
+  {
+    "areaCode": "959",
+    "city": "Bristol",
+    "state": "CT",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 41.674009166667,
+    "lng": -72.641041666667
+  },
+  {
+    "areaCode": "970",
+    "city": "Fort Collins",
+    "state": "CO",
+    "county": null,
+    "timezone": "America/Denver",
+    "lat": 40.11755,
+    "lng": -105.854795
   },
   {
     "areaCode": "971",
-    "city": "Portland",
+    "city": "Aloha",
     "state": "OR",
-    "county": "Multnomah County",
+    "county": null,
     "timezone": "America/Los_Angeles",
-    "lat": 45.5122,
-    "lng": -122.6587
+    "lat": 45.347859333333,
+    "lng": -122.79654266667
   },
   {
     "areaCode": "972",
-    "city": "Dallas",
+    "city": "Allen",
     "state": "TX",
-    "county": "Dallas County",
+    "county": null,
     "timezone": "America/Chicago",
-    "lat": 32.7876,
-    "lng": -96.7996
+    "lat": 32.869057826087,
+    "lng": -96.826015652174
   },
   {
     "areaCode": "973",
-    "city": "Newark",
+    "city": "Belleville",
     "state": "NJ",
-    "county": "Essex County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 40.7357,
-    "lng": -74.1724
+    "lat": 40.834617368421,
+    "lng": -74.219415789474
+  },
+  {
+    "areaCode": "978",
+    "city": "Beverly",
+    "state": "MA",
+    "county": null,
+    "timezone": "America/New_York",
+    "lat": 42.603682857143,
+    "lng": -71.226208571429
+  },
+  {
+    "areaCode": "979",
+    "city": "Bryan",
+    "state": "TX",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 30.112066666667,
+    "lng": -96.046253333333
   },
   {
     "areaCode": "980",
     "city": "Charlotte",
     "state": "NC",
-    "county": "Mecklenburg County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 35.2271,
-    "lng": -80.8431
+    "lat": 35.367685555556,
+    "lng": -80.747737777778
   },
   {
     "areaCode": "984",
-    "city": "Raleigh",
+    "city": "Apex",
     "state": "NC",
-    "county": "Wake County",
+    "county": null,
     "timezone": "America/New_York",
-    "lat": 35.7796,
-    "lng": -78.6382
+    "lat": 35.726142857143,
+    "lng": -78.77469
   },
   {
-    "areaCode": "986",
-    "city": "Boise",
-    "state": "ID",
-    "county": "Ada County",
-    "timezone": "America/Denver",
-    "lat": 43.615,
-    "lng": -116.2023
+    "areaCode": "985",
+    "city": "Houma",
+    "state": "LA",
+    "county": null,
+    "timezone": "America/Chicago",
+    "lat": 29.979313333333,
+    "lng": -90.32739
+  },
+  {
+    "areaCode": "989",
+    "city": "Bay City",
+    "state": "MI",
+    "county": null,
+    "timezone": "America/Detroit",
+    "lat": 43.52936,
+    "lng": -84.16104
   }
 ]
