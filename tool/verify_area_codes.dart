@@ -4,7 +4,7 @@
 /// - is a JSON array
 /// - every record has a non-empty areaCode/city/state
 /// - areaCode is 3 digits
-/// - no duplicate areaCode keys
+/// - no duplicate (areaCode, city, state) rows
 /// - lat/lng (when present) are within plausible US bounds
 ///
 /// Run with: dart run tool/verify_area_codes.dart
@@ -45,19 +45,20 @@ void main() {
 
     if (areaCode is! String || areaCode.isEmpty) {
       errors.add('Row $i has an empty/missing areaCode.');
-    } else {
-      if (!areaCodePattern.hasMatch(areaCode)) {
-        errors.add('Row $i areaCode "$areaCode" is not 3 digits.');
-      }
-      if (!seenCodes.add(areaCode)) {
-        errors.add('Duplicate areaCode "$areaCode" at row $i.');
-      }
+    } else if (!areaCodePattern.hasMatch(areaCode)) {
+      errors.add('Row $i areaCode "$areaCode" is not 3 digits.');
     }
     if (city is! String || city.isEmpty) {
       errors.add('Row $i (areaCode=$areaCode) has an empty/missing city.');
     }
     if (state is! String || state.isEmpty) {
       errors.add('Row $i (areaCode=$areaCode) has an empty/missing state.');
+    }
+    if (areaCode is String && city is String && state is String) {
+      final rowKey = '$areaCode|$city|$state';
+      if (!seenCodes.add(rowKey)) {
+        errors.add('Duplicate row (areaCode=$areaCode, city=$city, state=$state) at row $i.');
+      }
     }
     if (lat != null && (lat is! num || lat < 15 || lat > 72)) {
       errors.add('Row $i (areaCode=$areaCode) has an implausible lat: $lat.');

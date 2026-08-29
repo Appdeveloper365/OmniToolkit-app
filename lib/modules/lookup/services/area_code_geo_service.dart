@@ -4,34 +4,40 @@ import 'package:flutter/services.dart';
 
 import '../models/lookup_models.dart';
 
-/// Loads the unified, offline area-code -> city/state/county/timezone/lat-lng
+/// Loads the unified, offline area-code -> city/state/country/lat-lng
 /// dataset (assets/data/area_codes.json, regenerated via
-/// tool/generate_area_codes.dart) and serves single-record lookups by NPA.
+/// tool/generate_area_codes.dart from us-area-code-cities.csv). Each area
+/// code maps to one or more cities, so lookups return lists.
 class AreaCodeGeoService {
-  Map<String, AreaCodeRecord>? _byAreaCode;
+  List<AreaCodeRecord>? _records;
 
-  Future<Map<String, AreaCodeRecord>> _ensureLoaded() async {
-    final cached = _byAreaCode;
+  Future<List<AreaCodeRecord>> _ensureLoaded() async {
+    final cached = _records;
     if (cached != null) return cached;
 
     final raw = await rootBundle.loadString('assets/data/area_codes.json');
     final decoded = jsonDecode(raw) as List<dynamic>;
-    final map = <String, AreaCodeRecord>{};
-    for (final item in decoded) {
-      if (item is! Map<String, dynamic>) continue;
-      final record = AreaCodeRecord.fromJson(item);
-      if (record.areaCode.isEmpty || record.city.isEmpty) continue;
-      map[record.areaCode] = record;
-    }
-    _byAreaCode = map;
-    return map;
+    final records = decoded
+        .whereType<Map<String, dynamic>>()
+        .map(AreaCodeRecord.fromJson)
+        .where((r) => r.areaCode.isNotEmpty && r.city.isNotEmpty)
+        .toList();
+    _records = records;
+    return records;
   }
 
-  /// Returns the aggregated record for an exact 3-digit area code, if known.
-  Future<AreaCodeRecord?> lookup(String areaCode) async {
-    final cleaned = areaCode.trim();
-    if (cleaned.isEmpty) return null;
-    final byAreaCode = await _ensureLoaded();
-    return byAreaCode[cleaned];
+  /// Full city/state/lat-lng details for every city matching an area-code
+  /// prefix (e.g. "20" matches 201, 202, 203, ...).
+  Future<List<AreaCodeRecord>> resultsForAreaCode(String query) async {
+    final cleaned = query.trim();
+    if (cleaned.isEmpty) return const [];
+    final records = await _ensureLoaded();
+    return records.where((r) => r.areaCode.startsWith(cleaned)).toList();
+  }
+
+  /// Autocomplete suggestions ("areaCode (city, state)") for a partial code.
+  Future<List<String>> suggestionsForAreaCode(String query, {int limit = 10}) async {
+    final results = await resultsForAreaCode(query);
+    return results.take(limit).map((r) => '${r.areaCode} (${r.city}, ${r.state})').toList();
   }
 }

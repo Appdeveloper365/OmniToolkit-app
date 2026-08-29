@@ -50,7 +50,9 @@ class _LookupScreenState extends ConsumerState<LookupScreen> {
   @override
   Widget build(BuildContext context) {
     final mode = ref.watch(lookupModeProvider);
-    final suggestions = ref.watch(lookupSuggestionsProvider).valueOrNull ?? const [];
+    final suggestions = mode == LookupMode.byAreaCode
+        ? ref.watch(areaCodeCitySuggestionsProvider).valueOrNull ?? const []
+        : ref.watch(lookupSuggestionsProvider).valueOrNull ?? const [];
 
     return Scaffold(
       appBar: AppBar(
@@ -110,68 +112,81 @@ class _LookupScreenState extends ConsumerState<LookupScreen> {
 
             const SizedBox(height: 24),
 
-            // AREA CODE SUMMARY (city/state/county/timezone for an exact NPA)
-            if (mode == LookupMode.byAreaCode)
-              Consumer(
-                builder: (context, ref, _) {
-                  final summary = ref.watch(areaCodeSummaryProvider).valueOrNull;
-                  if (summary == null) return const SizedBox.shrink();
-                  final details = [
-                    '${summary.city}, ${summary.state}',
-                    if (summary.county != null && summary.county!.isNotEmpty) summary.county!,
-                    if (summary.timezone != null && summary.timezone!.isNotEmpty) summary.timezone!,
-                  ].join('  •  ');
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.public),
-                        title: Text('Area code ${summary.areaCode}'),
-                        subtitle: Text(details),
-                      ),
-                    ),
-                  );
-                },
-              ),
-
             // RESULTS
             Expanded(
-              child: Consumer(
-                builder: (context, ref, _) {
-                  final resultsAsync = ref.watch(lookupResultsProvider);
+              child: mode == LookupMode.byAreaCode
+                  ? Consumer(
+                      builder: (context, ref, _) {
+                        final resultsAsync = ref.watch(areaCodeCityResultsProvider);
 
-                  return resultsAsync.when(
-                    data: (results) {
-                      if (results.isEmpty) {
-                        return const Center(
-                          child: Text(
-                            'No results yet. Start typing above.',
-                            style: TextStyle(color: Colors.grey),
-                          ),
+                        return resultsAsync.when(
+                          data: (results) {
+                            if (results.isEmpty) {
+                              return const Center(
+                                child: Text(
+                                  'No results yet. Start typing above.',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              );
+                            }
+
+                            return ListView.builder(
+                              itemCount: results.length,
+                              itemBuilder: (context, index) {
+                                final entry = results[index];
+                                final details = [
+                                  if (entry.lat != null && entry.lng != null)
+                                    '${entry.lat!.toStringAsFixed(4)}, ${entry.lng!.toStringAsFixed(4)}',
+                                  if (entry.country != null && entry.country!.isNotEmpty) entry.country!,
+                                ].join('  •  ');
+                                return ListTile(
+                                  title: Text('${entry.city}, ${entry.state}'),
+                                  subtitle: Text('Area code: ${entry.areaCode}${details.isNotEmpty ? '  •  $details' : ''}'),
+                                );
+                              },
+                            );
+                          },
+                          loading: () => const Center(child: CircularProgressIndicator()),
+                          error: (err, _) => Center(child: Text('Lookup failed: $err')),
                         );
-                      }
+                      },
+                    )
+                  : Consumer(
+                      builder: (context, ref, _) {
+                        final resultsAsync = ref.watch(lookupResultsProvider);
 
-                      return ListView.builder(
-                        itemCount: results.length,
-                        itemBuilder: (context, index) {
-                          final entry = results[index];
-                          final details = [
-                            if (entry.county != null && entry.county!.isNotEmpty) entry.county!,
-                            if (entry.areaCode.isNotEmpty) 'Area code: ${entry.areaCode}',
-                            if (entry.timezone != null && entry.timezone!.isNotEmpty) entry.timezone!,
-                          ].join('  •  ');
-                          return ListTile(
-                            title: Text('${entry.city}, ${entry.state} ${entry.zip}'),
-                            subtitle: details.isNotEmpty ? Text(details) : null,
-                          );
-                        },
-                      );
-                    },
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (err, _) => Center(child: Text('Lookup failed: $err')),
-                  );
-                },
-              ),
+                        return resultsAsync.when(
+                          data: (results) {
+                            if (results.isEmpty) {
+                              return const Center(
+                                child: Text(
+                                  'No results yet. Start typing above.',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              );
+                            }
+
+                            return ListView.builder(
+                              itemCount: results.length,
+                              itemBuilder: (context, index) {
+                                final entry = results[index];
+                                final details = [
+                                  if (entry.county != null && entry.county!.isNotEmpty) entry.county!,
+                                  if (entry.areaCode.isNotEmpty) 'Area code: ${entry.areaCode}',
+                                  if (entry.timezone != null && entry.timezone!.isNotEmpty) entry.timezone!,
+                                ].join('  •  ');
+                                return ListTile(
+                                  title: Text('${entry.city}, ${entry.state} ${entry.zip}'),
+                                  subtitle: details.isNotEmpty ? Text(details) : null,
+                                );
+                              },
+                            );
+                          },
+                          loading: () => const Center(child: CircularProgressIndicator()),
+                          error: (err, _) => Center(child: Text('Lookup failed: $err')),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

@@ -52,12 +52,21 @@ final lookupSuggestionsProvider = FutureProvider<List<String>>((ref) async {
   return ref.watch(lookupDbServiceProvider).suggest(query, mode: mode);
 });
 
-/// Aggregated city/state/county/timezone summary for an exact area code,
-/// sourced from the unified assets/data/area_codes.json dataset. Only
-/// populated in [LookupMode.byAreaCode]; null while typing a partial code.
-final areaCodeSummaryProvider = FutureProvider<AreaCodeRecord?>((ref) async {
-  if (ref.watch(lookupModeProvider) != LookupMode.byAreaCode) return null;
+/// Full city/state/lat-lng results for every city matching the current
+/// area-code query, sourced from assets/data/area_codes.json. Only
+/// populated in [LookupMode.byAreaCode].
+final areaCodeCityResultsProvider = FutureProvider<List<AreaCodeRecord>>((ref) async {
+  if (ref.watch(lookupModeProvider) != LookupMode.byAreaCode) return [];
   final query = ref.watch(lookupQueryProvider).trim();
-  if (!RegExp(r'^\d{3}$').hasMatch(query)) return null;
-  return ref.watch(areaCodeGeoServiceProvider).lookup(query);
+  if (query.isEmpty) return [];
+  return ref.watch(areaCodeGeoServiceProvider).resultsForAreaCode(query);
 });
+
+/// Autocomplete suggestions ("areaCode (city, state)") for [LookupMode.byAreaCode].
+final areaCodeCitySuggestionsProvider = FutureProvider<List<String>>((ref) async {
+  if (ref.watch(lookupModeProvider) != LookupMode.byAreaCode) return [];
+  final query = ref.watch(lookupQueryProvider).trim();
+  if (query.isEmpty) return [];
+  return ref.watch(areaCodeGeoServiceProvider).suggestionsForAreaCode(query);
+});
+

@@ -44,12 +44,13 @@ class ZipRecord {
 }
 
 /// Data model representing a single Area Code record in [areaCodeData],
-/// enriched with county/timezone/lat-lng aggregated from the unified
-/// dataset (see assets/data/area_codes.json, tool/generate_area_codes.dart).
+/// enriched with county/timezone/lat-lng from the unified dataset (see
+/// assets/data/area_codes.json, tool/generate_area_codes.dart).
 class AreaCodeRecord {
   final String areaCode;
   final String city;
   final String state;
+  final String? country;
   final String? county;
   final String? timezone;
   final double? lat;
@@ -59,6 +60,7 @@ class AreaCodeRecord {
     required this.areaCode,
     required this.city,
     required this.state,
+    this.country,
     this.county,
     this.timezone,
     this.lat,
@@ -69,6 +71,7 @@ class AreaCodeRecord {
         'areaCode': areaCode,
         'city': city,
         'state': state,
+        'country': country,
         'county': county,
         'timezone': timezone,
         'lat': lat,
@@ -79,6 +82,7 @@ class AreaCodeRecord {
         areaCode: (json['area_code'] ?? json['areaCode']).toString(),
         city: (json['city'] ?? '').toString(),
         state: (json['state'] ?? '').toString(),
+        country: json['country'] as String?,
         county: json['county'] as String?,
         timezone: json['timezone'] as String?,
         lat: (json['lat'] as num?)?.toDouble(),
