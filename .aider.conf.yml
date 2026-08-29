@@ -1,0 +1,8 @@
+# .aider.conf.yml — local Ollama model, offline only
+model: ollama_chat/qwen2.5-coder:14b
+auto-lint: true
+auto-test: true
+test-cmd: flutter test
+lint-cmd: flutter analyze
+watch-files: true
+gitignore: true

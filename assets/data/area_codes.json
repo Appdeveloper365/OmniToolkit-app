@@ -1,0 +1,911 @@
+[
+  {
+    "areaCode": "202",
+    "city": "Washington",
+    "state": "DC",
+    "county": "District of Columbia",
+    "timezone": "America/New_York",
+    "lat": 38.9109,
+    "lng": -77.0163
+  },
+  {
+    "areaCode": "203",
+    "city": "Bridgeport",
+    "state": "CT",
+    "county": "Fairfield County",
+    "timezone": "America/New_York",
+    "lat": 41.1792,
+    "lng": -73.1894
+  },
+  {
+    "areaCode": "205",
+    "city": "Birmingham",
+    "state": "AL",
+    "county": "Jefferson County",
+    "timezone": "America/Chicago",
+    "lat": 33.5207,
+    "lng": -86.8025
+  },
+  {
+    "areaCode": "206",
+    "city": "Seattle",
+    "state": "WA",
+    "county": "King County",
+    "timezone": "America/Los_Angeles",
+    "lat": 47.6101,
+    "lng": -122.3344
+  },
+  {
+    "areaCode": "207",
+    "city": "Portland",
+    "state": "ME",
+    "county": "Cumberland County",
+    "timezone": "America/New_York",
+    "lat": 43.6591,
+    "lng": -70.2568
+  },
+  {
+    "areaCode": "208",
+    "city": "Boise",
+    "state": "ID",
+    "county": "Ada County",
+    "timezone": "America/Denver",
+    "lat": 43.615,
+    "lng": -116.2023
+  },
+  {
+    "areaCode": "210",
+    "city": "San Antonio",
+    "state": "TX",
+    "county": "Bexar County",
+    "timezone": "America/Chicago",
+    "lat": 29.4652,
+    "lng": -98.5157
+  },
+  {
+    "areaCode": "212",
+    "city": "New York",
+    "state": "NY",
+    "county": "New York County",
+    "timezone": "America/New_York",
+    "lat": 40.7454,
+    "lng": -73.9994
+  },
+  {
+    "areaCode": "213",
+    "city": "Los Angeles",
+    "state": "CA",
+    "county": "Los Angeles County",
+    "timezone": "America/Los_Angeles",
+    "lat": 33.9731,
+    "lng": -118.2479
+  },
+  {
+    "areaCode": "214",
+    "city": "Dallas",
+    "state": "TX",
+    "county": "Dallas County",
+    "timezone": "America/Chicago",
+    "lat": 32.7876,
+    "lng": -96.7996
+  },
+  {
+    "areaCode": "215",
+    "city": "Philadelphia",
+    "state": "PA",
+    "county": "Philadelphia County",
+    "timezone": "America/New_York",
+    "lat": 39.9523,
+    "lng": -75.1638
+  },
+  {
+    "areaCode": "267",
+    "city": "Philadelphia",
+    "state": "PA",
+    "county": "Philadelphia County",
+    "timezone": "America/New_York",
+    "lat": 39.9523,
+    "lng": -75.1638
+  },
+  {
+    "areaCode": "281",
+    "city": "Houston",
+    "state": "TX",
+    "county": "Harris County",
+    "timezone": "America/Chicago",
+    "lat": 29.7752,
+    "lng": -95.3654
+  },
+  {
+    "areaCode": "302",
+    "city": "Wilmington",
+    "state": "DE",
+    "county": "New Castle County",
+    "timezone": "America/New_York",
+    "lat": 39.7391,
+    "lng": -75.5398
+  },
+  {
+    "areaCode": "303",
+    "city": "Denver",
+    "state": "CO",
+    "county": "Denver County",
+    "timezone": "America/Denver",
+    "lat": 39.7502,
+    "lng": -104.9963
+  },
+  {
+    "areaCode": "304",
+    "city": "Charleston",
+    "state": "WV",
+    "county": "Kanawha County",
+    "timezone": "America/New_York",
+    "lat": 38.3498,
+    "lng": -81.6326
+  },
+  {
+    "areaCode": "305",
+    "city": "Miami",
+    "state": "FL",
+    "county": "Miami-Dade County",
+    "timezone": "America/New_York",
+    "lat": 25.7743,
+    "lng": -80.1937
+  },
+  {
+    "areaCode": "307",
+    "city": "Cheyenne",
+    "state": "WY",
+    "county": "Laramie County",
+    "timezone": "America/Denver",
+    "lat": 41.14,
+    "lng": -104.8202
+  },
+  {
+    "areaCode": "310",
+    "city": "Beverly Hills",
+    "state": "CA",
+    "county": "Los Angeles County",
+    "timezone": "America/Los_Angeles",
+    "lat": 34.0901,
+    "lng": -118.4065
+  },
+  {
+    "areaCode": "312",
+    "city": "Chicago",
+    "state": "IL",
+    "county": "Cook County",
+    "timezone": "America/Chicago",
+    "lat": 41.8858,
+    "lng": -87.6229
+  },
+  {
+    "areaCode": "313",
+    "city": "Detroit",
+    "state": "MI",
+    "county": "Wayne County",
+    "timezone": "America/Detroit",
+    "lat": 42.3486,
+    "lng": -83.0567
+  },
+  {
+    "areaCode": "314",
+    "city": "St. Louis",
+    "state": "MO",
+    "county": "St. Louis City",
+    "timezone": "America/Chicago",
+    "lat": 38.632,
+    "lng": -90.1994
+  },
+  {
+    "areaCode": "316",
+    "city": "Wichita",
+    "state": "KS",
+    "county": "Sedgwick County",
+    "timezone": "America/Chicago",
+    "lat": 37.6872,
+    "lng": -97.3301
+  },
+  {
+    "areaCode": "317",
+    "city": "Indianapolis",
+    "state": "IN",
+    "county": "Marion County",
+    "timezone": "America/Indiana/Indianapolis",
+    "lat": 39.7818,
+    "lng": -86.118
+  },
+  {
+    "areaCode": "323",
+    "city": "Los Angeles",
+    "state": "CA",
+    "county": "Los Angeles County",
+    "timezone": "America/Los_Angeles",
+    "lat": 33.9731,
+    "lng": -118.2479
+  },
+  {
+    "areaCode": "332",
+    "city": "New York",
+    "state": "NY",
+    "county": "New York County",
+    "timezone": "America/New_York",
+    "lat": 40.7454,
+    "lng": -73.9994
+  },
+  {
+    "areaCode": "380",
+    "city": "Columbus",
+    "state": "OH",
+    "county": "Franklin County",
+    "timezone": "America/New_York",
+    "lat": 39.9862,
+    "lng": -83.0068
+  },
+  {
+    "areaCode": "401",
+    "city": "Providence",
+    "state": "RI",
+    "county": "Providence County",
+    "timezone": "America/New_York",
+    "lat": 41.824,
+    "lng": -71.4128
+  },
+  {
+    "areaCode": "402",
+    "city": "Omaha",
+    "state": "NE",
+    "county": "Douglas County",
+    "timezone": "America/Chicago",
+    "lat": 41.2565,
+    "lng": -95.9345
+  },
+  {
+    "areaCode": "404",
+    "city": "Atlanta",
+    "state": "GA",
+    "county": "Fulton County",
+    "timezone": "America/New_York",
+    "lat": 33.755,
+    "lng": -84.39
+  },
+  {
+    "areaCode": "405",
+    "city": "Oklahoma City",
+    "state": "OK",
+    "county": "Oklahoma County",
+    "timezone": "America/Chicago",
+    "lat": 35.4676,
+    "lng": -97.5164
+  },
+  {
+    "areaCode": "406",
+    "city": "Billings",
+    "state": "MT",
+    "county": "Yellowstone County",
+    "timezone": "America/Denver",
+    "lat": 45.7833,
+    "lng": -108.5007
+  },
+  {
+    "areaCode": "408",
+    "city": "San Jose",
+    "state": "CA",
+    "county": "Santa Clara County",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.3382,
+    "lng": -121.8863
+  },
+  {
+    "areaCode": "410",
+    "city": "Baltimore",
+    "state": "MD",
+    "county": "Baltimore City",
+    "timezone": "America/New_York",
+    "lat": 39.2949,
+    "lng": -76.6158
+  },
+  {
+    "areaCode": "414",
+    "city": "Milwaukee",
+    "state": "WI",
+    "county": "Milwaukee County",
+    "timezone": "America/Chicago",
+    "lat": 43.0432,
+    "lng": -87.9099
+  },
+  {
+    "areaCode": "415",
+    "city": "San Francisco",
+    "state": "CA",
+    "county": "San Francisco County",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7749,
+    "lng": -122.4194
+  },
+  {
+    "areaCode": "424",
+    "city": "Beverly Hills",
+    "state": "CA",
+    "county": "Los Angeles County",
+    "timezone": "America/Los_Angeles",
+    "lat": 34.0901,
+    "lng": -118.4065
+  },
+  {
+    "areaCode": "443",
+    "city": "Baltimore",
+    "state": "MD",
+    "county": "Baltimore City",
+    "timezone": "America/New_York",
+    "lat": 39.2949,
+    "lng": -76.6158
+  },
+  {
+    "areaCode": "469",
+    "city": "Dallas",
+    "state": "TX",
+    "county": "Dallas County",
+    "timezone": "America/Chicago",
+    "lat": 32.7876,
+    "lng": -96.7996
+  },
+  {
+    "areaCode": "470",
+    "city": "Atlanta",
+    "state": "GA",
+    "county": "Fulton County",
+    "timezone": "America/New_York",
+    "lat": 33.755,
+    "lng": -84.39
+  },
+  {
+    "areaCode": "475",
+    "city": "Bridgeport",
+    "state": "CT",
+    "county": "Fairfield County",
+    "timezone": "America/New_York",
+    "lat": 41.1792,
+    "lng": -73.1894
+  },
+  {
+    "areaCode": "501",
+    "city": "Little Rock",
+    "state": "AR",
+    "county": "Pulaski County",
+    "timezone": "America/Chicago",
+    "lat": 34.7465,
+    "lng": -92.2896
+  },
+  {
+    "areaCode": "502",
+    "city": "Louisville",
+    "state": "KY",
+    "county": "Jefferson County",
+    "timezone": "America/New_York",
+    "lat": 38.2527,
+    "lng": -85.7585
+  },
+  {
+    "areaCode": "503",
+    "city": "Portland",
+    "state": "OR",
+    "county": "Multnomah County",
+    "timezone": "America/Los_Angeles",
+    "lat": 45.5122,
+    "lng": -122.6587
+  },
+  {
+    "areaCode": "504",
+    "city": "New Orleans",
+    "state": "LA",
+    "county": "Orleans Parish",
+    "timezone": "America/Chicago",
+    "lat": 29.955,
+    "lng": -90.0751
+  },
+  {
+    "areaCode": "505",
+    "city": "Albuquerque",
+    "state": "NM",
+    "county": "Bernalillo County",
+    "timezone": "America/Denver",
+    "lat": 35.0844,
+    "lng": -106.6504
+  },
+  {
+    "areaCode": "512",
+    "city": "Austin",
+    "state": "TX",
+    "county": "Travis County",
+    "timezone": "America/Chicago",
+    "lat": 30.2711,
+    "lng": -97.7437
+  },
+  {
+    "areaCode": "515",
+    "city": "Des Moines",
+    "state": "IA",
+    "county": "Polk County",
+    "timezone": "America/Chicago",
+    "lat": 41.5868,
+    "lng": -93.625
+  },
+  {
+    "areaCode": "531",
+    "city": "Omaha",
+    "state": "NE",
+    "county": "Douglas County",
+    "timezone": "America/Chicago",
+    "lat": 41.2565,
+    "lng": -95.9345
+  },
+  {
+    "areaCode": "572",
+    "city": "Oklahoma City",
+    "state": "OK",
+    "county": "Oklahoma County",
+    "timezone": "America/Chicago",
+    "lat": 35.4676,
+    "lng": -97.5164
+  },
+  {
+    "areaCode": "575",
+    "city": "Albuquerque",
+    "state": "NM",
+    "county": "Bernalillo County",
+    "timezone": "America/Denver",
+    "lat": 35.0844,
+    "lng": -106.6504
+  },
+  {
+    "areaCode": "601",
+    "city": "Jackson",
+    "state": "MS",
+    "county": "Hinds County",
+    "timezone": "America/Chicago",
+    "lat": 32.2988,
+    "lng": -90.1848
+  },
+  {
+    "areaCode": "602",
+    "city": "Phoenix",
+    "state": "AZ",
+    "county": "Maricopa County",
+    "timezone": "America/Phoenix",
+    "lat": 33.4484,
+    "lng": -112.074
+  },
+  {
+    "areaCode": "603",
+    "city": "Manchester",
+    "state": "NH",
+    "county": "Hillsborough County",
+    "timezone": "America/New_York",
+    "lat": 42.9956,
+    "lng": -71.4548
+  },
+  {
+    "areaCode": "605",
+    "city": "Sioux Falls",
+    "state": "SD",
+    "county": "Minnehaha County",
+    "timezone": "America/Chicago",
+    "lat": 43.5446,
+    "lng": -96.7311
+  },
+  {
+    "areaCode": "612",
+    "city": "Minneapolis",
+    "state": "MN",
+    "county": "Hennepin County",
+    "timezone": "America/Chicago",
+    "lat": 44.9829,
+    "lng": -93.268
+  },
+  {
+    "areaCode": "614",
+    "city": "Columbus",
+    "state": "OH",
+    "county": "Franklin County",
+    "timezone": "America/New_York",
+    "lat": 39.9862,
+    "lng": -83.0068
+  },
+  {
+    "areaCode": "615",
+    "city": "Nashville",
+    "state": "TN",
+    "county": "Davidson County",
+    "timezone": "America/Chicago",
+    "lat": 36.1715,
+    "lng": -86.7842
+  },
+  {
+    "areaCode": "617",
+    "city": "Boston",
+    "state": "MA",
+    "county": "Suffolk County",
+    "timezone": "America/New_York",
+    "lat": 42.3588,
+    "lng": -71.0567
+  },
+  {
+    "areaCode": "619",
+    "city": "San Diego",
+    "state": "CA",
+    "county": "San Diego County",
+    "timezone": "America/Los_Angeles",
+    "lat": 32.7157,
+    "lng": -117.1611
+  },
+  {
+    "areaCode": "623",
+    "city": "Phoenix",
+    "state": "AZ",
+    "county": "Maricopa County",
+    "timezone": "America/Phoenix",
+    "lat": 33.4484,
+    "lng": -112.074
+  },
+  {
+    "areaCode": "628",
+    "city": "San Francisco",
+    "state": "CA",
+    "county": "San Francisco County",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7749,
+    "lng": -122.4194
+  },
+  {
+    "areaCode": "629",
+    "city": "Nashville",
+    "state": "TN",
+    "county": "Davidson County",
+    "timezone": "America/Chicago",
+    "lat": 36.1715,
+    "lng": -86.7842
+  },
+  {
+    "areaCode": "646",
+    "city": "New York",
+    "state": "NY",
+    "county": "New York County",
+    "timezone": "America/New_York",
+    "lat": 40.7454,
+    "lng": -73.9994
+  },
+  {
+    "areaCode": "659",
+    "city": "Birmingham",
+    "state": "AL",
+    "county": "Jefferson County",
+    "timezone": "America/Chicago",
+    "lat": 33.5207,
+    "lng": -86.8025
+  },
+  {
+    "areaCode": "669",
+    "city": "San Jose",
+    "state": "CA",
+    "county": "Santa Clara County",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.3382,
+    "lng": -121.8863
+  },
+  {
+    "areaCode": "678",
+    "city": "Atlanta",
+    "state": "GA",
+    "county": "Fulton County",
+    "timezone": "America/New_York",
+    "lat": 33.755,
+    "lng": -84.39
+  },
+  {
+    "areaCode": "681",
+    "city": "Charleston",
+    "state": "WV",
+    "county": "Kanawha County",
+    "timezone": "America/New_York",
+    "lat": 38.3498,
+    "lng": -81.6326
+  },
+  {
+    "areaCode": "682",
+    "city": "Fort Worth",
+    "state": "TX",
+    "county": "Tarrant County",
+    "timezone": "America/Chicago",
+    "lat": 32.7555,
+    "lng": -97.3308
+  },
+  {
+    "areaCode": "701",
+    "city": "Fargo",
+    "state": "ND",
+    "county": "Cass County",
+    "timezone": "America/Chicago",
+    "lat": 46.8772,
+    "lng": -96.7898
+  },
+  {
+    "areaCode": "702",
+    "city": "Las Vegas",
+    "state": "NV",
+    "county": "Clark County",
+    "timezone": "America/Los_Angeles",
+    "lat": 36.175,
+    "lng": -115.1372
+  },
+  {
+    "areaCode": "704",
+    "city": "Charlotte",
+    "state": "NC",
+    "county": "Mecklenburg County",
+    "timezone": "America/New_York",
+    "lat": 35.2271,
+    "lng": -80.8431
+  },
+  {
+    "areaCode": "713",
+    "city": "Houston",
+    "state": "TX",
+    "county": "Harris County",
+    "timezone": "America/Chicago",
+    "lat": 29.7752,
+    "lng": -95.3654
+  },
+  {
+    "areaCode": "720",
+    "city": "Denver",
+    "state": "CO",
+    "county": "Denver County",
+    "timezone": "America/Denver",
+    "lat": 39.7502,
+    "lng": -104.9963
+  },
+  {
+    "areaCode": "725",
+    "city": "Las Vegas",
+    "state": "NV",
+    "county": "Clark County",
+    "timezone": "America/Los_Angeles",
+    "lat": 36.175,
+    "lng": -115.1372
+  },
+  {
+    "areaCode": "726",
+    "city": "San Antonio",
+    "state": "TX",
+    "county": "Bexar County",
+    "timezone": "America/Chicago",
+    "lat": 29.4652,
+    "lng": -98.5157
+  },
+  {
+    "areaCode": "737",
+    "city": "Austin",
+    "state": "TX",
+    "county": "Travis County",
+    "timezone": "America/Chicago",
+    "lat": 30.2711,
+    "lng": -97.7437
+  },
+  {
+    "areaCode": "757",
+    "city": "Virginia Beach",
+    "state": "VA",
+    "county": "Virginia Beach City",
+    "timezone": "America/New_York",
+    "lat": 36.8529,
+    "lng": -75.978
+  },
+  {
+    "areaCode": "769",
+    "city": "Jackson",
+    "state": "MS",
+    "county": "Hinds County",
+    "timezone": "America/Chicago",
+    "lat": 32.2988,
+    "lng": -90.1848
+  },
+  {
+    "areaCode": "786",
+    "city": "Miami",
+    "state": "FL",
+    "county": "Miami-Dade County",
+    "timezone": "America/New_York",
+    "lat": 25.7743,
+    "lng": -80.1937
+  },
+  {
+    "areaCode": "801",
+    "city": "Salt Lake City",
+    "state": "UT",
+    "county": "Salt Lake County",
+    "timezone": "America/Denver",
+    "lat": 40.7659,
+    "lng": -111.8911
+  },
+  {
+    "areaCode": "802",
+    "city": "Burlington",
+    "state": "VT",
+    "county": "Chittenden County",
+    "timezone": "America/New_York",
+    "lat": 44.4759,
+    "lng": -73.2121
+  },
+  {
+    "areaCode": "803",
+    "city": "Columbia",
+    "state": "SC",
+    "county": "Richland County",
+    "timezone": "America/New_York",
+    "lat": 34.0007,
+    "lng": -81.0348
+  },
+  {
+    "areaCode": "808",
+    "city": "Honolulu",
+    "state": "HI",
+    "county": "Honolulu County",
+    "timezone": "Pacific/Honolulu",
+    "lat": 21.3069,
+    "lng": -157.8583
+  },
+  {
+    "areaCode": "816",
+    "city": "Kansas City",
+    "state": "MO",
+    "county": "Jackson County",
+    "timezone": "America/Chicago",
+    "lat": 39.1141,
+    "lng": -94.5872
+  },
+  {
+    "areaCode": "817",
+    "city": "Fort Worth",
+    "state": "TX",
+    "county": "Tarrant County",
+    "timezone": "America/Chicago",
+    "lat": 32.7555,
+    "lng": -97.3308
+  },
+  {
+    "areaCode": "832",
+    "city": "Houston",
+    "state": "TX",
+    "county": "Harris County",
+    "timezone": "America/Chicago",
+    "lat": 29.7752,
+    "lng": -95.3654
+  },
+  {
+    "areaCode": "839",
+    "city": "Columbia",
+    "state": "SC",
+    "county": "Richland County",
+    "timezone": "America/New_York",
+    "lat": 34.0007,
+    "lng": -81.0348
+  },
+  {
+    "areaCode": "857",
+    "city": "Boston",
+    "state": "MA",
+    "county": "Suffolk County",
+    "timezone": "America/New_York",
+    "lat": 42.3588,
+    "lng": -71.0567
+  },
+  {
+    "areaCode": "858",
+    "city": "San Diego",
+    "state": "CA",
+    "county": "San Diego County",
+    "timezone": "America/Los_Angeles",
+    "lat": 32.7157,
+    "lng": -117.1611
+  },
+  {
+    "areaCode": "862",
+    "city": "Newark",
+    "state": "NJ",
+    "county": "Essex County",
+    "timezone": "America/New_York",
+    "lat": 40.7357,
+    "lng": -74.1724
+  },
+  {
+    "areaCode": "872",
+    "city": "Chicago",
+    "state": "IL",
+    "county": "Cook County",
+    "timezone": "America/Chicago",
+    "lat": 41.8858,
+    "lng": -87.6229
+  },
+  {
+    "areaCode": "904",
+    "city": "Jacksonville",
+    "state": "FL",
+    "county": "Duval County",
+    "timezone": "America/New_York",
+    "lat": 30.3322,
+    "lng": -81.6557
+  },
+  {
+    "areaCode": "907",
+    "city": "Anchorage",
+    "state": "AK",
+    "county": "Anchorage Municipality",
+    "timezone": "America/Anchorage",
+    "lat": 61.2181,
+    "lng": -149.9003
+  },
+  {
+    "areaCode": "919",
+    "city": "Raleigh",
+    "state": "NC",
+    "county": "Wake County",
+    "timezone": "America/New_York",
+    "lat": 35.7796,
+    "lng": -78.6382
+  },
+  {
+    "areaCode": "971",
+    "city": "Portland",
+    "state": "OR",
+    "county": "Multnomah County",
+    "timezone": "America/Los_Angeles",
+    "lat": 45.5122,
+    "lng": -122.6587
+  },
+  {
+    "areaCode": "972",
+    "city": "Dallas",
+    "state": "TX",
+    "county": "Dallas County",
+    "timezone": "America/Chicago",
+    "lat": 32.7876,
+    "lng": -96.7996
+  },
+  {
+    "areaCode": "973",
+    "city": "Newark",
+    "state": "NJ",
+    "county": "Essex County",
+    "timezone": "America/New_York",
+    "lat": 40.7357,
+    "lng": -74.1724
+  },
+  {
+    "areaCode": "980",
+    "city": "Charlotte",
+    "state": "NC",
+    "county": "Mecklenburg County",
+    "timezone": "America/New_York",
+    "lat": 35.2271,
+    "lng": -80.8431
+  },
+  {
+    "areaCode": "984",
+    "city": "Raleigh",
+    "state": "NC",
+    "county": "Wake County",
+    "timezone": "America/New_York",
+    "lat": 35.7796,
+    "lng": -78.6382
+  },
+  {
+    "areaCode": "986",
+    "city": "Boise",
+    "state": "ID",
+    "county": "Ada County",
+    "timezone": "America/Denver",
+    "lat": 43.615,
+    "lng": -116.2023
+  }
+]

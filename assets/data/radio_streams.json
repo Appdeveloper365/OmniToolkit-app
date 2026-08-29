@@ -1,0 +1,10 @@
+[
+  {"name": "Groove Salad (SomaFM)", "url": "https://ice1.somafm.com/groovesalad-128-mp3", "codec": "MP3"},
+  {"name": "Drone Zone (SomaFM)", "url": "https://ice1.somafm.com/dronezone-128-mp3", "codec": "MP3"},
+  {"name": "Lush (SomaFM)", "url": "https://ice1.somafm.com/lush-128-mp3", "codec": "MP3"},
+  {"name": "Indie Pop Rocks (SomaFM)", "url": "https://ice1.somafm.com/indiepop-128-mp3", "codec": "MP3"},
+  {"name": "Secret Agent (SomaFM)", "url": "https://ice1.somafm.com/secretagent-128-mp3", "codec": "MP3"},
+  {"name": "Deep Space One (SomaFM)", "url": "https://ice1.somafm.com/deepspaceone-128-mp3", "codec": "MP3"},
+  {"name": "Beat Blender (SomaFM)", "url": "https://ice1.somafm.com/beatblender-128-mp3", "codec": "MP3"},
+  {"name": "OmniToolkit Test Stream", "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", "codec": "MP3"}
+]

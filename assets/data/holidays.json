@@ -1,0 +1,23 @@
+[
+  {"date": "2024-01-01", "name": "New Year's Day", "country": "US"},
+  {"date": "2024-01-15", "name": "Martin Luther King Jr. Day", "country": "US"},
+  {"date": "2024-02-19", "name": "Presidents' Day", "country": "US"},
+  {"date": "2024-05-27", "name": "Memorial Day", "country": "US"},
+  {"date": "2024-06-19", "name": "Juneteenth", "country": "US"},
+  {"date": "2024-07-04", "name": "Independence Day", "country": "US"},
+  {"date": "2024-09-02", "name": "Labor Day", "country": "US"},
+  {"date": "2024-10-14", "name": "Columbus Day", "country": "US"},
+  {"date": "2024-11-11", "name": "Veterans Day", "country": "US"},
+  {"date": "2024-11-28", "name": "Thanksgiving Day", "country": "US"},
+  {"date": "2024-12-25", "name": "Christmas Day", "country": "US"},
+  {"date": "2024-01-04", "name": "World Braille Day", "country": "INTL"},
+  {"date": "2024-03-08", "name": "International Women's Day", "country": "INTL"},
+  {"date": "2024-04-07", "name": "World Health Day", "country": "INTL"},
+  {"date": "2024-04-22", "name": "Earth Day", "country": "INTL"},
+  {"date": "2024-06-05", "name": "World Environment Day", "country": "INTL"},
+  {"date": "2024-09-21", "name": "International Day of Peace", "country": "INTL"},
+  {"date": "2024-10-05", "name": "World Teachers' Day", "country": "INTL"},
+  {"date": "2024-10-16", "name": "World Food Day", "country": "INTL"},
+  {"date": "2024-12-03", "name": "Intl. Day of Persons with Disabilities", "country": "INTL"},
+  {"date": "2024-12-10", "name": "Human Rights Day", "country": "INTL"}
+]
