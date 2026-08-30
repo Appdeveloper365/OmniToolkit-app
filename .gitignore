@@ -51,3 +51,6 @@ app.*.map.json
 .env
 .aider*
 !.aider.conf.yml
+
+# Local code-signing certificates
+windows/certs/
