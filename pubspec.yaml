@@ -49,14 +49,9 @@ msix_config:
   publisher_display_name: Appdeveloper365
   identity_name: Appdeveloper365.OmniToolkit
   msix_version: 1.0.0.0
-  # For Partner Center submission: replace publisher with the exact
-  # "Package/Identity/Publisher" value from Partner Center (Product identity page,
-  # looks like CN=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX), set store: true,
-  # and remove certificate_path/certificate_password (the Store signs the package).
-  publisher: CN=Appdeveloper365
-  certificate_path: windows/certs/OmniToolkitDev.pfx
-  certificate_password: OmniToolkit-Dev-2026
-  install_certificate: false
+  # Partner Center identity: publisher must equal Package/Identity/Publisher exactly.
+  publisher: CN=414C09E0-1118-4894-9A2F-45A40232B6A6
+  store: true
   logo_path: windows/runner/resources/app_icon.ico
   capabilities: internetClient
   output_path: build/msix
