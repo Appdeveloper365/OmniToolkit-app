@@ -46,7 +46,7 @@ dev_dependencies:
 
 msix_config:
   display_name: OmniToolkit
-  publisher_display_name: Appdeveloper365
+  publisher_display_name: BTIM
   identity_name: Appdeveloper365.OmniToolkit
   msix_version: 1.0.0.0
   # Partner Center identity: publisher must equal Package/Identity/Publisher exactly.
@@ -55,7 +55,7 @@ msix_config:
   logo_path: windows/runner/resources/app_icon.ico
   capabilities: internetClient
   output_path: build/msix
-  output_name: OmniToolkit
+  output_name: BTIM_OmniToolkit
 
 flutter:
   uses-material-design: true
