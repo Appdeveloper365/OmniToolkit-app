@@ -47,7 +47,7 @@ dev_dependencies:
 msix_config:
   display_name: OmniToolkit
   publisher_display_name: BTIM
-  identity_name: Appdeveloper365.OmniToolkit
+  identity_name: BTIM.OmniToolkit
   msix_version: 1.0.0.0
   # Partner Center identity: publisher must equal Package/Identity/Publisher exactly.
   publisher: CN=414C09E0-1118-4894-9A2F-45A40232B6A6
