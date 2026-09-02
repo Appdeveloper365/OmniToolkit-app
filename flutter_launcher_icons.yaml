@@ -1,0 +1,19 @@
+flutter_launcher_icons:
+  image_path: "omnitoolkit_logo_master.png"
+  
+  android:
+    notification_icon: "ic_stat_icon"
+    notification_icon_color: "#2F6FED"
+    generate_legacy_icon: true
+  
+  ios:
+    generate: true
+  
+  macos:
+    generate: true
+  
+  windows:
+    generate: true
+  
+  web:
+    generate: true
