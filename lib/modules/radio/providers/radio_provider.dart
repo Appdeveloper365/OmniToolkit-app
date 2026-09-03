@@ -1,5 +1,7 @@
-/// FILE: lib/modules/radio/providers/radio_provider.dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
@@ -69,21 +71,50 @@ class RadioPlaybackController {
   Future<void> play(StationModel station) async {
     final player = ref.read(audioPlayerProvider);
     ref.read(currentStationProvider.notifier).state = station;
-    await player.setAudioSource(
-      AudioSource.uri(
-        Uri.parse(station.streamUrl),
-        headers: const {
-          'User-Agent': 'OmniToolkit/1.0',
-          'Accept': '*/*',
-        },
-        tag: MediaItem(
-          id: station.id,
-          album: 'OmniToolkit Radio',
-          title: station.name,
+    try {
+      await player.stop();
+
+      String targetUrl = station.streamUrl;
+      // Resolve playlist links (.m3u, .pls) if applicable
+      if (targetUrl.endsWith('.m3u') || targetUrl.endsWith('.pls')) {
+        targetUrl = await _resolvePlaylistUrl(targetUrl);
+      }
+
+      await player.setAudioSource(
+        AudioSource.uri(
+          Uri.parse(targetUrl),
+          headers: const {
+            'User-Agent': 'OmniToolkit/1.0',
+            'Accept': '*/*',
+          },
+          tag: MediaItem(
+            id: station.id,
+            album: 'OmniToolkit Radio',
+            title: station.name,
+          ),
         ),
-      ),
-    );
-    await player.play();
+      );
+      await player.play();
+    } catch (e) {
+      debugPrint('Error playing stream ${station.name}: $e');
+      await player.stop();
+      ref.read(currentStationProvider.notifier).state = null;
+    }
+  }
+
+  Future<String> _resolvePlaylistUrl(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 4));
+      if (response.statusCode == 200) {
+        for (final rawLine in response.body.split('\n')) {
+          final line = rawLine.trim();
+          if (line.startsWith('http://') || line.startsWith('https://')) {
+            return line;
+          }
+        }
+      }
+    } catch (_) {}
+    return url;
   }
 
   Future<void> togglePlayPause() async {

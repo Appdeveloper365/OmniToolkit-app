@@ -1,9 +1,9 @@
-/// FILE: lib/modules/weather/widgets/weather_info_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../models/weather_model.dart';
+import '../providers/weather_provider.dart';
 
 /// Displays temperature, humidity, wind, sunrise and sunset details.
 class WeatherInfoCard extends ConsumerWidget {
@@ -28,12 +28,22 @@ class WeatherInfoCard extends ConsumerWidget {
     }
   }
 
+  String _formatTemp(double celsius, TemperatureUnit unit) {
+    if (unit == TemperatureUnit.fahrenheit) {
+      final fahrenheit = (celsius * 9 / 5) + 32;
+      return '${fahrenheit.toStringAsFixed(1)}°F';
+    }
+    return '${celsius.toStringAsFixed(1)}°C';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final unit = ref.watch(temperatureUnitProvider);
     final format12 = DateFormat('hh:mm a');
     final format24 = DateFormat('HH:mm');
     String dualTime(DateTime dateTime) =>
         '${format12.format(dateTime)}  |  ${format24.format(dateTime)}';
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -48,11 +58,11 @@ class WeatherInfoCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${weather.temperature.toStringAsFixed(1)}°C',
+                      _formatTemp(weather.temperature, unit),
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     Text(weather.description),
-                    Text('Feels like ${weather.apparentTemperature.toStringAsFixed(1)}°C'),
+                    Text('Feels like ${_formatTemp(weather.apparentTemperature, unit)}'),
                   ],
                 ),
               ],

@@ -13,7 +13,6 @@ add_executable(${BINARY_NAME} WIN32
   "win32_window.cpp"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
   "Runner.rc"
-  "runner.exe.manifest"
 )
 
 # Apply the standard set of build settings. This can be removed for applications
@@ -29,6 +28,9 @@ target_compile_definitions(${BINARY_NAME} PRIVATE "FLUTTER_VERSION_BUILD=${FLUTT
 
 # Disable Windows macros that collide with C++ standard library functions.
 target_compile_definitions(${BINARY_NAME} PRIVATE "NOMINMAX")
+
+# Disable mt.exe manifest tool pass in link phase since manifest is compiled directly in Runner.rc
+target_link_options(${BINARY_NAME} PRIVATE "/MANIFEST:NO")
 
 # Add dependency libraries and include directories. Add any application-specific
 # dependencies here.

@@ -1,4 +1,3 @@
-/// FILE: lib/modules/calculator/widgets/calculator_keypad.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -28,7 +27,6 @@ class CalculatorKeypad extends ConsumerWidget {
     final current = ref.read(expressionInputProvider);
     if (key == 'C') {
       ref.read(expressionInputProvider.notifier).state = '';
-      ref.read(expressionResultProvider.notifier).state = '';
       return;
     }
     if (key == '=') {

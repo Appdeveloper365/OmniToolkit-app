@@ -1,4 +1,3 @@
-/// FILE: lib/modules/calculator/widgets/expression_field.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,28 +21,12 @@ class _ExpressionFieldState extends ConsumerState<ExpressionField> {
     super.dispose();
   }
 
-  void _evaluate(String value) {
-    ref.read(expressionInputProvider.notifier).state = value;
-    try {
-      final result = ref.read(expressionServiceProvider).evaluate(value);
-      ref.read(expressionResultProvider.notifier).state = _formatResult(result);
-    } catch (_) {
-      ref.read(expressionResultProvider.notifier).state = value.trim().isEmpty ? '' : 'Error';
-    }
-  }
-
-  String _formatResult(double value) {
-    if (value == value.roundToDouble() && value.abs() < 1e15) {
-      return value.toStringAsFixed(0);
-    }
-    return value.toStringAsPrecision(10).replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
-  }
-
   @override
   Widget build(BuildContext context) {
     final result = ref.watch(expressionResultProvider);
-    // keep controller in sync when input changed externally (keypad taps)
     final external = ref.watch(expressionInputProvider);
+
+    // Keep controller in sync when input is changed via keypad or text field
     if (_controller.text != external) {
       _controller.value = TextEditingValue(
         text: external,
@@ -56,7 +39,9 @@ class _ExpressionFieldState extends ConsumerState<ExpressionField> {
       children: [
         TextField(
           controller: _controller,
-          onChanged: _evaluate,
+          onChanged: (value) {
+            ref.read(expressionInputProvider.notifier).state = value;
+          },
           textAlign: TextAlign.right,
           style: Theme.of(context).textTheme.headlineSmall,
           decoration: const InputDecoration(

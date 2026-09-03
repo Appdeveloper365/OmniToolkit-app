@@ -1,11 +1,15 @@
-/// FILE: lib/modules/weather/providers/weather_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/city_model.dart';
 import '../models/weather_model.dart';
 import '../services/weather_service.dart';
 
+enum TemperatureUnit { celsius, fahrenheit }
+
 final weatherServiceProvider = Provider<WeatherService>((ref) => WeatherService());
+
+/// Temperature unit selection (Celsius vs Fahrenheit).
+final temperatureUnitProvider = StateProvider<TemperatureUnit>((ref) => TemperatureUnit.celsius);
 
 /// City currently selected by the user (defaults to New York City).
 final selectedCityProvider = StateProvider<CityModel>((ref) {

@@ -1,12 +1,12 @@
 {
-    "name": "omnitoolkit",
-    "short_name": "omnitoolkit",
+    "name": "OmniToolkit",
+    "short_name": "OmniToolkit",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "description": "OmniToolkit - daily tools for Windows: weather with dual time display, calendar with notes, calculator, internet radio directory, and US ZIP/area code/city lookup.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

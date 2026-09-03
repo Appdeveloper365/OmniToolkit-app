@@ -1,4 +1,3 @@
-/// FILE: lib/modules/weather/screens/weather_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,9 +13,33 @@ class WeatherScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final city = ref.watch(selectedCityProvider);
     final weatherAsync = ref.watch(currentWeatherProvider);
+    final unit = ref.watch(temperatureUnitProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Weather')),
+      appBar: AppBar(
+        title: const Text('Weather'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: SegmentedButton<TemperatureUnit>(
+              segments: const [
+                ButtonSegment(
+                  value: TemperatureUnit.celsius,
+                  label: Text('°C'),
+                ),
+                ButtonSegment(
+                  value: TemperatureUnit.fahrenheit,
+                  label: Text('°F'),
+                ),
+              ],
+              selected: {unit},
+              onSelectionChanged: (newSelection) {
+                ref.read(temperatureUnitProvider.notifier).state = newSelection.first;
+              },
+            ),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () async => ref.refresh(currentWeatherProvider.future),
         child: ListView(

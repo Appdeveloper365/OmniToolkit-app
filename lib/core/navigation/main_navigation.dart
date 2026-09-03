@@ -1,4 +1,3 @@
-/// FILE: lib/core/navigation/main_navigation.dart
 import 'package:flutter/material.dart';
 
 import '../../modules/calculator/screens/calculator_screen.dart';
@@ -8,6 +7,7 @@ import '../../modules/lookup/screens/lookup_screen.dart';
 import '../../modules/radio/screens/radio_screen.dart';
 import '../../modules/weather/screens/weather_screen.dart';
 import '../settings/settings_screen.dart';
+import '../theme/app_logo.dart';
 
 /// Root scaffold hosting navigation for all modules and settings.
 class MainNavigation extends StatefulWidget {
@@ -55,6 +55,16 @@ class _MainNavigationState extends State<MainNavigation> {
                 ),
                 child: IntrinsicHeight(
                   child: NavigationRail(
+                    leading: const Padding(
+                      padding: EdgeInsets.only(top: 16, bottom: 8),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AppLogo(size: 84),
+                          SizedBox(height: 4),
+                        ],
+                      ),
+                    ),
                     selectedIndex: _index,
                     onDestinationSelected: (i) => setState(() => _index = i),
                     labelType: NavigationRailLabelType.all,
