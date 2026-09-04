@@ -19,10 +19,10 @@ class CalculatorScreen extends StatelessWidget {
           bottom: const TabBar(
             isScrollable: true,
             tabs: [
-              Tab(icon: Icon(Icons.calculate_outlined), text: 'Simple'),
+              Tab(icon: Icon(Icons.calculate_outlined), text: 'Standard'),
               Tab(icon: Icon(Icons.functions), text: 'Scientific'),
-              Tab(icon: Icon(Icons.date_range), text: 'Date Diff'),
-              Tab(icon: Icon(Icons.swap_horiz), text: 'Converter'),
+              Tab(icon: Icon(Icons.date_range), text: 'Date Calculator'),
+              Tab(icon: Icon(Icons.swap_horiz), text: 'Unit Converter'),
             ],
           ),
         ),
