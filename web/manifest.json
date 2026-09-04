@@ -1,8 +1,8 @@
 {
   "name": "BTIM",
   "short_name": "BTIM.OmniToolkit",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "id": "CN=414C09E0-1118-4894-9A2F-45A40232B6A6",
   "description": "A BUNDLE OF UTILITIES IN ONE APP",
   "lang": "en",
@@ -23,7 +23,7 @@
   ],
   "share_target": {
     "method": "GET",
-    "action": "/share",
+    "action": "./share",
     "params": {
       "title": "title",
       "text": "text",
