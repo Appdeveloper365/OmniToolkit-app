@@ -8,6 +8,15 @@
     "description": "OmniToolkit - daily tools for Windows: weather with dual time display, calendar with notes, calculator, internet radio directory, and US ZIP/area code/city lookup.",
     "orientation": "any",
     "prefer_related_applications": false,
+    "share_target": {
+        "action": "/share",
+        "method": "GET",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url"
+        }
+    },
     "icons": [
         {
             "src": "icons/Icon-192.png",

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio_background/just_audio_background.dart';
@@ -9,6 +10,7 @@ import 'package:timezone/data/latest.dart' as tz_data;
 import 'core/navigation/main_navigation.dart';
 import 'core/theme/app_theme.dart';
 import 'core/data/asset_importer.dart';
+import 'screens/share_target_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,12 +19,12 @@ Future<void> main() async {
     await AssetImporter.importFirstLaunch();
 
     // Initialize media_kit backend for Windows/Linux audio playback
-    if (Platform.isWindows || Platform.isLinux) {
+    if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
       JustAudioMediaKit.ensureInitialized();
     }
 
     // Initialize just_audio background playback for Android/iOS
-    if (Platform.isAndroid || Platform.isIOS) {
+    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
       await JustAudioBackground.init(
         androidNotificationChannelId: 'com.omnitoolkit.channel.audio',
         androidNotificationChannelName: 'OmniToolkit Radio',
@@ -47,7 +49,31 @@ class OmniToolkitApp extends StatelessWidget {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: ThemeMode.system,
-      home: const MainNavigation(),
+      onGenerateRoute: (settings) {
+        final uri = Uri.parse(settings.name ?? '/');
+        
+        // Match /share route for Web Share Target and query parameters
+        if (uri.path == '/share') {
+          final title = uri.queryParameters['title'];
+          final text = uri.queryParameters['text'];
+          final url = uri.queryParameters['url'];
+          
+          return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => ShareTargetScreen(
+              title: title,
+              text: text,
+              url: url,
+            ),
+          );
+        }
+
+        // Default home root route
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const MainNavigation(),
+        );
+      },
     );
   }
 }
