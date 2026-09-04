@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../models/note_model.dart';
 import '../providers/calendar_provider.dart';
 import '../widgets/calendar_grid.dart';
 import '../widgets/note_dialog.dart';
@@ -10,9 +11,11 @@ import '../widgets/note_dialog.dart';
 class CalendarScreen extends ConsumerWidget {
   const CalendarScreen({super.key});
 
-  Future<void> _openNoteDialog(BuildContext context, WidgetRef ref, {dynamic existing}) async {
+  static final _timeFormat = DateFormat('hh:mm a');
+
+  Future<void> _openNoteDialog(BuildContext context, WidgetRef ref, {NoteModel? existing}) async {
     final date = ref.read(selectedDateProvider);
-    final result = await showDialog(
+    final result = await showDialog<NoteModel>(
       context: context,
       builder: (_) => NoteDialog(date: date, existing: existing),
     );
@@ -49,6 +52,7 @@ class CalendarScreen extends ConsumerWidget {
       ]),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openNoteDialog(context, ref),
+        tooltip: 'Add note',
         child: const Icon(Icons.add),
       ),
       body: ListView(
@@ -61,25 +65,25 @@ class CalendarScreen extends ConsumerWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
+          // Note preview panel: notes are hidden inside the calendar cells
+          // themselves and are only revealed here once a date is tapped.
           notesAsync.when(
             data: (notes) {
               if (notes.isEmpty) {
                 return const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Text('No notes for this date. Tap + to add one.'),
+                  child: Text('No notes for this date.'),
                 );
               }
               return Column(
                 children: notes
                     .map((note) => Card(
                           child: ListTile(
-                            title: Text(note.title),
-                            subtitle: Text([
-                              if (note.description?.isNotEmpty ?? false) note.description!,
-                              if (note.reminderTime != null) 'Reminder: ${note.reminderTime}',
-                            ].join('\n')),
-                            isThreeLine: (note.description?.isNotEmpty ?? false) &&
-                                note.reminderTime != null,
+                            leading: const Icon(Icons.note),
+                            title: Text(note.noteText),
+                            subtitle: note.createdAt != null
+                                ? Text(_timeFormat.format(note.createdAt!))
+                                : null,
                             trailing: PopupMenuButton(
                               itemBuilder: (_) => const [
                                 PopupMenuItem(value: 'edit', child: Text('Edit')),

@@ -1,16 +1,23 @@
 /// FILE: lib/modules/calendar/widgets/calendar_grid.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../models/holiday_record.dart';
 import '../models/note_model.dart';
 import '../providers/calendar_provider.dart';
 
-/// A responsive monthly calendar grid. Days with saved notes are highlighted.
+/// Brown highlight used for calendar cells that contain at least one note.
+const Color _notedCellColor = Color(0xFF8B4513);
+
+/// A responsive monthly calendar grid. Days with saved notes show the full
+/// date, a brown background, white text, and a small note icon; note
+/// contents themselves are never shown inside the cell.
 class CalendarGrid extends ConsumerWidget {
   const CalendarGrid({super.key});
 
   static const _weekdayLabels = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+  static final _cellDateFormat = DateFormat('MM/dd/yyyy');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -106,51 +113,77 @@ class CalendarGrid extends ConsumerWidget {
     final holidaysForDay = holidayLabels[dateKey] ?? const <HolidayRecord>[];
     final scheme = Theme.of(context).colorScheme;
 
+    // Notes take precedence for the background color per spec; selection is
+    // instead conveyed with a border ring so the brown "has notes" color is
+    // never masked.
+    final backgroundColor = hasNote
+        ? _notedCellColor
+        : (isSelected ? scheme.primary : Colors.transparent);
+    final foregroundColor = hasNote
+        ? Colors.white
+        : (isSelected ? scheme.onPrimary : null);
+
     return AspectRatio(
       aspectRatio: 1,
       child: Padding(
         padding: const EdgeInsets.all(2),
         child: Material(
-          color: isSelected
-              ? scheme.primary
-              : hasNote
-                  ? scheme.tertiaryContainer
-                  : Colors.transparent,
+          color: backgroundColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
-            side: isToday && !isSelected
-                ? BorderSide(color: scheme.primary, width: 1.5)
-                : BorderSide.none,
+            side: isSelected
+                ? BorderSide(color: scheme.primary, width: 2)
+                : (isToday
+                    ? BorderSide(color: scheme.primary, width: 1.5)
+                    : BorderSide.none),
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(8),
             onTap: () => ref.read(selectedDateProvider.notifier).state = date,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('$dayNumber', style: TextStyle(
-                    color: isSelected ? scheme.onPrimary : null,
-                    fontWeight: hasNote ? FontWeight.bold : FontWeight.normal,
-                  )),
-                  if (holidaysForDay.isNotEmpty)
-                    Text(
-                      holidaysForDay.length > 1
-                          ? '${holidaysForDay.first.shortLabel} +'
-                          : holidaysForDay.first.shortLabel,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: isSelected
-                            ? scheme.onPrimary
-                            : (holidaysForDay.first.country == 'US' ? Colors.blue : Colors.green),
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        // Full date is shown once a note exists; otherwise the
+                        // plain day number keeps the grid compact.
+                        hasNote ? _cellDateFormat.format(date) : '$dayNumber',
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: foregroundColor,
+                          fontWeight: hasNote ? FontWeight.bold : FontWeight.normal,
+                          fontSize: hasNote ? 11 : null,
+                        ),
                       ),
-                    ),
-                ],
-              ),
+                      if (holidaysForDay.isNotEmpty)
+                        Text(
+                          holidaysForDay.length > 1
+                              ? '${holidaysForDay.first.shortLabel} +'
+                              : holidaysForDay.first.shortLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: foregroundColor ??
+                                (holidaysForDay.first.country == 'US' ? Colors.blue : Colors.green),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (hasNote)
+                  const Positioned(
+                    top: 2,
+                    right: 2,
+                    child: Icon(Icons.note, size: 12, color: Colors.white),
+                  ),
+              ],
             ),
           ),
         ),

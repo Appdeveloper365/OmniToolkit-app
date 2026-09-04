@@ -41,6 +41,7 @@ dependencies:
 
   # Calculator expression parsing
   math_expressions: ^2.6.0
+  sqflite_common_ffi_web: ^1.1.2
 
 dev_dependencies:
   flutter_test:
