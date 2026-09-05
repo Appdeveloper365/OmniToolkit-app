@@ -1,4 +1,5 @@
 /// FILE: lib/modules/lookup/providers/lookup_provider.dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/lookup_models.dart';
@@ -10,19 +11,15 @@ import '../services/lookup_service.dart';
 export '../models/lookup_models.dart' show LookupMode;
 
 final lookupDbServiceProvider = Provider((ref) => LookupDbService());
-
 final lookupServiceProvider = Provider((ref) => LookupService());
-
 final areaCodeGeoServiceProvider = Provider((ref) => AreaCodeGeoService());
 
-final lookupServiceInitProvider = FutureProvider<void>((ref) async {
-  final service = ref.watch(lookupServiceProvider);
-  await service.ensureInitialized();
-});
-
 final lookupSeededProvider = FutureProvider<void>((ref) async {
-  await ref.watch(lookupDbServiceProvider).ensureSeeded();
-  await ref.watch(lookupServiceInitProvider.future);
+  try {
+    await ref.watch(lookupDbServiceProvider).ensureSeeded().timeout(const Duration(seconds: 5));
+  } catch (e) {
+    debugPrint('[LookupProvider] Database seeding warning: $e');
+  }
 });
 
 final lookupModeProvider = StateProvider<LookupMode>((ref) => LookupMode.byZip);
@@ -43,7 +40,6 @@ final lookupResultsProvider = FutureProvider<List<ZipEntry>>((ref) async {
   }
 });
 
-/// Autocomplete suggestions (ZIP, city/state, area code) for the current query.
 final lookupSuggestionsProvider = FutureProvider<List<String>>((ref) async {
   await ref.watch(lookupSeededProvider.future);
   final query = ref.watch(lookupQueryProvider).trim();
@@ -52,9 +48,6 @@ final lookupSuggestionsProvider = FutureProvider<List<String>>((ref) async {
   return ref.watch(lookupDbServiceProvider).suggest(query, mode: mode);
 });
 
-/// Full city/state/lat-lng results for every city matching the current
-/// area-code query, sourced from assets/data/area_codes.json. Only
-/// populated in [LookupMode.byAreaCode].
 final areaCodeCityResultsProvider = FutureProvider<List<AreaCodeRecord>>((ref) async {
   if (ref.watch(lookupModeProvider) != LookupMode.byAreaCode) return [];
   final query = ref.watch(lookupQueryProvider).trim();
@@ -62,11 +55,9 @@ final areaCodeCityResultsProvider = FutureProvider<List<AreaCodeRecord>>((ref) a
   return ref.watch(areaCodeGeoServiceProvider).resultsForAreaCode(query);
 });
 
-/// Autocomplete suggestions ("areaCode (city, state)") for [LookupMode.byAreaCode].
 final areaCodeCitySuggestionsProvider = FutureProvider<List<String>>((ref) async {
   if (ref.watch(lookupModeProvider) != LookupMode.byAreaCode) return [];
   final query = ref.watch(lookupQueryProvider).trim();
   if (query.isEmpty) return [];
   return ref.watch(areaCodeGeoServiceProvider).suggestionsForAreaCode(query);
 });
-

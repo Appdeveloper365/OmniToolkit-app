@@ -1,10 +1,10 @@
 {
-  "name": "BTIM",
-  "short_name": "BTIM.OmniToolkit",
+  "name": "OmniToolkit",
+  "short_name": "OmniToolkit",
   "start_url": "./",
   "scope": "./",
   "id": "CN=414C09E0-1118-4894-9A2F-45A40232B6A6",
-  "description": "A BUNDLE OF UTILITIES IN ONE APP",
+  "description": "OmniToolkit - Daily productivity suite for weather, calendar with notes, calculator, world radio, lookup, and password generator.",
   "lang": "en",
   "dir": "ltr",
   "display": "standalone",
@@ -13,8 +13,8 @@
     "standalone"
   ],
   "orientation": "any",
-  "background_color": "#978d8d",
-  "theme_color": "#d45757",
+  "background_color": "#0F172A",
+  "theme_color": "#0284C7",
   "categories": [
     "entertainment",
     "productivity",

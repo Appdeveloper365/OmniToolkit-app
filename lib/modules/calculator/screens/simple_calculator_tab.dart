@@ -5,10 +5,9 @@ import '../widgets/calculator_body.dart';
 import '../widgets/calculator_display.dart';
 import '../widgets/calculator_keyboard_shortcuts.dart';
 import '../widgets/calculator_keypad.dart';
-import '../widgets/history_panel.dart';
 
-/// The "Standard" calculator tab: compact display, history panel, and keypad
-/// designed to fit within initial mobile viewport without vertical scrolling.
+/// The "Standard" calculator tab: compact display with in-display history toggle,
+/// and keypad designed to fit within initial mobile viewport without vertical scrolling.
 class SimpleCalculatorTab extends StatelessWidget {
   const SimpleCalculatorTab({super.key});
 
@@ -17,14 +16,13 @@ class SimpleCalculatorTab extends StatelessWidget {
     return const CalculatorKeyboardShortcuts(
       child: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(8),
+          padding: EdgeInsets.all(6),
           child: CalculatorBody(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 CalculatorDisplay(),
-                HistoryPanel(),
-                SizedBox(height: 8),
+                SizedBox(height: 6),
                 CalculatorKeypad(),
               ],
             ),

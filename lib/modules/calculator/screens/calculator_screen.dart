@@ -14,25 +14,36 @@ class CalculatorScreen extends StatelessWidget {
     return DefaultTabController(
       length: 4,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Calculator'),
-          bottom: const TabBar(
-            isScrollable: true,
-            tabs: [
-              Tab(icon: Icon(Icons.calculate_outlined), text: 'Standard'),
-              Tab(icon: Icon(Icons.functions), text: 'Scientific'),
-              Tab(icon: Icon(Icons.date_range), text: 'Date Calculator'),
-              Tab(icon: Icon(Icons.swap_horiz), text: 'Unit Converter'),
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Compact TabBar without large title header to maximize viewport
+              const Material(
+                elevation: 1,
+                child: TabBar(
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                  labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                  tabs: [
+                    Tab(icon: Icon(Icons.calculate_outlined, size: 20), text: 'Standard'),
+                    Tab(icon: Icon(Icons.functions, size: 20), text: 'Scientific'),
+                    Tab(icon: Icon(Icons.date_range, size: 20), text: 'Date Calculator'),
+                    Tab(icon: Icon(Icons.swap_horiz, size: 20), text: 'Unit Converter'),
+                  ],
+                ),
+              ),
+              const Expanded(
+                child: TabBarView(
+                  children: [
+                    SimpleCalculatorTab(),
+                    ScientificCalculatorTab(),
+                    DateDifferenceTab(),
+                    UnitConverterTab(),
+                  ],
+                ),
+              ),
             ],
           ),
-        ),
-        body: const TabBarView(
-          children: [
-            SimpleCalculatorTab(),
-            ScientificCalculatorTab(),
-            DateDifferenceTab(),
-            UnitConverterTab(),
-          ],
         ),
       ),
     );
