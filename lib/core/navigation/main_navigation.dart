@@ -5,7 +5,6 @@ import '../../modules/calendar/screens/calendar_screen.dart';
 import '../../modules/lookup/screens/lookup_screen.dart';
 import '../../modules/password/password_screen.dart';
 import '../../modules/radio/screens/radio_screen.dart';
-import '../../modules/weather/screens/weather_screen.dart';
 import '../settings/settings_screen.dart';
 import '../theme/app_logo.dart';
 
@@ -21,7 +20,6 @@ class _MainNavigationState extends State<MainNavigation> {
   int _index = 0;
 
   static const _screens = [
-    WeatherScreen(),
     CalendarScreen(),
     CalculatorScreen(),
     RadioScreen(),
@@ -31,7 +29,6 @@ class _MainNavigationState extends State<MainNavigation> {
   ];
 
   static const _destinations = [
-    NavigationDestination(icon: Icon(Icons.wb_sunny_outlined), selectedIcon: Icon(Icons.wb_sunny), label: 'Weather'),
     NavigationDestination(icon: Icon(Icons.calendar_month_outlined), selectedIcon: Icon(Icons.calendar_month), label: 'Calendar'),
     NavigationDestination(icon: Icon(Icons.calculate_outlined), selectedIcon: Icon(Icons.calculate), label: 'Calculator'),
     NavigationDestination(icon: Icon(Icons.radio_outlined), selectedIcon: Icon(Icons.radio), label: 'Radio/TV'),

@@ -10,7 +10,7 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: OmniToolkitApp()));
     await tester.pump();
 
-    expect(find.text('Weather'), findsWidgets);
     expect(find.text('Calendar'), findsWidgets);
+    expect(find.text('Calculator'), findsWidgets);
   });
 }

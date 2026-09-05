@@ -1,7 +1,7 @@
 # Repository Purpose
 
-OmniToolkit is a Flutter app bundling several offline-first utility modules (Weather,
-Calendar, Calculator, Radio/TV, ZIP/Area-code Lookup, Clipper) behind a single bottom
+OmniToolkit is a Flutter app bundling several offline-first utility modules (Calendar & Clock,
+Calculator, Radio Explorer, ZIP/Area-code Lookup, Password Generator) behind a single bottom
 navigation / navigation rail shell.
 
 # Setup Instructions
@@ -25,21 +25,12 @@ flutter run -d windows   # or -d chrome / -d <android-device-id>
   SQLite on first launch / when a table is empty after a migration.
 - `lib/modules/<name>/` — each module follows `screens/`, `providers/`, `services/`, `models/`,
   `widgets/` sub-folders. State management is **Riverpod** (`flutter_riverpod`), using
-  `Provider`, `StateProvider`, and `FutureProvider` — no `StatefulWidget` business logic beyond
-  local `TextEditingController`/`FocusNode` bookkeeping.
+  `Provider`, `StateProvider`, and `FutureProvider`.
 - `assets/data/` — bundled seed datasets (zip/area-code lookup, holidays, radio streams).
 - `test/` — widget/unit tests use `sqflite_common_ffi` with `databaseFactoryFfi` for DB-backed
-  tests. Widget tests that touch real async I/O (SQLite FFI, `rootBundle`, network) must use
-  `tester.runAsync()` — plain `tester.pump()`/`pumpAndSettle()` will hang because the fake-async
-  test zone never drains real OS-level async callbacks.
+  tests.
 
 # Development Guidelines
 
 - Run `flutter analyze` and `flutter test` before considering a change done; both must be clean.
-- When adding a Riverpod `FutureProvider` that depends on another provider via `ref.watch`,
-  keep in mind it recomputes (and briefly shows a loading state) on every dependency change —
-  don't rely on it to preserve external mutable state across rebuilds.
-- Prefer binding a single `TextEditingController` directly to `Autocomplete`'s
-  `textEditingController` parameter over maintaining a second shadow controller — a previous bug
-  in the Lookup module came from exactly that duplication (see `lib/modules/lookup/screens/lookup_screen.dart`).
-- `AppDatabase` is a process-wide singleton; don't open a second connection to the same file.
+- AppDatabase is a process-wide singleton; don't open a second connection to the same file.

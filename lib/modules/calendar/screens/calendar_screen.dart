@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../calculator/services/date_math_service.dart';
 import '../models/note_model.dart';
 import '../providers/calendar_provider.dart';
+import '../widgets/calendar_clock_widget.dart';
 import '../widgets/calendar_grid.dart';
 import '../widgets/note_dialog.dart';
 
@@ -58,7 +59,7 @@ class CalendarScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calendar & Notes'),
+        title: const Text('Calendar & Clock'),
         actions: [
           IconButton(
             icon: const Icon(Icons.info_outline_rounded),
@@ -94,6 +95,10 @@ class CalendarScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Prominent Live Clock Header
+            const CalendarClockWidget(),
+            const SizedBox(height: 16),
+
             // Calendar Grid Container
             Card(
               elevation: 2,
