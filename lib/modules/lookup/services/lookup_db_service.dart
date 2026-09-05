@@ -79,10 +79,21 @@ class LookupDbService {
       if (results.isNotEmpty) return results;
     } catch (_) {}
 
-    // Fallback 1: Query in-memory LookupService dataset
-    final memRecord = _inMemoryService.zipData[cleanZip] ?? _inMemoryService.zipData[trimmed];
-    if (memRecord != null) {
-      final areaCodes = _inMemoryService.lookupAreaCodesFromZip(cleanZip);
+    // Ensure in-memory dataset is initialized if SQLite returns 0 rows on Web
+    if (!_inMemoryService.isInitialized) {
+      await _inMemoryService.ensureInitialized();
+    }
+
+    // Fallback 1: Query in-memory LookupService map (prefix or exact match)
+    final memRecord = _inMemoryService.zipData[cleanZip] ??
+        _inMemoryService.zipData[trimmed] ??
+        _inMemoryService.zipData.values.firstWhere(
+          (r) => r.zip.startsWith(cleanZip) || r.zip.startsWith(trimmed),
+          orElse: () => const ZipRecord(zip: '', city: '', state: ''),
+        );
+
+    if (memRecord.zip.isNotEmpty) {
+      final areaCodes = _inMemoryService.lookupAreaCodesFromZip(memRecord.zip);
       return [
         ZipEntry(
           zip: memRecord.zip,
@@ -137,6 +148,10 @@ class LookupDbService {
       if (results.isNotEmpty) return results;
     } catch (_) {}
 
+    if (!_inMemoryService.isInitialized) {
+      await _inMemoryService.ensureInitialized();
+    }
+
     final cityLower = trimmed.toLowerCase();
     final memZips = _inMemoryService.lookupZipsFromCity(trimmed);
     if (memZips.isNotEmpty) {
@@ -187,6 +202,10 @@ class LookupDbService {
       final results = rows.map(ZipEntry.fromMap).toList();
       if (results.isNotEmpty) return results;
     } catch (_) {}
+
+    if (!_inMemoryService.isInitialized) {
+      await _inMemoryService.ensureInitialized();
+    }
 
     final memCity = _inMemoryService.lookupCityFromAreaCode(queryStr);
     if (memCity != null) {
@@ -269,6 +288,10 @@ class LookupDbService {
 
     if (suggestions.isNotEmpty) {
       return suggestions.take(limit).toList();
+    }
+
+    if (!_inMemoryService.isInitialized) {
+      await _inMemoryService.ensureInitialized();
     }
 
     // In-Memory Suggestion Fallbacks for Web
