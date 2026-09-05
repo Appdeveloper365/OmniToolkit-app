@@ -1,5 +1,6 @@
 /// FILE: lib/modules/radio/services/radio_service.dart
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/station_model.dart';
 import 'radio_db_service.dart';
@@ -168,6 +169,13 @@ class RadioService {
 
   bool _isSafePublicStation(StationModel station) {
     if (station.streamUrl.isEmpty) return false;
+    // On Web (HTTPS), filter out insecure HTTP streams up front to prevent browser mixed-content blocks
+    if (kIsWeb) {
+      final isHttpsPage = Uri.base.scheme.toLowerCase() == 'https';
+      if (isHttpsPage && station.streamUrl.startsWith('http://')) {
+        return false;
+      }
+    }
     if (!station.streamUrl.startsWith('http://') && !station.streamUrl.startsWith('https://')) {
       return false;
     }
