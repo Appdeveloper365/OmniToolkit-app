@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -74,7 +75,9 @@ class AssetImporter {
           'lng': (entry['lng'] as num?)?.toDouble(),
         };
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AssetImporter] Error parsing lookup_data.json: $e');
+    }
 
     // 2. Load curated_us_zips.csv
     try {
@@ -123,15 +126,24 @@ class AssetImporter {
           }
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AssetImporter] Error parsing curated_us_zips.csv: $e');
+    }
 
     if (zipMap.isEmpty) return;
 
-    final batch = db.batch();
-    for (final record in zipMap.values) {
-      batch.insert('lookup', record);
+    // Batch insert into SQLite / IndexedDB in chunks of 500 to prevent Web IndexedDB transaction timeout
+    final records = zipMap.values.toList();
+    const chunkSize = 500;
+    for (var i = 0; i < records.length; i += chunkSize) {
+      final end = (i + chunkSize < records.length) ? i + chunkSize : records.length;
+      final chunk = records.sublist(i, end);
+      final batch = db.batch();
+      for (final record in chunk) {
+        batch.insert('lookup', record);
+      }
+      await batch.commit(noResult: true);
     }
-    await batch.commit(noResult: true);
   }
 
   static List<String> _parseCsvLine(String line) {
@@ -153,8 +165,6 @@ class AssetImporter {
     return result;
   }
 
-  /// Imports when either the flag was never set or the table is empty
-  /// (e.g. after a schema migration wiped the table's rows).
   static Future<bool> _needsImport(
     Database db,
     SharedPreferences prefs,
@@ -175,8 +185,6 @@ class AssetImporter {
     return decoded.cast<Map<String, dynamic>>();
   }
 
-  /// Flattens a JSON array field (e.g. `area_code`, `region`) into the
-  /// comma-joined TEXT column format used by the `lookup` table.
   static String? _joinField(dynamic value) {
     if (value == null) return null;
     if (value is List) return value.map((e) => e.toString()).join(',');
