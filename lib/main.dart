@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 
 import 'core/navigation/main_navigation.dart';
@@ -20,6 +21,7 @@ Future<void> main() async {
 
     // Initialize media_kit backend for Windows/Linux audio playback
     if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+      MediaKit.ensureInitialized();
       JustAudioMediaKit.ensureInitialized();
     }
 

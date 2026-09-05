@@ -25,7 +25,7 @@ class RadioState {
     this.status = RadioStatus.stopped,
     this.statusText = '⚪ STOPPED',
     this.formatDetected,
-    this.volume = 1.0,
+    this.volume = 0.75,
     this.isMuted = false,
     this.errorMessage,
     this.reconnectCount = 0,
@@ -136,6 +136,7 @@ final radioStateProvider = NotifierProvider<RadioNotifier, RadioState>(RadioNoti
 class RadioNotifier extends Notifier<RadioState> {
   StreamSubscription<PlayerState>? _playerStateSub;
   Timer? _reconnectTimer;
+  Timer? _bufferTimeoutTimer;
   bool _isDisposed = false;
 
   @override
@@ -146,14 +147,15 @@ class RadioNotifier extends Notifier<RadioState> {
       _isDisposed = true;
       _playerStateSub?.cancel();
       _reconnectTimer?.cancel();
+      _bufferTimeoutTimer?.cancel();
     });
-    return const RadioState();
+    return const RadioState(volume: 0.75);
   }
 
   Future<void> _initVolume() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final savedVolume = prefs.getDouble('radio_volume') ?? 1.0;
+      final savedVolume = prefs.getDouble('radio_volume') ?? 0.75;
       final savedMuted = prefs.getBool('radio_is_muted') ?? false;
       state = state.copyWith(volume: savedVolume, isMuted: savedMuted);
 
@@ -171,7 +173,7 @@ class RadioNotifier extends Notifier<RadioState> {
       final playing = playerState.playing;
       final processingState = playerState.processingState;
 
-      debugPrint('[RadioState] PlayerState update: playing=$playing, processingState=$processingState');
+      debugPrint('[RadioLog] Audio Element Status: playing=$playing, processingState=$processingState, volume=${player.volume}, muted=${state.isMuted}');
 
       if (state.currentStation == null) {
         if (state.status != RadioStatus.stopped) {
@@ -185,12 +187,16 @@ class RadioNotifier extends Notifier<RadioState> {
       }
 
       if (processingState == ProcessingState.loading || processingState == ProcessingState.buffering) {
+        debugPrint('[RadioLog] 6. Buffering started');
         state = state.copyWith(
           status: RadioStatus.buffering,
           statusText: '🟡 BUFFERING',
         );
+        _startBufferTimeout();
       } else if (playing && processingState == ProcessingState.ready) {
-        // True playback confirmed!
+        _bufferTimeoutTimer?.cancel();
+        debugPrint('[RadioLog] 7. Buffering completed');
+        debugPrint('[RadioLog] 8. Playback started (● LIVE confirmed)');
         state = state.copyWith(
           status: RadioStatus.live,
           statusText: '🟢 LIVE',
@@ -198,7 +204,7 @@ class RadioNotifier extends Notifier<RadioState> {
           reconnectCount: 0,
         );
       } else if (processingState == ProcessingState.completed) {
-        // Auto reconnect check
+        _bufferTimeoutTimer?.cancel();
         if (state.status == RadioStatus.live || state.status == RadioStatus.buffering) {
           _triggerReconnect('Stream completed unexpectedly.');
         } else {
@@ -208,21 +214,51 @@ class RadioNotifier extends Notifier<RadioState> {
           );
         }
       } else if (!playing && processingState == ProcessingState.ready) {
-        // Paused by user
+        _bufferTimeoutTimer?.cancel();
         state = state.copyWith(
-          status: RadioStatus.buffering, // or paused state
+          status: RadioStatus.buffering,
           statusText: '⏸ PAUSED',
         );
       }
     });
   }
 
+  void _startBufferTimeout() {
+    _bufferTimeoutTimer?.cancel();
+    _bufferTimeoutTimer = Timer(const Duration(seconds: 10), () {
+      if (_isDisposed) return;
+      if (state.status == RadioStatus.buffering) {
+        debugPrint('[RadioLog] FAILURE POINT: Buffering timed out after 10 seconds.');
+        final player = ref.read(audioPlayerProvider);
+        player.stop();
+
+        String failReason;
+        if (kIsWeb && StreamResolverService.isInsecureWebStream(state.currentStation?.streamUrl ?? '')) {
+          failReason = 'Insecure radio stream blocked by browser.';
+        } else if (kIsWeb) {
+          failReason = 'This station does not permit web playback.';
+        } else {
+          failReason = 'Stream buffering timed out. Tap Play to try again.';
+        }
+
+        state = state.copyWith(
+          status: RadioStatus.offline,
+          statusText: '🔴 OFFLINE',
+          errorMessage: () => failReason,
+        );
+      }
+    });
+  }
+
   Future<void> playStation(StationModel station) async {
-    debugPrint('[RadioController] Station selected: ${station.name} (${station.streamUrl})');
+    debugPrint('[RadioLog] 1. Station selected: ${station.name}');
+    debugPrint('[RadioLog] 2. Stream URL received: ${station.streamUrl}');
+
     final resolver = ref.read(streamResolverServiceProvider);
     final player = ref.read(audioPlayerProvider);
 
     _reconnectTimer?.cancel();
+    _bufferTimeoutTimer?.cancel();
 
     state = state.copyWith(
       currentStation: () => station,
@@ -232,11 +268,11 @@ class RadioNotifier extends Notifier<RadioState> {
       reconnectCount: 0,
     );
 
-    // Validate and resolve URL
+    // Step 6 & 7: Validate stream URL, HTTPS, CORS, and playlists
     final validation = await resolver.resolveAndValidate(station.streamUrl);
-    debugPrint('[RadioController] URL validated. Result: isValid=${validation.isValid}, format=${validation.detectedFormat}');
 
     if (!validation.isValid) {
+      debugPrint('[RadioLog] FAILURE POINT: URL Validation Failed - ${validation.errorMessage}');
       await player.stop();
       state = state.copyWith(
         status: RadioStatus.offline,
@@ -247,43 +283,63 @@ class RadioNotifier extends Notifier<RadioState> {
       return;
     }
 
+    debugPrint('[RadioLog] 3. URL validation passed: ${validation.resolvedUrl}');
+    debugPrint('[RadioLog] Stream format detected: ${validation.detectedFormat}');
+
     state = state.copyWith(formatDetected: () => validation.detectedFormat);
 
     try {
       await player.stop();
-      debugPrint('[RadioController] Connection establishing to: ${validation.resolvedUrl}');
+      debugPrint('[RadioLog] 4. Connection established');
 
+      // Note: On Web, omit custom headers to prevent CORS preflight blocking!
       await player.setAudioSource(
         AudioSource.uri(
           Uri.parse(validation.resolvedUrl),
-          headers: const {
-            'User-Agent': 'OmniToolkit/1.0',
-            'Accept': '*/*',
-          },
+          headers: kIsWeb ? null : const {'User-Agent': 'OmniToolkit/1.0'},
           tag: MediaItem(
             id: station.id,
             album: 'OmniToolkit Radio',
             title: station.name,
-            artist: '${station.category} • ${station.country}',
+            artist: '${station.category}${station.country.isNotEmpty ? " • ${station.country}" : ""}',
             artUri: station.favicon != null ? Uri.tryParse(station.favicon!) : null,
           ),
         ),
       );
 
-      debugPrint('[RadioController] Buffer started...');
-      await player.play();
-      debugPrint('[RadioController] Play requested successfully.');
-    } catch (e) {
-      debugPrint('[RadioController] Error starting playback: $e');
-      if (StreamResolverService.isInsecureWebStream(station.streamUrl)) {
-        state = state.copyWith(
-          status: RadioStatus.offline,
-          statusText: '🔴 OFFLINE',
-          errorMessage: () => 'This station uses an insecure stream and cannot be played over HTTPS.',
-        );
+      debugPrint('[RadioLog] 5. Metadata loaded');
+      debugPrint('[RadioLog] 6. Buffering started');
+      _startBufferTimeout();
+
+      // Step 3 & 9: Verify play event and handle promise rejection / autoplay policy
+      final playFuture = player.play();
+      await playFuture;
+      debugPrint('[RadioLog] Play event promise resolved successfully.');
+    } catch (e, stackTrace) {
+      debugPrint('[RadioLog] FAILURE POINT: Play event rejected with exception: $e');
+      debugPrint('$stackTrace');
+
+      _bufferTimeoutTimer?.cancel();
+      await player.stop();
+
+      String errorMsg;
+      final errString = e.toString().toLowerCase();
+
+      if (errString.contains('notallowederror') || errString.contains('user gesture') || errString.contains('autoplay')) {
+        errorMsg = 'Tap Play to enable audio.';
+      } else if (StreamResolverService.isInsecureWebStream(station.streamUrl)) {
+        errorMsg = 'Insecure radio stream blocked by browser.';
+      } else if (kIsWeb && (errString.contains('xmlhttprequest') || errString.contains('cors') || errString.contains('format'))) {
+        errorMsg = 'This station does not permit web playback.';
       } else {
-        _triggerReconnect('Failed to load audio stream.');
+        errorMsg = 'Failed to start audio stream. Tap Play to retry.';
       }
+
+      state = state.copyWith(
+        status: RadioStatus.offline,
+        statusText: '🔴 OFFLINE',
+        errorMessage: () => errorMsg,
+      );
     }
   }
 
@@ -292,19 +348,30 @@ class RadioNotifier extends Notifier<RadioState> {
     if (state.currentStation == null) return;
 
     if (player.playing) {
+      debugPrint('[RadioLog] Playback paused by user.');
       await player.pause();
     } else {
       if (player.processingState == ProcessingState.idle) {
         await playStation(state.currentStation!);
       } else {
-        await player.play();
+        try {
+          await player.play();
+        } catch (e) {
+          debugPrint('[RadioLog] Error on play resume: $e');
+          state = state.copyWith(
+            status: RadioStatus.offline,
+            statusText: '🔴 OFFLINE',
+            errorMessage: () => 'Tap Play to enable audio.',
+          );
+        }
       }
     }
   }
 
   Future<void> stop() async {
-    debugPrint('[RadioController] Playback stopped by user.');
+    debugPrint('[RadioLog] Playback stopped by user.');
     _reconnectTimer?.cancel();
+    _bufferTimeoutTimer?.cancel();
     final player = ref.read(audioPlayerProvider);
     await player.stop();
     state = state.copyWith(
@@ -347,7 +414,7 @@ class RadioNotifier extends Notifier<RadioState> {
 
     final currentAttempts = state.reconnectCount;
     if (currentAttempts >= 3) {
-      debugPrint('[RadioController] Reconnection failed after 3 attempts.');
+      debugPrint('[RadioLog] FAILURE POINT: Reconnection failed after 3 attempts.');
       state = state.copyWith(
         status: RadioStatus.offline,
         statusText: '🔴 OFFLINE',
@@ -357,7 +424,7 @@ class RadioNotifier extends Notifier<RadioState> {
     }
 
     final nextAttempt = currentAttempts + 1;
-    debugPrint('[RadioController] Attempting reconnection ($nextAttempt/3)... Reason: $reason');
+    debugPrint('[RadioLog] Attempting reconnection ($nextAttempt/3)... Reason: $reason');
 
     state = state.copyWith(
       status: RadioStatus.reconnecting,

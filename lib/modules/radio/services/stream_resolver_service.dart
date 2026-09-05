@@ -46,9 +46,8 @@ class StreamResolverService {
 
     String currentUrl = initialUrl.trim();
 
-    // 1. Web HTTPS Mixed Content Check
+    // 1. Web HTTPS Mixed Content Check (Step 6)
     if (isInsecureWebStream(currentUrl)) {
-      // Try upgrading to HTTPS
       final upgraded = currentUrl.replaceFirst('http://', 'https://');
       debugPrint('[RadioResolver] Attempting HTTPS upgrade: $upgraded');
       final isUpgradedOk = await _probeUrl(upgraded);
@@ -56,17 +55,17 @@ class StreamResolverService {
         currentUrl = upgraded;
         debugPrint('[RadioResolver] Stream upgraded to HTTPS successfully.');
       } else {
-        debugPrint('[RadioResolver] HTTPS upgrade failed. Insecure HTTP blocked on Web HTTPS.');
+        debugPrint('[RadioResolver] HTTPS upgrade failed. Insecure HTTP blocked by browser.');
         return StreamValidationResult(
           isValid: false,
           resolvedUrl: currentUrl,
           isInsecureHttpOnWeb: true,
-          errorMessage: 'This station uses an insecure stream and cannot be played over HTTPS.',
+          errorMessage: 'Insecure radio stream blocked by browser.',
         );
       }
     }
 
-    // 2. Resolve Playlist or Redirect
+    // 2. Resolve Playlist or Redirect (Step 7 & Step 8)
     try {
       final resolved = await _resolvePlaylistsAndRedirects(currentUrl);
       currentUrl = resolved;
@@ -74,7 +73,7 @@ class StreamResolverService {
       debugPrint('[RadioResolver] Warning during redirect resolution: $e');
     }
 
-    // 3. Detect Format / Codec
+    // 3. Detect Format / Codec (Step 7)
     final format = _detectFormat(currentUrl);
     if (format == 'UNSUPPORTED') {
       debugPrint('[RadioResolver] Unsupported audio format detected for: $currentUrl');
@@ -174,6 +173,6 @@ class StreamResolverService {
       return 'UNSUPPORTED';
     }
 
-    return 'MP3'; // Default stream format
+    return 'MP3';
   }
 }
