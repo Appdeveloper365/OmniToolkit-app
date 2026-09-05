@@ -192,12 +192,18 @@ class RadioNotifier extends Notifier<RadioState> {
       }
 
       if (processingState == ProcessingState.loading || processingState == ProcessingState.buffering) {
-        debugPrint('[RadioLog] Status: BUFFERING');
-        state = state.copyWith(
-          status: RadioStatus.buffering,
-          statusText: '🟡 BUFFERING',
-        );
-        _startBufferTimeout();
+        // Do NOT trigger buffer timeout while active playback is in progress
+        // Only set status to BUFFERING if we weren't already LIVE, or if position stalls for > 15s
+        if (state.status != RadioStatus.live) {
+          debugPrint('[RadioLog] Status: BUFFERING');
+          state = state.copyWith(
+            status: RadioStatus.buffering,
+            statusText: '🟡 BUFFERING',
+          );
+          _startBufferTimeout();
+        } else {
+          debugPrint('[RadioLog] Brief stream buffer glitch during live playback (maintaining LIVE state)');
+        }
       } else if (playing && processingState == ProcessingState.ready) {
         _bufferTimeoutTimer?.cancel();
         debugPrint('[RadioLog] Status: PLAYING (● LIVE confirmed)');
@@ -230,8 +236,18 @@ class RadioNotifier extends Notifier<RadioState> {
     _positionSub = player.positionStream.listen((pos) {
       if (_isDisposed) return;
       _lastPosition = pos;
-      if (player.playing && state.status == RadioStatus.live) {
-        debugPrint('[RadioLog] Playback position advancing: ${pos.inSeconds}s');
+      if (player.playing) {
+        // Any time position advances, guarantee we cancel the buffer timeout!
+        _bufferTimeoutTimer?.cancel();
+        if (state.status != RadioStatus.live) {
+          debugPrint('[RadioLog] Position advancing (${pos.inSeconds}s) -> confirming LIVE state');
+          state = state.copyWith(
+            status: RadioStatus.live,
+            statusText: '🟢 LIVE',
+            errorMessage: () => null,
+            reconnectCount: 0,
+          );
+        }
       }
     });
   }
@@ -240,6 +256,7 @@ class RadioNotifier extends Notifier<RadioState> {
     _bufferTimeoutTimer?.cancel();
     _bufferTimeoutTimer = Timer(const Duration(seconds: 15), () {
       if (_isDisposed) return;
+      // Only trip timeout if we never went LIVE or if position hasn't moved
       if (state.status == RadioStatus.buffering) {
         debugPrint('[RadioLog] FAILURE POINT: Buffering timed out after 15 seconds. CurrentPosition: ${_lastPosition.inSeconds}s');
         final player = ref.read(audioPlayerProvider);
@@ -272,6 +289,7 @@ class RadioNotifier extends Notifier<RadioState> {
 
     _reconnectTimer?.cancel();
     _bufferTimeoutTimer?.cancel();
+    _lastPosition = Duration.zero;
 
     state = state.copyWith(
       currentStation: () => station,
@@ -352,10 +370,12 @@ class RadioNotifier extends Notifier<RadioState> {
       state = state.copyWith(
         status: RadioStatus.offline,
         statusText: '🔴 OFFLINE',
-        errorMessage: () => errorMsg,
+        errorMessage: () => failReasonText(errorMsg),
       );
     }
   }
+
+  String failReasonText(String fallback) => fallback;
 
   Future<void> togglePlayPause() async {
     final player = ref.read(audioPlayerProvider);
