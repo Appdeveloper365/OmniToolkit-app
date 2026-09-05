@@ -9,7 +9,7 @@ class CalcKeySpec {
     required this.label,
     required this.onTap,
     this.role = CalcKeyRole.numberLight,
-    this.fontSize = 22,
+    this.fontSize = 20,
     this.semanticsLabel,
   });
 
@@ -21,16 +21,15 @@ class CalcKeySpec {
 }
 
 /// Lays out rows of [CalcKeySpec] as a touch-friendly square grid: every key
-/// is a square cell at least 80x80 logical pixels (falling back gracefully
-/// on very small screens), with 8-12px spacing, centered, and capped to a
-/// maximum width so the calculator never stretches into a landscape shape.
+/// is a square cell (min 48px to fit on small mobile viewports without scrolling),
+/// with 6-8px spacing, centered, and capped to a maximum width.
 class CalculatorKeypadGrid extends StatelessWidget {
   const CalculatorKeypadGrid({
     super.key,
     required this.rows,
     this.maxWidth = 420,
-    this.minCellSize = 64,
-    this.spacing = 10,
+    this.minCellSize = 48,
+    this.spacing = 8,
   });
 
   final List<List<CalcKeySpec>> rows;

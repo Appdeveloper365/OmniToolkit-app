@@ -34,7 +34,11 @@ class _NoteDialogState extends State<NoteDialog> {
           children: [
             TextField(
               controller: _noteController,
-              decoration: const InputDecoration(labelText: 'Note'),
+              decoration: const InputDecoration(
+                labelText: 'Note',
+                hintText: 'Enter your note here...',
+                border: OutlineInputBorder(),
+              ),
               maxLines: 4,
               autofocus: true,
             ),
@@ -56,6 +60,7 @@ class _NoteDialogState extends State<NoteDialog> {
               noteText: text,
               createdAt: widget.existing?.createdAt,
             );
+            _noteController.clear();
             Navigator.pop(context, note);
           },
           child: const Text('Save'),

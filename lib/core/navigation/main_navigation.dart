@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../modules/calculator/screens/calculator_screen.dart';
 import '../../modules/calendar/screens/calendar_screen.dart';
-import '../../modules/clipper/screens/clipper_screen.dart';
 import '../../modules/lookup/screens/lookup_screen.dart';
+import '../../modules/password/password_screen.dart';
 import '../../modules/radio/screens/radio_screen.dart';
 import '../../modules/weather/screens/weather_screen.dart';
 import '../settings/settings_screen.dart';
@@ -26,7 +26,7 @@ class _MainNavigationState extends State<MainNavigation> {
     CalculatorScreen(),
     RadioScreen(),
     LookupScreen(),
-    ClipperScreen(),
+    PasswordScreen(),
     SettingsScreen(),
   ];
 
@@ -36,7 +36,7 @@ class _MainNavigationState extends State<MainNavigation> {
     NavigationDestination(icon: Icon(Icons.calculate_outlined), selectedIcon: Icon(Icons.calculate), label: 'Calculator'),
     NavigationDestination(icon: Icon(Icons.radio_outlined), selectedIcon: Icon(Icons.radio), label: 'Radio/TV'),
     NavigationDestination(icon: Icon(Icons.location_searching_outlined), selectedIcon: Icon(Icons.location_on), label: 'Lookup'),
-    NavigationDestination(icon: Icon(Icons.content_cut_outlined), selectedIcon: Icon(Icons.content_cut), label: 'Clipper'),
+    NavigationDestination(icon: Icon(Icons.password_outlined), selectedIcon: Icon(Icons.password), label: 'Password'),
     NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: 'Settings'),
   ];
 

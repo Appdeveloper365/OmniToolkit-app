@@ -7,12 +7,9 @@ import '../models/holiday_record.dart';
 import '../models/note_model.dart';
 import '../providers/calendar_provider.dart';
 
-/// Brown highlight used for calendar cells that contain at least one note.
-const Color _notedCellColor = Color(0xFF8B4513);
+/// Brown/Orange highlight used for calendar cells that contain at least one note.
+const Color _notedCellColor = Color(0xFF8B4513); // SaddleBrown / Orange-Brown
 
-/// A responsive monthly calendar grid. Days with saved notes show the full
-/// date, a brown background, white text, and a small note icon; note
-/// contents themselves are never shown inside the cell.
 class CalendarGrid extends ConsumerWidget {
   const CalendarGrid({super.key});
 
@@ -23,6 +20,8 @@ class CalendarGrid extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final month = ref.watch(visibleMonthProvider);
     final selectedDate = ref.watch(selectedDateProvider);
+    final secondaryDate = ref.watch(secondaryDateProvider);
+
     final notesAsync = ref.watch(datesWithNotesProvider);
     final notedDates = notesAsync.valueOrNull ?? <String>{};
     final holidayLabelsAsync = ref.watch(holidayLabelsProvider);
@@ -46,7 +45,7 @@ class CalendarGrid extends ConsumerWidget {
             ),
             Text(
               _monthLabel(month),
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             IconButton(
               icon: const Icon(Icons.chevron_right),
@@ -59,7 +58,7 @@ class CalendarGrid extends ConsumerWidget {
           children: _weekdayLabels
               .map((d) => Expanded(
                     child: Center(
-                      child: Text(d, style: Theme.of(context).textTheme.labelMedium),
+                      child: Text(d, style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold)),
                     ),
                   ))
               .toList(),
@@ -78,6 +77,7 @@ class CalendarGrid extends ConsumerWidget {
                     daysInMonth,
                     month,
                     selectedDate,
+                    secondaryDate,
                     notedDates,
                     holidayLabels,
                   ),
@@ -96,6 +96,7 @@ class CalendarGrid extends ConsumerWidget {
     int daysInMonth,
     DateTime month,
     DateTime selectedDate,
+    DateTime? secondaryDate,
     Set<String> notedDates,
     Map<String, List<HolidayRecord>> holidayLabels,
   ) {
@@ -105,23 +106,26 @@ class CalendarGrid extends ConsumerWidget {
     }
     final date = DateTime(month.year, month.month, dayNumber);
     final dateKey = NoteModel.dateKey(date);
-    final isSelected = date.year == selectedDate.year &&
-        date.month == selectedDate.month &&
-        date.day == selectedDate.day;
+
+    final isSelected = _isSameDay(date, selectedDate);
+    final isSecondary = secondaryDate != null && _isSameDay(date, secondaryDate);
     final isToday = _isSameDay(date, DateTime.now());
     final hasNote = notedDates.contains(dateKey);
     final holidaysForDay = holidayLabels[dateKey] ?? const <HolidayRecord>[];
     final scheme = Theme.of(context).colorScheme;
 
-    // Notes take precedence for the background color per spec; selection is
-    // instead conveyed with a border ring so the brown "has notes" color is
-    // never masked.
+    // Styling logic: Note dates are Brown/Orange with white readable text.
     final backgroundColor = hasNote
         ? _notedCellColor
-        : (isSelected ? scheme.primary : Colors.transparent);
+        : (isSelected
+            ? scheme.primary
+            : (isSecondary ? scheme.secondaryContainer : Colors.transparent));
+
     final foregroundColor = hasNote
         ? Colors.white
-        : (isSelected ? scheme.onPrimary : null);
+        : (isSelected
+            ? scheme.onPrimary
+            : (isSecondary ? scheme.onSecondaryContainer : null));
 
     return AspectRatio(
       aspectRatio: 1,
@@ -132,14 +136,18 @@ class CalendarGrid extends ConsumerWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
             side: isSelected
-                ? BorderSide(color: scheme.primary, width: 2)
-                : (isToday
-                    ? BorderSide(color: scheme.primary, width: 1.5)
-                    : BorderSide.none),
+                ? BorderSide(color: scheme.primary, width: 2.5)
+                : (isSecondary
+                    ? BorderSide(color: scheme.secondary, width: 2)
+                    : (isToday
+                        ? BorderSide(color: scheme.primary, width: 1.5)
+                        : BorderSide.none)),
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(8),
-            onTap: () => ref.read(selectedDateProvider.notifier).state = date,
+            onTap: () {
+              ref.read(selectedDateProvider.notifier).state = date;
+            },
             child: Stack(
               children: [
                 Padding(
@@ -148,16 +156,14 @@ class CalendarGrid extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        // Full date is shown once a note exists; otherwise the
-                        // plain day number keeps the grid compact.
                         hasNote ? _cellDateFormat.format(date) : '$dayNumber',
                         textAlign: TextAlign.center,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: foregroundColor,
-                          fontWeight: hasNote ? FontWeight.bold : FontWeight.normal,
-                          fontSize: hasNote ? 11 : null,
+                          fontWeight: (hasNote || isSelected || isSecondary) ? FontWeight.bold : FontWeight.normal,
+                          fontSize: hasNote ? 10 : null,
                         ),
                       ),
                       if (holidaysForDay.isNotEmpty)
@@ -169,7 +175,8 @@ class CalendarGrid extends ConsumerWidget {
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w600,
                             color: foregroundColor ??
                                 (holidaysForDay.first.country == 'US' ? Colors.blue : Colors.green),
                           ),
@@ -181,7 +188,7 @@ class CalendarGrid extends ConsumerWidget {
                   const Positioned(
                     top: 2,
                     right: 2,
-                    child: Icon(Icons.note, size: 12, color: Colors.white),
+                    child: Icon(Icons.note_rounded, size: 12, color: Colors.white),
                   ),
               ],
             ),

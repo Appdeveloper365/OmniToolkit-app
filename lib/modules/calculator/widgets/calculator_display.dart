@@ -4,9 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/calculator_provider.dart';
 
-/// Premium glass-effect display panel: smaller expression text on top,
-/// a significantly larger result below, right-aligned, with a smooth
-/// scrollable row for long expressions.
+/// Premium glass-effect display panel optimized for mobile & desktop:
+/// smaller expression text on top, a clear readable result below.
 class CalculatorDisplay extends ConsumerWidget {
   const CalculatorDisplay({super.key});
 
@@ -19,9 +18,9 @@ class CalculatorDisplay extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -35,19 +34,15 @@ class CalculatorDisplay extends ConsumerWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.12),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-          BoxShadow(
-            color: Colors.white.withValues(alpha: isDark ? 0.02 : 0.9),
-            blurRadius: 1,
-            offset: const Offset(0, -1),
+            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
         children: [
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -56,13 +51,13 @@ class CalculatorDisplay extends ConsumerWidget {
               expression,
               maxLines: 1,
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 16,
                 color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.6),
                 fontWeight: FontWeight.w400,
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 180),
             child: SingleChildScrollView(
@@ -73,7 +68,7 @@ class CalculatorDisplay extends ConsumerWidget {
                 result.isEmpty ? '0' : result,
                 maxLines: 1,
                 style: TextStyle(
-                  fontSize: 46,
+                  fontSize: 34,
                   fontWeight: FontWeight.bold,
                   color: result == 'Error'
                       ? Theme.of(context).colorScheme.error

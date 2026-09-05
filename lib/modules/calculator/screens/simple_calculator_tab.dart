@@ -7,25 +7,27 @@ import '../widgets/calculator_keyboard_shortcuts.dart';
 import '../widgets/calculator_keypad.dart';
 import '../widgets/history_panel.dart';
 
-/// The "Standard" calculator tab: premium square keypad with +, -, ×, ÷, %,
-/// sign toggle, decimal support, session history, and full keyboard support.
+/// The "Standard" calculator tab: compact display, history panel, and keypad
+/// designed to fit within initial mobile viewport without vertical scrolling.
 class SimpleCalculatorTab extends StatelessWidget {
   const SimpleCalculatorTab({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const CalculatorKeyboardShortcuts(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        child: CalculatorBody(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CalculatorDisplay(),
-              HistoryPanel(),
-              SizedBox(height: 16),
-              CalculatorKeypad(),
-            ],
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(8),
+          child: CalculatorBody(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CalculatorDisplay(),
+                HistoryPanel(),
+                SizedBox(height: 8),
+                CalculatorKeypad(),
+              ],
+            ),
           ),
         ),
       ),

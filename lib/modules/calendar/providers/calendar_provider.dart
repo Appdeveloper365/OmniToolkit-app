@@ -15,8 +15,11 @@ final visibleMonthProvider = StateProvider<DateTime>((ref) {
   return DateTime(now.year, now.month);
 });
 
-/// Date currently selected by the user.
+/// Date currently selected by the user (Primary / Start date).
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
+
+/// Secondary date for Date Difference Calculator.
+final secondaryDateProvider = StateProvider<DateTime?>((ref) => null);
 
 /// Set of 'yyyy-MM-dd' date keys that have notes, for the visible month.
 final datesWithNotesProvider = FutureProvider<Set<String>>((ref) async {

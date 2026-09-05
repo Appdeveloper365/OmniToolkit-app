@@ -19,21 +19,21 @@ class CalculatorBody extends StatelessWidget {
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(22),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: isDark
-                  ? const [Color(0xFF232427), Color(0xFF121214)] // Graphite black
-                  : const [Color(0xFFE4E6EA), Color(0xFFC7CBD1)], // Silver gray
+                  ? const [Color(0xFF232427), Color(0xFF121214)]
+                  : const [Color(0xFFE4E6EA), Color(0xFFC7CBD1)],
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.6 : 0.22),
-                blurRadius: 24,
-                offset: const Offset(0, 14),
+                color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.18),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
