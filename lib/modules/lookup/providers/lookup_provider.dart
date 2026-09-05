@@ -16,9 +16,10 @@ final areaCodeGeoServiceProvider = Provider((ref) => AreaCodeGeoService());
 
 final lookupSeededProvider = FutureProvider<void>((ref) async {
   try {
-    await ref.watch(lookupDbServiceProvider).ensureSeeded().timeout(const Duration(seconds: 5));
+    final dbService = ref.read(lookupDbServiceProvider);
+    await dbService.ensureSeeded().timeout(const Duration(seconds: 5));
   } catch (e) {
-    debugPrint('[LookupProvider] Database seeding warning: $e');
+    debugPrint('[LookupProvider] Database seeding warning/timeout: $e');
   }
 });
 
@@ -29,7 +30,7 @@ final lookupResultsProvider = FutureProvider<List<ZipEntry>>((ref) async {
   await ref.watch(lookupSeededProvider.future);
   final query = ref.watch(lookupQueryProvider).trim();
   if (query.isEmpty) return [];
-  final service = ref.watch(lookupDbServiceProvider);
+  final service = ref.read(lookupDbServiceProvider);
   switch (ref.watch(lookupModeProvider)) {
     case LookupMode.byZip:
       return service.searchByZip(query);
@@ -45,19 +46,19 @@ final lookupSuggestionsProvider = FutureProvider<List<String>>((ref) async {
   final query = ref.watch(lookupQueryProvider).trim();
   if (query.isEmpty) return [];
   final mode = ref.watch(lookupModeProvider);
-  return ref.watch(lookupDbServiceProvider).suggest(query, mode: mode);
+  return ref.read(lookupDbServiceProvider).suggest(query, mode: mode);
 });
 
 final areaCodeCityResultsProvider = FutureProvider<List<AreaCodeRecord>>((ref) async {
   if (ref.watch(lookupModeProvider) != LookupMode.byAreaCode) return [];
   final query = ref.watch(lookupQueryProvider).trim();
   if (query.isEmpty) return [];
-  return ref.watch(areaCodeGeoServiceProvider).resultsForAreaCode(query);
+  return ref.read(areaCodeGeoServiceProvider).resultsForAreaCode(query);
 });
 
 final areaCodeCitySuggestionsProvider = FutureProvider<List<String>>((ref) async {
   if (ref.watch(lookupModeProvider) != LookupMode.byAreaCode) return [];
   final query = ref.watch(lookupQueryProvider).trim();
   if (query.isEmpty) return [];
-  return ref.watch(areaCodeGeoServiceProvider).suggestionsForAreaCode(query);
+  return ref.read(areaCodeGeoServiceProvider).suggestionsForAreaCode(query);
 });

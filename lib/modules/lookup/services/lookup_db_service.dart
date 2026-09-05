@@ -36,7 +36,7 @@ class LookupDbService {
     if (trimmed.isEmpty) return [];
     final db = await AppDatabase.instance.database;
 
-    // Handle sanitized/padded 5-digit zip if numeric (e.g. 2101 -> 02101)
+    // Handle sanitized/padded 5-digit zip if numeric (e.g. 2101 -> 02101, 17111 -> 17111)
     String? padded;
     final cleanInput = trimmed.split(' ').first.replaceAll(RegExp(r'[^\d]'), '');
     if (cleanInput.isNotEmpty && cleanInput.length <= 5) {
@@ -64,7 +64,14 @@ class LookupDbService {
       whereArgs: args,
       limit: 100,
     );
-    return rows.map(ZipEntry.fromMap).toList();
+    final results = rows.map(ZipEntry.fromMap).toList();
+    if (results.isNotEmpty) return results;
+
+    // Fallback if DB table lacks 17111 or entry: search in-memory zipSeedData
+    final seedMatches = zipSeedData
+        .where((e) => e.zip.startsWith(trimmed) || (padded != null && e.zip.startsWith(padded)))
+        .toList();
+    return seedMatches;
   }
 
   /// City/county → ZIP list (also returns state/area code/region per row).
@@ -92,7 +99,16 @@ class LookupDbService {
         limit: 100,
       );
     }
-    return rows.map(ZipEntry.fromMap).toList();
+    final results = rows.map(ZipEntry.fromMap).toList();
+    if (results.isNotEmpty) return results;
+
+    final cityLower = trimmed.toLowerCase();
+    return zipSeedData
+        .where((e) =>
+            e.city.toLowerCase().contains(cityLower) ||
+            (e.county != null && e.county!.toLowerCase().contains(cityLower)) ||
+            e.state.toLowerCase() == cityLower)
+        .toList();
   }
 
   /// Area code → city/state/ZIP/region.
@@ -109,7 +125,12 @@ class LookupDbService {
       whereArgs: ['%$queryStr%', '$queryStr%', '%$queryStr%'],
       limit: 100,
     );
-    return rows.map(ZipEntry.fromMap).toList();
+    final results = rows.map(ZipEntry.fromMap).toList();
+    if (results.isNotEmpty) return results;
+
+    return zipSeedData
+        .where((e) => e.areaCode.contains(queryStr) || e.zip.startsWith(queryStr))
+        .toList();
   }
 
   /// Autocomplete suggestions tailored by LookupMode.
@@ -139,6 +160,13 @@ class LookupDbService {
       for (final r in rows) {
         suggestions.add('${r['zip']} (${r['city']}, ${r['state']})');
       }
+      if (suggestions.isEmpty) {
+        for (final entry in zipSeedData) {
+          if (entry.zip.startsWith(trimmed) || (padded != null && entry.zip.startsWith(padded))) {
+            suggestions.add('${entry.zip} (${entry.city}, ${entry.state})');
+          }
+        }
+      }
     } else if (mode == LookupMode.byCity) {
       final cityPart = trimmed.split(',').first.trim();
       final rows = await db.query(
@@ -153,6 +181,14 @@ class LookupDbService {
         final county = r['county'] as String?;
         if (county != null && county.isNotEmpty) {
           suggestions.add('$county, ${r['state']}');
+        }
+      }
+      if (suggestions.isEmpty) {
+        final cLower = cityPart.toLowerCase();
+        for (final entry in zipSeedData) {
+          if (entry.city.toLowerCase().contains(cLower)) {
+            suggestions.add('${entry.city}, ${entry.state}');
+          }
         }
       }
     } else if (mode == LookupMode.byAreaCode) {
@@ -193,4 +229,3 @@ class LookupDbService {
     return suggestions.take(limit).toList();
   }
 }
-
