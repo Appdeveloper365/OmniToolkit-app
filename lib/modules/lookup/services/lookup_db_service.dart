@@ -51,7 +51,7 @@ class LookupDbService {
     return trimmed;
   }
 
-  /// ZIP → city/state/county/area code(s).
+  /// ZIP → city/state/county/area code(s). Returns ALL matches starting with query prefix.
   Future<List<ZipEntry>> searchByZip(String zip) async {
     final trimmed = zip.trim();
     if (trimmed.isEmpty) return [];
@@ -84,18 +84,18 @@ class LookupDbService {
       await _inMemoryService.ensureInitialized();
     }
 
-    // Fallback 1: Query in-memory LookupService map (prefix or exact match)
-    final memRecord = _inMemoryService.zipData[cleanZip] ??
-        _inMemoryService.zipData[trimmed] ??
-        _inMemoryService.zipData.values.firstWhere(
-          (r) => r.zip.startsWith(cleanZip) || r.zip.startsWith(trimmed),
-          orElse: () => const ZipRecord(zip: '', city: '', state: ''),
-        );
+    // Fallback 1: Query all in-memory LookupService entries matching prefix or clean zip
+    final memMatches = _inMemoryService.zipData.values.where((r) {
+      return r.zip == cleanZip ||
+          r.zip == trimmed ||
+          r.zip.startsWith(cleanZip) ||
+          r.zip.startsWith(trimmed);
+    }).toList();
 
-    if (memRecord.zip.isNotEmpty) {
-      final areaCodes = _inMemoryService.lookupAreaCodesFromZip(memRecord.zip);
-      return [
-        ZipEntry(
+    if (memMatches.isNotEmpty) {
+      return memMatches.map((memRecord) {
+        final areaCodes = _inMemoryService.lookupAreaCodesFromZip(memRecord.zip);
+        return ZipEntry(
           zip: memRecord.zip,
           city: memRecord.city,
           state: memRecord.state,
@@ -105,8 +105,8 @@ class LookupDbService {
           timezone: memRecord.timezone,
           lat: memRecord.lat,
           lng: memRecord.lng,
-        )
-      ];
+        );
+      }).toList();
     }
 
     // Fallback 2: Search in-memory zipSeedData
