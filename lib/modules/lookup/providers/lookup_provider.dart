@@ -64,23 +64,61 @@ final lookupSuggestionsProvider = FutureProvider<List<String>>((ref) async {
   }
 });
 
+/// Returns area-code city records for [LookupMode.byAreaCode].
+/// Now falls back to querying ZipEntry records if area_codes.json yields no result.
 final areaCodeCityResultsProvider = FutureProvider<List<AreaCodeRecord>>((ref) async {
   if (ref.watch(lookupModeProvider) != LookupMode.byAreaCode) return [];
   final query = ref.watch(lookupQueryProvider).trim();
   if (query.isEmpty) return [];
+  final geoService = ref.read(areaCodeGeoServiceProvider);
+  final dbService = ref.read(lookupDbServiceProvider);
+
   try {
-    return await ref.read(areaCodeGeoServiceProvider).resultsForAreaCode(query).timeout(const Duration(seconds: 4));
+    final geoResults = await geoService.resultsForAreaCode(query).timeout(const Duration(seconds: 4));
+    if (geoResults.isNotEmpty) return geoResults;
+  } catch (_) {}
+
+  // Fallback: Query ZipEntry database by ZIP or City if input was a ZIP code / City name on Area Code tab
+  try {
+    final zipResults = query.replaceAll(RegExp(r'[^\d]'), '').isNotEmpty && query.length >= 5
+        ? await dbService.searchByZip(query).timeout(const Duration(seconds: 4))
+        : await dbService.searchByCity(query).timeout(const Duration(seconds: 4));
+
+    final areaCodeRecords = <AreaCodeRecord>[];
+    for (final z in zipResults) {
+      for (final code in z.areaCodes) {
+        if (code.isNotEmpty) {
+          areaCodeRecords.add(AreaCodeRecord(
+            areaCode: code,
+            city: z.city,
+            state: z.state,
+            lat: z.lat,
+            lng: z.lng,
+          ));
+        }
+      }
+    }
+    return areaCodeRecords;
   } catch (_) {
     return [];
   }
 });
 
+/// Autocomplete suggestions ("areaCode (city, state)") for [LookupMode.byAreaCode].
 final areaCodeCitySuggestionsProvider = FutureProvider<List<String>>((ref) async {
   if (ref.watch(lookupModeProvider) != LookupMode.byAreaCode) return [];
   final query = ref.watch(lookupQueryProvider).trim();
   if (query.isEmpty) return [];
+  final geoService = ref.read(areaCodeGeoServiceProvider);
+  final dbService = ref.read(lookupDbServiceProvider);
+
   try {
-    return await ref.read(areaCodeGeoServiceProvider).suggestionsForAreaCode(query).timeout(const Duration(seconds: 4));
+    final geoSugg = await geoService.suggestionsForAreaCode(query).timeout(const Duration(seconds: 4));
+    if (geoSugg.isNotEmpty) return geoSugg;
+  } catch (_) {}
+
+  try {
+    return await dbService.suggest(query, mode: LookupMode.byAreaCode).timeout(const Duration(seconds: 4));
   } catch (_) {
     return [];
   }
