@@ -4,7 +4,7 @@
   "start_url": "./",
   "scope": "./",
   "id": "CN=414C09E0-1118-4894-9A2F-45A40232B6A6",
-  "description": "OmniToolkit - Daily productivity suite for weather, calendar with notes, calculator, world radio, lookup, and password generator.",
+  "description": "OmniToolkit - Daily productivity suite for calendar with clock and notes, calculator, world radio, lookup, and password generator.",
   "lang": "en",
   "dir": "ltr",
   "display": "standalone",
@@ -18,8 +18,7 @@
   "categories": [
     "entertainment",
     "productivity",
-    "utilities",
-    "weather"
+    "utilities"
   ],
   "share_target": {
     "method": "GET",
