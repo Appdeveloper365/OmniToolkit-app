@@ -6,6 +6,8 @@ const List<ZipEntry> zipSeedData = [
   ZipEntry(zip: '17111', city: 'Harrisburg', state: 'PA', county: 'Dauphin', areaCodes: ['717', '223'], region: ['Harrisburg, PA'], timezone: 'America/New_York', lat: 40.26895, lng: -76.78491),
   ZipEntry(zip: '10001', city: 'New York', state: 'NY', county: 'New York County', areaCodes: ['212', '646', '332'], region: ['NYC Metro'], timezone: 'America/New_York', lat: 40.7506, lng: -73.9972),
   ZipEntry(zip: '90210', city: 'Beverly Hills', state: 'CA', county: 'Los Angeles County', areaCodes: ['310', '424'], region: ['Los Angeles, CA'], timezone: 'America/Los_Angeles', lat: 34.0901, lng: -118.4065),
+  ZipEntry(zip: '00501', city: 'Holtsville', state: 'NY', county: 'Suffolk County', areaCodes: ['631'], region: ['Suffolk County, NY'], timezone: 'America/New_York', lat: 40.8154, lng: -73.0451),
+  ZipEntry(zip: '02108', city: 'Boston', state: 'MA', county: 'Suffolk County', areaCodes: ['617', '857'], region: ['Boston, MA'], timezone: 'America/New_York', lat: 42.3588, lng: -71.0567),
   ZipEntry(zip: '30301', city: 'Atlanta', state: 'GA', county: 'Fulton County', areaCodes: ['404', '678', '470'], region: ['Atlanta, GA'], timezone: 'America/New_York', lat: 33.7550, lng: -84.3900),
   ZipEntry(zip: '90001', city: 'Los Angeles', state: 'CA', county: 'Los Angeles County', areaCodes: ['213', '323'], region: ['Los Angeles, CA'], timezone: 'America/Los_Angeles', lat: 33.9731, lng: -118.2479),
   ZipEntry(zip: '60601', city: 'Chicago', state: 'IL', county: 'Cook County', areaCodes: ['312', '872'], region: ['Chicago, IL'], timezone: 'America/Chicago', lat: 41.8858, lng: -87.6229),

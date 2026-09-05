@@ -18,7 +18,6 @@ class LookupDbService {
       try {
         await AssetImporter.importLookupData(db);
       } catch (_) {
-        // Fallback for widget testing environments without rootBundle
         if (count == 0) {
           final batch = db.batch();
           for (final entry in zipSeedData) {
@@ -30,28 +29,34 @@ class LookupDbService {
     }
   }
 
-  /// ZIP → city/state/area code(s).
+  /// Extracts clean 5-digit ZIP string from input (e.g. "17111-1234" -> "17111", "00501" -> "00501", "2108" -> "02108").
+  String _sanitizeZip(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.contains('-')) {
+      final base = trimmed.split('-').first.trim();
+      final digits = base.replaceAll(RegExp(r'[^\d]'), '');
+      return digits.length <= 5 ? digits.padLeft(5, '0') : digits;
+    }
+    final cleanDigits = trimmed.replaceAll(RegExp(r'[^\d]'), '');
+    if (cleanDigits.isNotEmpty && cleanDigits.length <= 5) {
+      return cleanDigits.padLeft(5, '0');
+    }
+    return trimmed;
+  }
+
+  /// ZIP → city/state/county/area code(s). Supports exact 5-digit, ZIP+4, padded, and prefix searches.
   Future<List<ZipEntry>> searchByZip(String zip) async {
     final trimmed = zip.trim();
     if (trimmed.isEmpty) return [];
+
     final db = await AppDatabase.instance.database;
+    final cleanZip = _sanitizeZip(trimmed);
 
-    // Handle sanitized/padded 5-digit zip if numeric (e.g. 2101 -> 02101, 17111 -> 17111)
-    String? padded;
-    final cleanInput = trimmed.split(' ').first.replaceAll(RegExp(r'[^\d]'), '');
-    if (cleanInput.isNotEmpty && cleanInput.length <= 5) {
-      padded = cleanInput.padLeft(5, '0');
-    }
+    // Build SQL query matching raw input, sanitized 5-digit padded string, or ZIP+4 base
+    final whereClause = StringBuffer('zip LIKE ? OR zip LIKE ?');
+    final args = <String>['$trimmed%', '$cleanZip%'];
 
-    final whereClause = StringBuffer('zip LIKE ?');
-    final args = <String>['$trimmed%'];
-
-    if (padded != null && padded != trimmed) {
-      whereClause.write(' OR zip LIKE ?');
-      args.add('$padded%');
-    }
-
-    // Fallback search by city if non-numeric string (e.g. user selected city from autocomplete)
+    // Handle city name fallback if non-numeric
     if (RegExp(r'[a-zA-Z]').hasMatch(trimmed)) {
       final cityPart = trimmed.split(',').first.trim();
       whereClause.write(' OR city LIKE ?');
@@ -67,14 +72,16 @@ class LookupDbService {
     final results = rows.map(ZipEntry.fromMap).toList();
     if (results.isNotEmpty) return results;
 
-    // Fallback if DB table lacks 17111 or entry: search in-memory zipSeedData
-    final seedMatches = zipSeedData
-        .where((e) => e.zip.startsWith(trimmed) || (padded != null && e.zip.startsWith(padded)))
+    // Fallback: search in-memory seed dataset
+    return zipSeedData
+        .where((e) =>
+            e.zip == cleanZip ||
+            e.zip.startsWith(cleanZip) ||
+            e.zip.startsWith(trimmed))
         .toList();
-    return seedMatches;
   }
 
-  /// City/county → ZIP list (also returns state/area code/region per row).
+  /// City/county → ZIP list (returns city, state, county, area code, region per row).
   Future<List<ZipEntry>> searchByCity(String city) async {
     final trimmed = city.trim();
     if (trimmed.isEmpty) return [];
@@ -142,19 +149,12 @@ class LookupDbService {
     final suggestions = <String>{};
 
     if (mode == LookupMode.byZip) {
-      final cleanInput = trimmed.replaceAll(RegExp(r'[^\d]'), '');
-      final padded = cleanInput.length <= 5 && cleanInput.isNotEmpty ? cleanInput.padLeft(5, '0') : null;
-      final args = ['$trimmed%'];
-      var where = 'zip LIKE ?';
-      if (padded != null && padded != trimmed) {
-        where += ' OR zip LIKE ?';
-        args.add('$padded%');
-      }
+      final cleanZip = _sanitizeZip(trimmed);
       final rows = await db.query(
         _table,
         columns: ['zip', 'city', 'state'],
-        where: where,
-        whereArgs: args,
+        where: 'zip LIKE ? OR zip LIKE ?',
+        whereArgs: ['$trimmed%', '$cleanZip%'],
         limit: limit * 2,
       );
       for (final r in rows) {
@@ -162,7 +162,7 @@ class LookupDbService {
       }
       if (suggestions.isEmpty) {
         for (final entry in zipSeedData) {
-          if (entry.zip.startsWith(trimmed) || (padded != null && entry.zip.startsWith(padded))) {
+          if (entry.zip.startsWith(trimmed) || entry.zip.startsWith(cleanZip)) {
             suggestions.add('${entry.zip} (${entry.city}, ${entry.state})');
           }
         }
