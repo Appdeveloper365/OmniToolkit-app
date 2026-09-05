@@ -38,6 +38,7 @@ dependencies:
   # Windows/Linux audio backend for just_audio
   media_kit: ^1.2.6
   just_audio_media_kit: ^2.1.0
+  media_kit_libs_windows_audio: ^1.0.7
 
   # Calculator expression parsing
   math_expressions: ^2.6.0
