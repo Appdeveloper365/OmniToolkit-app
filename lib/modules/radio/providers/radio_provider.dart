@@ -1,30 +1,97 @@
+/// FILE: lib/modules/radio/providers/radio_provider.dart
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/station_model.dart';
 import '../services/favorites_service.dart';
 import '../services/radio_service.dart';
+import '../services/stream_resolver_service.dart';
+
+enum RadioStatus {
+  stopped,
+  buffering,
+  live,
+  offline,
+  reconnecting,
+}
+
+class RadioState {
+  const RadioState({
+    this.currentStation,
+    this.status = RadioStatus.stopped,
+    this.statusText = '⚪ STOPPED',
+    this.formatDetected,
+    this.volume = 1.0,
+    this.isMuted = false,
+    this.errorMessage,
+    this.reconnectCount = 0,
+  });
+
+  final StationModel? currentStation;
+  final RadioStatus status;
+  final String statusText;
+  final String? formatDetected;
+  final double volume;
+  final bool isMuted;
+  final String? errorMessage;
+  final int reconnectCount;
+
+  RadioState copyWith({
+    StationModel? Function()? currentStation,
+    RadioStatus? status,
+    String? statusText,
+    String? Function()? formatDetected,
+    double? volume,
+    bool? isMuted,
+    String? Function()? errorMessage,
+    int? reconnectCount,
+  }) {
+    return RadioState(
+      currentStation: currentStation != null ? currentStation() : this.currentStation,
+      status: status ?? this.status,
+      statusText: statusText ?? this.statusText,
+      formatDetected: formatDetected != null ? formatDetected() : this.formatDetected,
+      volume: volume ?? this.volume,
+      isMuted: isMuted ?? this.isMuted,
+      errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
+      reconnectCount: reconnectCount ?? this.reconnectCount,
+    );
+  }
+}
 
 final radioServiceProvider = Provider((ref) => RadioService());
 final favoritesServiceProvider = Provider((ref) => FavoritesService());
+final streamResolverServiceProvider = Provider((ref) => StreamResolverService());
 
 final radioSearchQueryProvider = StateProvider<String>((ref) => '');
 final selectedCategoryProvider = StateProvider<String?>((ref) => null);
+final selectedGenreProvider = StateProvider<String?>((ref) => null);
+final selectedCountryProvider = StateProvider<CountryInfo?>((ref) => null);
 
 final stationListProvider = FutureProvider<List<StationModel>>((ref) async {
   final service = ref.watch(radioServiceProvider);
   final query = ref.watch(radioSearchQueryProvider);
   final category = ref.watch(selectedCategoryProvider);
+  final genre = ref.watch(selectedGenreProvider);
+  final country = ref.watch(selectedCountryProvider);
 
-  final stations = query.trim().isNotEmpty ? await service.search(query)
-      : category != null ? await service.byCategory(category) : await service.topStations();
-  if (category == null) return stations;
-  return stations.where((s) => s.category.toLowerCase().contains(category.toLowerCase()) ||
-      s.name.toLowerCase().contains(query.toLowerCase())).toList();
+  if (query.trim().isNotEmpty) {
+    return service.search(query);
+  }
+  if (country != null) {
+    return service.byCountry(country.code);
+  }
+  if (genre != null) {
+    return service.byCategory(genre);
+  }
+  if (category != null) {
+    return service.byCategory(category);
+  }
+  return service.topStations();
 });
 
 final favoritesProvider =
@@ -49,40 +116,146 @@ class FavoritesNotifier extends AsyncNotifier<List<StationModel>> {
   bool isFavorite(String id) => (state.valueOrNull ?? []).any((s) => s.id == id);
 }
 
-/// Global just_audio player shared across the radio screen for background
-/// playback support (registered via JustAudioBackground in main.dart).
 final audioPlayerProvider = Provider<AudioPlayer>((ref) {
   final player = AudioPlayer();
   ref.onDispose(player.dispose);
   return player;
 });
 
-final currentStationProvider = StateProvider<StationModel?>((ref) => null);
+final currentStationProvider = StateProvider<StationModel?>((ref) {
+  return ref.watch(radioStateProvider).currentStation;
+});
 
 final playerStateProvider = StreamProvider<PlayerState>((ref) {
   final player = ref.watch(audioPlayerProvider);
   return player.playerStateStream;
 });
 
-class RadioPlaybackController {
-  RadioPlaybackController(this.ref);
-  final Ref ref;
+final radioStateProvider = NotifierProvider<RadioNotifier, RadioState>(RadioNotifier.new);
 
-  Future<void> play(StationModel station) async {
+class RadioNotifier extends Notifier<RadioState> {
+  StreamSubscription<PlayerState>? _playerStateSub;
+  Timer? _reconnectTimer;
+  bool _isDisposed = false;
+
+  @override
+  RadioState build() {
+    _initVolume();
+    _listenPlayer();
+    ref.onDispose(() {
+      _isDisposed = true;
+      _playerStateSub?.cancel();
+      _reconnectTimer?.cancel();
+    });
+    return const RadioState();
+  }
+
+  Future<void> _initVolume() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedVolume = prefs.getDouble('radio_volume') ?? 1.0;
+      final savedMuted = prefs.getBool('radio_is_muted') ?? false;
+      state = state.copyWith(volume: savedVolume, isMuted: savedMuted);
+
+      final player = ref.read(audioPlayerProvider);
+      await player.setVolume(savedMuted ? 0.0 : savedVolume);
+    } catch (_) {}
+  }
+
+  void _listenPlayer() {
     final player = ref.read(audioPlayerProvider);
-    ref.read(currentStationProvider.notifier).state = station;
+    _playerStateSub?.cancel();
+    _playerStateSub = player.playerStateStream.listen((playerState) {
+      if (_isDisposed) return;
+
+      final playing = playerState.playing;
+      final processingState = playerState.processingState;
+
+      debugPrint('[RadioState] PlayerState update: playing=$playing, processingState=$processingState');
+
+      if (state.currentStation == null) {
+        if (state.status != RadioStatus.stopped) {
+          state = state.copyWith(
+            status: RadioStatus.stopped,
+            statusText: '⚪ STOPPED',
+            errorMessage: () => null,
+          );
+        }
+        return;
+      }
+
+      if (processingState == ProcessingState.loading || processingState == ProcessingState.buffering) {
+        state = state.copyWith(
+          status: RadioStatus.buffering,
+          statusText: '🟡 BUFFERING',
+        );
+      } else if (playing && processingState == ProcessingState.ready) {
+        // True playback confirmed!
+        state = state.copyWith(
+          status: RadioStatus.live,
+          statusText: '🟢 LIVE',
+          errorMessage: () => null,
+          reconnectCount: 0,
+        );
+      } else if (processingState == ProcessingState.completed) {
+        // Auto reconnect check
+        if (state.status == RadioStatus.live || state.status == RadioStatus.buffering) {
+          _triggerReconnect('Stream completed unexpectedly.');
+        } else {
+          state = state.copyWith(
+            status: RadioStatus.stopped,
+            statusText: '⚪ STOPPED',
+          );
+        }
+      } else if (!playing && processingState == ProcessingState.ready) {
+        // Paused by user
+        state = state.copyWith(
+          status: RadioStatus.buffering, // or paused state
+          statusText: '⏸ PAUSED',
+        );
+      }
+    });
+  }
+
+  Future<void> playStation(StationModel station) async {
+    debugPrint('[RadioController] Station selected: ${station.name} (${station.streamUrl})');
+    final resolver = ref.read(streamResolverServiceProvider);
+    final player = ref.read(audioPlayerProvider);
+
+    _reconnectTimer?.cancel();
+
+    state = state.copyWith(
+      currentStation: () => station,
+      status: RadioStatus.buffering,
+      statusText: '🟡 BUFFERING',
+      errorMessage: () => null,
+      reconnectCount: 0,
+    );
+
+    // Validate and resolve URL
+    final validation = await resolver.resolveAndValidate(station.streamUrl);
+    debugPrint('[RadioController] URL validated. Result: isValid=${validation.isValid}, format=${validation.detectedFormat}');
+
+    if (!validation.isValid) {
+      await player.stop();
+      state = state.copyWith(
+        status: RadioStatus.offline,
+        statusText: '🔴 OFFLINE',
+        errorMessage: () => validation.errorMessage ?? 'Cannot play stream.',
+        formatDetected: () => validation.detectedFormat,
+      );
+      return;
+    }
+
+    state = state.copyWith(formatDetected: () => validation.detectedFormat);
+
     try {
       await player.stop();
-
-      String targetUrl = station.streamUrl;
-      // Resolve playlist links (.m3u, .pls) if applicable
-      if (targetUrl.endsWith('.m3u') || targetUrl.endsWith('.pls')) {
-        targetUrl = await _resolvePlaylistUrl(targetUrl);
-      }
+      debugPrint('[RadioController] Connection establishing to: ${validation.resolvedUrl}');
 
       await player.setAudioSource(
         AudioSource.uri(
-          Uri.parse(targetUrl),
+          Uri.parse(validation.resolvedUrl),
           headers: const {
             'User-Agent': 'OmniToolkit/1.0',
             'Accept': '*/*',
@@ -91,45 +264,171 @@ class RadioPlaybackController {
             id: station.id,
             album: 'OmniToolkit Radio',
             title: station.name,
+            artist: '${station.category} • ${station.country}',
+            artUri: station.favicon != null ? Uri.tryParse(station.favicon!) : null,
           ),
         ),
       );
-      await player.play();
-    } catch (e) {
-      debugPrint('Error playing stream ${station.name}: $e');
-      await player.stop();
-      ref.read(currentStationProvider.notifier).state = null;
-    }
-  }
 
-  Future<String> _resolvePlaylistUrl(String url) async {
-    try {
-      final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 4));
-      if (response.statusCode == 200) {
-        for (final rawLine in response.body.split('\n')) {
-          final line = rawLine.trim();
-          if (line.startsWith('http://') || line.startsWith('https://')) {
-            return line;
-          }
-        }
+      debugPrint('[RadioController] Buffer started...');
+      await player.play();
+      debugPrint('[RadioController] Play requested successfully.');
+    } catch (e) {
+      debugPrint('[RadioController] Error starting playback: $e');
+      if (StreamResolverService.isInsecureWebStream(station.streamUrl)) {
+        state = state.copyWith(
+          status: RadioStatus.offline,
+          statusText: '🔴 OFFLINE',
+          errorMessage: () => 'This station uses an insecure stream and cannot be played over HTTPS.',
+        );
+      } else {
+        _triggerReconnect('Failed to load audio stream.');
       }
-    } catch (_) {}
-    return url;
+    }
   }
 
   Future<void> togglePlayPause() async {
     final player = ref.read(audioPlayerProvider);
+    if (state.currentStation == null) return;
+
     if (player.playing) {
       await player.pause();
     } else {
-      await player.play();
+      if (player.processingState == ProcessingState.idle) {
+        await playStation(state.currentStation!);
+      } else {
+        await player.play();
+      }
     }
   }
 
   Future<void> stop() async {
+    debugPrint('[RadioController] Playback stopped by user.');
+    _reconnectTimer?.cancel();
     final player = ref.read(audioPlayerProvider);
     await player.stop();
-    ref.read(currentStationProvider.notifier).state = null;
+    state = state.copyWith(
+      currentStation: () => null,
+      status: RadioStatus.stopped,
+      statusText: '⚪ STOPPED',
+      errorMessage: () => null,
+    );
+  }
+
+  Future<void> setVolume(double newVolume) async {
+    final clamped = newVolume.clamp(0.0, 1.0);
+    state = state.copyWith(volume: clamped, isMuted: clamped == 0.0);
+
+    final player = ref.read(audioPlayerProvider);
+    await player.setVolume(state.isMuted ? 0.0 : clamped);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('radio_volume', clamped);
+      await prefs.setBool('radio_is_muted', state.isMuted);
+    } catch (_) {}
+  }
+
+  Future<void> toggleMute() async {
+    final nextMute = !state.isMuted;
+    state = state.copyWith(isMuted: nextMute);
+
+    final player = ref.read(audioPlayerProvider);
+    await player.setVolume(nextMute ? 0.0 : state.volume);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('radio_is_muted', nextMute);
+    } catch (_) {}
+  }
+
+  void _triggerReconnect(String reason) {
+    if (state.currentStation == null) return;
+
+    final currentAttempts = state.reconnectCount;
+    if (currentAttempts >= 3) {
+      debugPrint('[RadioController] Reconnection failed after 3 attempts.');
+      state = state.copyWith(
+        status: RadioStatus.offline,
+        statusText: '🔴 OFFLINE',
+        errorMessage: () => 'Station temporarily unavailable.',
+      );
+      return;
+    }
+
+    final nextAttempt = currentAttempts + 1;
+    debugPrint('[RadioController] Attempting reconnection ($nextAttempt/3)... Reason: $reason');
+
+    state = state.copyWith(
+      status: RadioStatus.reconnecting,
+      statusText: '🟡 RECONNECTING ($nextAttempt/3)',
+      reconnectCount: nextAttempt,
+      errorMessage: () => 'Attempting reconnection...',
+    );
+
+    _reconnectTimer?.cancel();
+    _reconnectTimer = Timer(const Duration(seconds: 3), () {
+      if (state.currentStation != null && state.status == RadioStatus.reconnecting) {
+        playStation(state.currentStation!);
+      }
+    });
+  }
+
+  Future<void> playNextFavorite() async {
+    final favorites = ref.read(favoritesProvider).valueOrNull ?? [];
+    if (favorites.isEmpty) return;
+    if (state.currentStation == null) {
+      await playStation(favorites.first);
+      return;
+    }
+    final currentIndex = favorites.indexWhere((s) => s.id == state.currentStation!.id);
+    final nextIndex = (currentIndex + 1) % favorites.length;
+    await playStation(favorites[nextIndex]);
+  }
+
+  Future<void> playPreviousFavorite() async {
+    final favorites = ref.read(favoritesProvider).valueOrNull ?? [];
+    if (favorites.isEmpty) return;
+    if (state.currentStation == null) {
+      await playStation(favorites.last);
+      return;
+    }
+    final currentIndex = favorites.indexWhere((s) => s.id == state.currentStation!.id);
+    final prevIndex = currentIndex <= 0 ? favorites.length - 1 : currentIndex - 1;
+    await playStation(favorites[prevIndex]);
+  }
+}
+
+class RadioPlaybackController {
+  RadioPlaybackController(this.ref);
+  final Ref ref;
+
+  Future<void> play(StationModel station) async {
+    await ref.read(radioStateProvider.notifier).playStation(station);
+  }
+
+  Future<void> togglePlayPause() async {
+    await ref.read(radioStateProvider.notifier).togglePlayPause();
+  }
+
+  Future<void> stop() async {
+    await ref.read(radioStateProvider.notifier).stop();
+  }
+
+  Future<void> setVolume(double vol) async {
+    await ref.read(radioStateProvider.notifier).setVolume(vol);
+  }
+
+  Future<void> toggleMute() async {
+    await ref.read(radioStateProvider.notifier).toggleMute();
+  }
+
+  Future<void> nextFavorite() async {
+    await ref.read(radioStateProvider.notifier).playNextFavorite();
+  }
+
+  Future<void> previousFavorite() async {
+    await ref.read(radioStateProvider.notifier).playPreviousFavorite();
   }
 }
 

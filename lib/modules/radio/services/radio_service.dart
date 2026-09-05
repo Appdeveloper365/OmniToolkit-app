@@ -1,12 +1,16 @@
+/// FILE: lib/modules/radio/services/radio_service.dart
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
-
 import '../models/station_model.dart';
 import 'radio_db_service.dart';
 
-/// Client for the free, keyless Radio Browser API used to search stations
-/// and browse them by category (genre tag).
+class CountryInfo {
+  const CountryInfo({required this.name, required this.code, required this.flag});
+  final String name;
+  final String code;
+  final String flag;
+}
+
 class RadioService {
   RadioService({RadioDbService? radioDbService})
       : _radioDbService = radioDbService ?? RadioDbService();
@@ -20,55 +24,114 @@ class RadioService {
     'at1.api.radio-browser.info',
   ];
 
-  static const categories = ['News', 'Music', 'Sports', 'Talk', 'Jazz', 'Classical', 'Pop', 'Rock'];
+  static const genres = [
+    'News',
+    'Talk Radio',
+    'Sports',
+    'Pop',
+    'Rock',
+    'Jazz',
+    'Classical',
+    'Country',
+    'Electronic',
+    'Dance',
+    'Religious',
+    'Oldies',
+    'Easy Listening',
+    'Community',
+    'International',
+  ];
+
+  static const categories = genres; // Backward compatibility
+
+  static const countries = [
+    CountryInfo(name: 'United States', code: 'US', flag: '🇺🇸'),
+    CountryInfo(name: 'Canada', code: 'CA', flag: '🇨🇦'),
+    CountryInfo(name: 'United Kingdom', code: 'GB', flag: '🇬🇧'),
+    CountryInfo(name: 'Australia', code: 'AU', flag: '🇦🇺'),
+    CountryInfo(name: 'India', code: 'IN', flag: '🇮🇳'),
+    CountryInfo(name: 'Germany', code: 'DE', flag: '🇩🇪'),
+    CountryInfo(name: 'France', code: 'FR', flag: '🇫🇷'),
+    CountryInfo(name: 'Japan', code: 'JP', flag: '🇯🇵'),
+    CountryInfo(name: 'Italy', code: 'IT', flag: '🇮🇹'),
+    CountryInfo(name: 'Spain', code: 'ES', flag: '🇪🇸'),
+    CountryInfo(name: 'Brazil', code: 'BR', flag: '🇧🇷'),
+    CountryInfo(name: 'Mexico', code: 'MX', flag: '🇲🇽'),
+  ];
 
   static const fallbackStations = [
     StationModel(
       id: 'somafm-groovesalad',
       name: 'Groove Salad (SomaFM)',
       streamUrl: 'https://ice1.somafm.com/groovesalad-128-mp3',
-      category: 'Music',
-      country: 'US',
+      category: 'Pop',
+      country: 'United States',
+      countryCode: 'US',
+      language: 'English',
+      bitrate: 128,
+      codec: 'MP3',
+      favicon: 'https://somafm.com/img/groovesalad120.png',
     ),
     StationModel(
       id: 'somafm-dronezone',
       name: 'Drone Zone (SomaFM)',
       streamUrl: 'https://ice1.somafm.com/dronezone-128-mp3',
-      category: 'Music',
-      country: 'US',
+      category: 'Electronic',
+      country: 'United States',
+      countryCode: 'US',
+      language: 'English',
+      bitrate: 128,
+      codec: 'MP3',
+      favicon: 'https://somafm.com/img/dronezone120.png',
     ),
     StationModel(
       id: 'somafm-indiepop',
       name: 'Indie Pop Rocks (SomaFM)',
       streamUrl: 'https://ice1.somafm.com/indiepop-128-mp3',
-      category: 'Music',
-      country: 'US',
+      category: 'Rock',
+      country: 'United States',
+      countryCode: 'US',
+      language: 'English',
+      bitrate: 128,
+      codec: 'MP3',
+      favicon: 'https://somafm.com/img/indiepop120.png',
     ),
     StationModel(
       id: 'test-stream',
       name: 'OmniToolkit Test Audio',
       streamUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-      category: 'Music',
-      country: 'Test',
+      category: 'Pop',
+      country: 'United States',
+      countryCode: 'US',
+      language: 'English',
+      bitrate: 128,
+      codec: 'MP3',
     ),
   ];
 
   Future<List<StationModel>> search(String query) async {
-    if (query.trim().isEmpty) return [];
+    final cleanQuery = query.trim();
+    if (cleanQuery.isEmpty) return topStations();
     return _fetchWithFallback('/stations/search', {
-      'name': query,
-      'limit': '30',
+      'name': cleanQuery,
+      'limit': '50',
       'hidebroken': 'true',
     });
   }
 
   Future<List<StationModel>> byCategory(String category) async {
-    final path = '/stations/bytag/${Uri.encodeComponent(category.toLowerCase())}';
-    return _fetchWithFallback(path, {'limit': '30', 'hidebroken': 'true'});
+    final cleanCat = category.trim().toLowerCase().replaceAll(' ', '');
+    final path = '/stations/bytag/$cleanCat';
+    return _fetchWithFallback(path, {'limit': '50', 'hidebroken': 'true'});
+  }
+
+  Future<List<StationModel>> byCountry(String countryCode) async {
+    final path = '/stations/bycodeexact/${countryCode.trim().toLowerCase()}';
+    return _fetchWithFallback(path, {'limit': '50', 'hidebroken': 'true'});
   }
 
   Future<List<StationModel>> topStations() async {
-    return _fetchWithFallback('/stations/topclick/30', {});
+    return _fetchWithFallback('/stations/topclick/50', {});
   }
 
   Future<List<StationModel>> _fetchWithFallback(String path, Map<String, String> queryParams) async {
@@ -78,7 +141,7 @@ class RadioService {
         final response = await http.get(uri, headers: {
           'User-Agent': 'OmniToolkit/1.0 (+https://github.com/omnitoolkit)',
           'Accept': 'application/json',
-        }).timeout(const Duration(seconds: 8));
+        }).timeout(const Duration(seconds: 6));
 
         if (response.statusCode == 200) {
           final list = jsonDecode(response.body) as List<dynamic>;
@@ -89,14 +152,12 @@ class RadioService {
           if (stations.isNotEmpty) return stations;
         }
       } catch (_) {
-        // Try next mirror
+        // Try next mirror host
       }
     }
     return _offlineFallback();
   }
 
-  /// Offline streams imported from assets/data/radio_streams.json, with the
-  /// fallback stations as a last resort if the DB is also empty.
   Future<List<StationModel>> _offlineFallback() async {
     try {
       final offline = await _radioDbService.loadStreams();
@@ -107,7 +168,6 @@ class RadioService {
 
   bool _isSafePublicStation(StationModel station) {
     if (station.streamUrl.isEmpty) return false;
-    // Allow both HTTP and HTTPS streams
     if (!station.streamUrl.startsWith('http://') && !station.streamUrl.startsWith('https://')) {
       return false;
     }
