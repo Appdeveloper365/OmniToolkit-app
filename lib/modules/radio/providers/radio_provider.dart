@@ -72,6 +72,12 @@ final selectedCategoryProvider = StateProvider<String?>((ref) => null);
 final selectedGenreProvider = StateProvider<String?>((ref) => null);
 final selectedCountryProvider = StateProvider<CountryInfo?>((ref) => null);
 
+/// Dynamic Radio Categories Provider with automatic/manual refresh capability.
+final radioCategoriesProvider = FutureProvider.family<List<String>, bool>((ref, forceRefresh) async {
+  final service = ref.watch(radioServiceProvider);
+  return service.fetchCategories(forceRefresh: forceRefresh);
+});
+
 final stationListProvider = FutureProvider<List<StationModel>>((ref) async {
   final service = ref.watch(radioServiceProvider);
   final query = ref.watch(radioSearchQueryProvider);
@@ -192,8 +198,6 @@ class RadioNotifier extends Notifier<RadioState> {
       }
 
       if (processingState == ProcessingState.loading || processingState == ProcessingState.buffering) {
-        // Do NOT trigger buffer timeout while active playback is in progress
-        // Only set status to BUFFERING if we weren't already LIVE, or if position stalls for > 15s
         if (state.status != RadioStatus.live) {
           debugPrint('[RadioLog] Status: BUFFERING');
           state = state.copyWith(
@@ -237,7 +241,6 @@ class RadioNotifier extends Notifier<RadioState> {
       if (_isDisposed) return;
       _lastPosition = pos;
       if (player.playing) {
-        // Any time position advances, guarantee we cancel the buffer timeout!
         _bufferTimeoutTimer?.cancel();
         if (state.status != RadioStatus.live) {
           debugPrint('[RadioLog] Position advancing (${pos.inSeconds}s) -> confirming LIVE state');
@@ -256,7 +259,6 @@ class RadioNotifier extends Notifier<RadioState> {
     _bufferTimeoutTimer?.cancel();
     _bufferTimeoutTimer = Timer(const Duration(seconds: 15), () {
       if (_isDisposed) return;
-      // Only trip timeout if we never went LIVE or if position hasn't moved
       if (state.status == RadioStatus.buffering) {
         debugPrint('[RadioLog] FAILURE POINT: Buffering timed out after 15 seconds. CurrentPosition: ${_lastPosition.inSeconds}s');
         final player = ref.read(audioPlayerProvider);
@@ -299,7 +301,6 @@ class RadioNotifier extends Notifier<RadioState> {
       reconnectCount: 0,
     );
 
-    // Validate stream URL, HTTPS, CORS, and playlists
     final validation = await resolver.resolveAndValidate(station.streamUrl);
 
     if (!validation.isValid) {
@@ -323,7 +324,6 @@ class RadioNotifier extends Notifier<RadioState> {
       await player.stop();
       debugPrint('[RadioLog] 4. Connection established');
 
-      // Note: On Web, omit custom headers to prevent CORS preflight blocking!
       await player.setAudioSource(
         AudioSource.uri(
           Uri.parse(validation.resolvedUrl),

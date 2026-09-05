@@ -20,6 +20,7 @@ class RadioScreen extends ConsumerStatefulWidget {
 class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProviderStateMixin {
   late final TabController _tabController = TabController(length: 4, vsync: this);
   final TextEditingController _searchController = TextEditingController();
+  bool _forceRefreshCategories = false;
 
   @override
   void dispose() {
@@ -38,6 +39,7 @@ class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProv
     final selectedCountry = ref.watch(selectedCountryProvider);
     final stationsAsync = ref.watch(stationListProvider);
     final favoritesAsync = ref.watch(favoritesProvider);
+    final categoriesAsync = ref.watch(radioCategoriesProvider(_forceRefreshCategories));
 
     return RadioKeyboardShortcuts(
       child: Scaffold(
@@ -66,6 +68,7 @@ class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProv
                       context,
                       ref,
                       selectedCategory,
+                      categoriesAsync,
                       stationsAsync,
                       isDark,
                     ),
@@ -84,6 +87,7 @@ class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProv
                       context,
                       ref,
                       selectedGenre,
+                      categoriesAsync,
                       stationsAsync,
                       isDark,
                     ),
@@ -110,6 +114,7 @@ class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProv
     BuildContext context,
     WidgetRef ref,
     String? selectedCategory,
+    AsyncValue<List<String>> categoriesAsync,
     AsyncValue<List<StationModel>> stationsAsync,
     bool isDark,
   ) {
@@ -146,31 +151,72 @@ class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProv
         ),
         SizedBox(
           height: 40,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
             children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: FilterChip(
-                  label: const Text('Top Stations'),
-                  selected: selectedCategory == null,
-                  onSelected: (_) {
-                    ref.read(selectedCategoryProvider.notifier).state = null;
+              Expanded(
+                child: categoriesAsync.when(
+                  data: (categories) {
+                    return ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: FilterChip(
+                            label: const Text('Top Stations'),
+                            selected: selectedCategory == null,
+                            onSelected: (_) {
+                              ref.read(selectedCategoryProvider.notifier).state = null;
+                            },
+                          ),
+                        ),
+                        for (final cat in categories)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: FilterChip(
+                              label: Text(cat),
+                              selected: selectedCategory == cat,
+                              onSelected: (_) {
+                                ref.read(selectedCategoryProvider.notifier).state = cat;
+                              },
+                            ),
+                          ),
+                      ],
+                    );
                   },
-                ),
-              ),
-              for (final cat in RadioService.genres)
-                Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: FilterChip(
-                    label: Text(cat),
-                    selected: selectedCategory == cat,
-                    onSelected: (_) {
-                      ref.read(selectedCategoryProvider.notifier).state = cat;
-                    },
+                  loading: () => const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))),
+                  ),
+                  error: (_, __) => ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    children: [
+                      for (final cat in RadioService.genres)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: FilterChip(
+                            label: Text(cat),
+                            selected: selectedCategory == cat,
+                            onSelected: (_) {
+                              ref.read(selectedCategoryProvider.notifier).state = cat;
+                            },
+                          ),
+                        ),
+                    ],
                   ),
                 ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                tooltip: 'Refresh Categories',
+                onPressed: () {
+                  setState(() {
+                    _forceRefreshCategories = !_forceRefreshCategories;
+                  });
+                  ref.invalidate(radioCategoriesProvider);
+                },
+              ),
             ],
           ),
         ),
@@ -232,6 +278,7 @@ class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProv
     BuildContext context,
     WidgetRef ref,
     String? selectedGenre,
+    AsyncValue<List<String>> categoriesAsync,
     AsyncValue<List<StationModel>> stationsAsync,
     bool isDark,
   ) {
@@ -239,19 +286,38 @@ class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProv
       children: [
         Padding(
           padding: const EdgeInsets.all(12),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: RadioService.genres.map((g) {
-              final isSel = selectedGenre == g;
-              return FilterChip(
-                label: Text(g),
-                selected: isSel,
-                onSelected: (_) {
-                  ref.read(selectedGenreProvider.notifier).state = isSel ? null : g;
-                },
+          child: categoriesAsync.when(
+            data: (categories) {
+              return Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: categories.map((g) {
+                  final isSel = selectedGenre == g;
+                  return FilterChip(
+                    label: Text(g),
+                    selected: isSel,
+                    onSelected: (_) {
+                      ref.read(selectedGenreProvider.notifier).state = isSel ? null : g;
+                    },
+                  );
+                }).toList(),
               );
-            }).toList(),
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, __) => Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: RadioService.genres.map((g) {
+                final isSel = selectedGenre == g;
+                return FilterChip(
+                  label: Text(g),
+                  selected: isSel,
+                  onSelected: (_) {
+                    ref.read(selectedGenreProvider.notifier).state = isSel ? null : g;
+                  },
+                );
+              }).toList(),
+            ),
           ),
         ),
         Expanded(
