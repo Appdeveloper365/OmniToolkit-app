@@ -17,7 +17,7 @@ class LookupService {
   Future<void> ensureInitialized() async {
     if (_isInitialized) return;
     try {
-      await loadFromLocalAssets().timeout(const Duration(seconds: 4));
+      await loadFromLocalAssets().timeout(const Duration(seconds: 5));
     } catch (e) {
       debugPrint('[LookupService] Asset load timeout or error: $e');
       _loadFallbackSeedData();
@@ -26,17 +26,43 @@ class LookupService {
   }
 
   Future<void> loadFromLocalAssets() async {
+    // 1. Try loading curated_us_zips.csv
     try {
-      final csvContent = await rootBundle.loadString('assets/data/curated_us_zips.csv');
-      parseZipCsv(csvContent);
+      String? csvContent;
+      try {
+        csvContent = await rootBundle.loadString('assets/data/curated_us_zips.csv');
+      } catch (e1) {
+        debugPrint('[LookupService] Primary asset path load error: $e1');
+        try {
+          csvContent = await rootBundle.loadString('curated_us_zips.csv');
+        } catch (e2) {
+          debugPrint('[LookupService] Secondary asset path load error: $e2');
+        }
+      }
+
+      if (csvContent != null && csvContent.isNotEmpty) {
+        parseZipCsv(csvContent);
+        debugPrint('[LookupService] Successfully loaded ${zipData.length} ZIP records from CSV');
+      }
     } catch (e) {
       debugPrint('[LookupService] Error loading curated_us_zips.csv: $e');
     }
 
+    // 2. Try loading lookup_data.json
     try {
-      final rawJson = await rootBundle.loadString('assets/data/lookup_data.json');
-      final decoded = jsonDecode(rawJson);
-      parseAreaCodesJson(decoded);
+      String? rawJson;
+      try {
+        rawJson = await rootBundle.loadString('assets/data/lookup_data.json');
+      } catch (_) {
+        try {
+          rawJson = await rootBundle.loadString('lookup_data.json');
+        } catch (_) {}
+      }
+
+      if (rawJson != null && rawJson.isNotEmpty) {
+        final decoded = jsonDecode(rawJson);
+        parseAreaCodesJson(decoded);
+      }
     } catch (e) {
       debugPrint('[LookupService] Error loading lookup_data.json: $e');
     }
@@ -56,7 +82,9 @@ class LookupService {
       if (line.isEmpty) continue;
       final parts = _parseCsvLine(line);
       if (parts.length >= 3) {
-        final zip = parts[0].replaceAll('"', '').trim();
+        final rawZip = parts[0].replaceAll('"', '').trim();
+        if (rawZip.isEmpty) continue;
+        final cleanZip = rawZip.padLeft(5, '0');
         final city = parts[1].replaceAll('"', '').trim();
         final state = parts[2].replaceAll('"', '').trim();
         final county = parts.length > 3 ? parts[3].replaceAll('"', '').trim() : null;
@@ -65,7 +93,7 @@ class LookupService {
         final lng = parts.length > 6 ? double.tryParse(parts[6].replaceAll('"', '')) : null;
 
         addZipRecord(ZipRecord(
-          zip: zip,
+          zip: cleanZip,
           city: city,
           state: state,
           county: county?.isEmpty == true ? null : county,
@@ -146,7 +174,8 @@ class LookupService {
   }
 
   List<String> lookupAreaCodesFromZip(String zip) {
-    final rec = zipData[zip.trim()];
+    final cleanZip = zip.trim().padLeft(5, '0');
+    final rec = zipData[cleanZip] ?? zipData[zip.trim()];
     if (rec == null) return [];
     final matches = <String>{};
     areaCodeData.forEach((code, list) {
@@ -171,7 +200,8 @@ class LookupService {
   }
 
   String? lookupCityFromZip(String zip) {
-    final rec = zipData[zip.trim()];
+    final cleanZip = zip.trim().padLeft(5, '0');
+    final rec = zipData[cleanZip] ?? zipData[zip.trim()];
     return rec != null ? '${rec.city}, ${rec.state}' : null;
   }
 
