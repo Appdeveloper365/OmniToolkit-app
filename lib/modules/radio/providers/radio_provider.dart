@@ -247,9 +247,9 @@ class RadioNotifier extends Notifier<RadioState> {
 
         String failReason;
         if (kIsWeb && StreamResolverService.isInsecureWebStream(state.currentStation?.streamUrl ?? '')) {
-          failReason = 'Insecure radio stream blocked by browser.';
+          failReason = 'Insecure radio stream blocked by browser policy.';
         } else if (kIsWeb) {
-          failReason = 'This station does not permit web playback.';
+          failReason = 'Radio station stream unplayable in browser environment.';
         } else {
           failReason = 'Unable to start audio stream.';
         }
@@ -342,9 +342,9 @@ class RadioNotifier extends Notifier<RadioState> {
       if (errString.contains('notallowederror') || errString.contains('user gesture') || errString.contains('autoplay')) {
         errorMsg = 'Tap Play to enable audio.';
       } else if (StreamResolverService.isInsecureWebStream(station.streamUrl)) {
-        errorMsg = 'Insecure radio stream blocked by browser.';
+        errorMsg = 'Insecure radio stream blocked by browser policy.';
       } else if (kIsWeb && (errString.contains('xmlhttprequest') || errString.contains('cors') || errString.contains('format'))) {
-        errorMsg = 'This station does not permit web playback.';
+        errorMsg = 'Radio station stream unplayable in browser environment.';
       } else {
         errorMsg = 'Unable to start audio stream.';
       }
