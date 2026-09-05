@@ -51,6 +51,11 @@ class LookupDbService {
     return trimmed;
   }
 
+  /// Normalizes city/county text for fuzzy matching (e.g. "Harris burg" -> "harrisburg")
+  String _normalizeFuzzy(String input) {
+    return input.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+  }
+
   /// ZIP → city/state/county/area code(s). Returns ALL matches starting with query prefix.
   Future<List<ZipEntry>> searchByZip(String zip) async {
     final trimmed = zip.trim();
@@ -118,10 +123,12 @@ class LookupDbService {
         .toList();
   }
 
-  /// City/county → ZIP list.
+  /// City/county → ZIP list with fuzzy matching (e.g. "Harrisburg", "harrisburg", "Harris burg").
   Future<List<ZipEntry>> searchByCity(String city) async {
     final trimmed = city.trim();
     if (trimmed.isEmpty) return [];
+
+    final fuzzyQuery = _normalizeFuzzy(trimmed);
 
     try {
       final db = await AppDatabase.instance.database;
@@ -144,7 +151,7 @@ class LookupDbService {
           limit: 100,
         );
       }
-      final results = rows.map(ZipEntry.fromMap).toList();
+      var results = rows.map(ZipEntry.fromMap).toList();
       if (results.isNotEmpty) return results;
     } catch (_) {}
 
@@ -152,34 +159,34 @@ class LookupDbService {
       await _inMemoryService.ensureInitialized();
     }
 
-    final cityLower = trimmed.toLowerCase();
-    final memZips = _inMemoryService.lookupZipsFromCity(trimmed);
-    if (memZips.isNotEmpty) {
-      final list = <ZipEntry>[];
-      for (final z in memZips) {
-        final rec = _inMemoryService.zipData[z];
-        if (rec != null) {
-          list.add(ZipEntry(
-            zip: rec.zip,
-            city: rec.city,
-            state: rec.state,
-            county: rec.county,
-            areaCodes: _inMemoryService.lookupAreaCodesFromZip(rec.zip),
-            region: [rec.state],
-            timezone: rec.timezone,
-            lat: rec.lat,
-            lng: rec.lng,
-          ));
-        }
+    // In-memory fuzzy match across LookupService zipData
+    final memList = <ZipEntry>[];
+    _inMemoryService.zipData.forEach((z, rec) {
+      final cityNorm = _normalizeFuzzy(rec.city);
+      final countyNorm = rec.county != null ? _normalizeFuzzy(rec.county!) : '';
+      if (cityNorm.contains(fuzzyQuery) || countyNorm.contains(fuzzyQuery) || rec.state.toLowerCase() == trimmed.toLowerCase()) {
+        memList.add(ZipEntry(
+          zip: rec.zip,
+          city: rec.city,
+          state: rec.state,
+          county: rec.county,
+          areaCodes: _inMemoryService.lookupAreaCodesFromZip(rec.zip),
+          region: [rec.state],
+          timezone: rec.timezone,
+          lat: rec.lat,
+          lng: rec.lng,
+        ));
       }
-      if (list.isNotEmpty) return list;
-    }
+    });
 
+    if (memList.isNotEmpty) return memList;
+
+    // Fallback seed fuzzy search
     return zipSeedData
         .where((e) =>
-            e.city.toLowerCase().contains(cityLower) ||
-            (e.county != null && e.county!.toLowerCase().contains(cityLower)) ||
-            e.state.toLowerCase() == cityLower)
+            _normalizeFuzzy(e.city).contains(fuzzyQuery) ||
+            (e.county != null && _normalizeFuzzy(e.county!).contains(fuzzyQuery)) ||
+            e.state.toLowerCase() == trimmed.toLowerCase())
         .toList();
   }
 
@@ -296,6 +303,8 @@ class LookupDbService {
 
     // In-Memory Suggestion Fallbacks for Web
     final cleanZip = _sanitizeZip(trimmed);
+    final fuzzyQuery = _normalizeFuzzy(trimmed);
+
     if (mode == LookupMode.byZip) {
       _inMemoryService.zipData.forEach((z, rec) {
         if (z.startsWith(trimmed) || z.startsWith(cleanZip)) {
@@ -308,14 +317,13 @@ class LookupDbService {
         }
       }
     } else if (mode == LookupMode.byCity) {
-      final cityPart = trimmed.split(',').first.trim().toLowerCase();
       _inMemoryService.zipData.forEach((z, rec) {
-        if (rec.city.toLowerCase().contains(cityPart)) {
+        if (_normalizeFuzzy(rec.city).contains(fuzzyQuery)) {
           suggestions.add('${rec.city}, ${rec.state}');
         }
       });
       for (final entry in zipSeedData) {
-        if (entry.city.toLowerCase().contains(cityPart)) {
+        if (_normalizeFuzzy(entry.city).contains(fuzzyQuery)) {
           suggestions.add('${entry.city}, ${entry.state}');
         }
       }

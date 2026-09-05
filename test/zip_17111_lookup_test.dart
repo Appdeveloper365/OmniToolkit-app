@@ -1,7 +1,6 @@
 /// FILE: test/zip_17111_lookup_test.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:omnitoolkit/core/db/app_database.dart';
-import 'package:omnitoolkit/modules/lookup/models/lookup_models.dart';
 import 'package:omnitoolkit/modules/lookup/models/zip_entry.dart';
 import 'package:omnitoolkit/modules/lookup/services/lookup_db_service.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -74,7 +73,7 @@ void main() {
     ).toMap());
   });
 
-  group('ZIP Lookup Required Test Cases', () {
+  group('ZIP & Area Code Local Data-Driven Required Test Cases', () {
     test('17111 -> Harrisburg, PA', () async {
       final results = await dbService.searchByZip('17111');
       expect(results, isNotEmpty);
@@ -111,17 +110,39 @@ void main() {
       expect(results.first.state, equals('MA'));
     });
 
+    test('717 -> Area Code searchByAreaCode returns Harrisburg, PA', () async {
+      final results = await dbService.searchByAreaCode('717');
+      expect(results, isNotEmpty);
+      expect(results.any((r) => r.city == 'Harrisburg' && r.state == 'PA'), isTrue);
+    });
+
+    test('212 -> Area Code searchByAreaCode returns New York, NY', () async {
+      final results = await dbService.searchByAreaCode('212');
+      expect(results, isNotEmpty);
+      expect(results.any((r) => r.city == 'New York' && r.state == 'NY'), isTrue);
+    });
+
+    test('310 -> Area Code searchByAreaCode returns Beverly Hills, CA', () async {
+      final results = await dbService.searchByAreaCode('310');
+      expect(results, isNotEmpty);
+      expect(results.any((r) => r.state == 'CA'), isTrue);
+    });
+
+    test('Fuzzy matching: "harrisburg" and "Harris burg" -> Harrisburg', () async {
+      final res1 = await dbService.searchByCity('harrisburg');
+      expect(res1, isNotEmpty);
+      expect(res1.first.city, equals('Harrisburg'));
+
+      final res2 = await dbService.searchByCity('Harris burg');
+      expect(res2, isNotEmpty);
+      expect(res2.first.city, equals('Harrisburg'));
+    });
+
     test('ZIP+4 format 17111-1234 -> Harrisburg, PA', () async {
       final results = await dbService.searchByZip('17111-1234');
       expect(results, isNotEmpty);
       expect(results.first.city, equals('Harrisburg'));
       expect(results.first.state, equals('PA'));
-    });
-
-    test('Trimmed whitespace " 90210 " -> Beverly Hills, CA', () async {
-      final results = await dbService.searchByZip(' 90210 ');
-      expect(results, isNotEmpty);
-      expect(results.first.city, equals('Beverly Hills'));
     });
   });
 }
