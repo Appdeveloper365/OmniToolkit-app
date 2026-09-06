@@ -18,12 +18,46 @@ class RadioScreen extends ConsumerStatefulWidget {
 }
 
 class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProviderStateMixin {
-  late final TabController _tabController = TabController(length: 4, vsync: this);
+  late final TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   bool _forceRefreshCategories = false;
 
   @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(_handleTabChange);
+  }
+
+  void _handleTabChange() {
+    if (_tabController.indexIsChanging) {
+      // Clear filter selections when switching primary tabs so other tabs aren't overridden
+      switch (_tabController.index) {
+        case 0: // Browse tab
+          ref.read(selectedCountryProvider.notifier).state = null;
+          ref.read(selectedGenreProvider.notifier).state = null;
+          break;
+        case 1: // Countries tab
+          ref.read(selectedCategoryProvider.notifier).state = null;
+          ref.read(selectedGenreProvider.notifier).state = null;
+          ref.read(radioSearchQueryProvider.notifier).state = '';
+          _searchController.clear();
+          break;
+        case 2: // Genres tab
+          ref.read(selectedCategoryProvider.notifier).state = null;
+          ref.read(selectedCountryProvider.notifier).state = null;
+          ref.read(radioSearchQueryProvider.notifier).state = '';
+          _searchController.clear();
+          break;
+        case 3: // Favorites tab
+          break;
+      }
+    }
+  }
+
+  @override
   void dispose() {
+    _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();

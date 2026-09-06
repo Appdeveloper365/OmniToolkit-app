@@ -32,6 +32,7 @@ class AssetImporter {
 
     if (await _needsImport(db, prefs, 'radioImported', 'radio_streams')) {
       final data = await _loadList('assets/data/radio_streams.json');
+      await db.delete('radio_streams');
       final batch = db.batch();
       for (final entry in data) {
         final url = (entry['url'] ?? entry['url_resolved'] ?? '') as String;
@@ -40,6 +41,8 @@ class AssetImporter {
           'name': entry['name'],
           'url': url,
           'codec': entry['codec'] ?? 'MP3',
+          'country': entry['country'] ?? 'United States',
+          'countrycode': entry['countrycode'] ?? 'US',
         });
       }
       await batch.commit(noResult: true);

@@ -98,6 +98,39 @@ class RadioService {
       favicon: 'https://somafm.com/img/indiepop120.png',
     ),
     StationModel(
+      id: 'cbc-radio-one',
+      name: 'CBC Radio One Toronto',
+      streamUrl: 'https://cbcliveradio-lh.akamaihd.net/i/CBCR1_TOR@382863/master.m3u8',
+      category: 'News',
+      country: 'Canada',
+      countryCode: 'CA',
+      language: 'English',
+      bitrate: 128,
+      codec: 'HLS',
+    ),
+    StationModel(
+      id: 'bbc-radio-one',
+      name: 'BBC Radio 1',
+      streamUrl: 'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_one',
+      category: 'Pop',
+      country: 'United Kingdom',
+      countryCode: 'GB',
+      language: 'English',
+      bitrate: 128,
+      codec: 'MP3',
+    ),
+    StationModel(
+      id: 'abc-news-radio-au',
+      name: 'ABC News Radio Australia',
+      streamUrl: 'https://live-radio01.mediahubaustralia.com/2NEWS/mp3/',
+      category: 'News',
+      country: 'Australia',
+      countryCode: 'AU',
+      language: 'English',
+      bitrate: 128,
+      codec: 'MP3',
+    ),
+    StationModel(
       id: 'test-stream',
       name: 'OmniToolkit Test Audio',
       streamUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
@@ -114,7 +147,6 @@ class RadioService {
   List<String>? _dynamicCategoriesCache;
 
   /// Fetches top tags/categories dynamically from Radio Browser API with offline fallback.
-  /// Enforces atomic replacement, deduplication, safe null/empty string handling, and logging.
   Future<List<String>> fetchCategories({bool forceRefresh = false}) async {
     if (!forceRefresh && _dynamicCategoriesCache != null && _dynamicCategoriesCache!.isNotEmpty) {
       debugPrint('[RadioCategoryLog] Cache hit. Returning ${_dynamicCategoriesCache!.length} cached categories.');
@@ -151,7 +183,6 @@ class RadioService {
             final cleanName = rawName.trim();
             if (cleanName.length < 2 || cleanName.length > 30) continue;
 
-            // Normalize title case for display (e.g. "talk radio" -> "Talk Radio", "pop" -> "Pop")
             final normalizedKey = cleanName.toLowerCase();
             if (seen.contains(normalizedKey)) continue;
             seen.add(normalizedKey);
@@ -169,10 +200,7 @@ class RadioService {
           debugPrint('[RadioCategoryLog] Categories after filtering and deduplication count: ${freshCategories.length}');
 
           if (freshCategories.isNotEmpty) {
-            // Atomic replacement of dynamic cache
             _dynamicCategoriesCache = freshCategories;
-            debugPrint('[RadioCategoryLog] Cache invalidated and atomically replaced with ${freshCategories.length} fresh categories.');
-            debugPrint('[RadioCategoryLog] Category refresh completed successfully.');
             return List.unmodifiable(_dynamicCategoriesCache!);
           }
         }
@@ -181,7 +209,6 @@ class RadioService {
       }
     }
 
-    debugPrint('[RadioCategoryLog] Dynamic fetch failed. Falling back to default static genres.');
     _dynamicCategoriesCache = List.from(genres);
     return List.unmodifiable(_dynamicCategoriesCache!);
   }
@@ -193,25 +220,31 @@ class RadioService {
       'name': cleanQuery,
       'limit': '50',
       'hidebroken': 'true',
-    });
+    }, filterType: _FilterType.search, filterVal: cleanQuery);
   }
 
   Future<List<StationModel>> byCategory(String category) async {
     final cleanCat = category.trim().toLowerCase();
     final path = '/stations/bytag/${Uri.encodeComponent(cleanCat)}';
-    return _fetchWithFallback(path, {'limit': '50', 'hidebroken': 'true'});
+    return _fetchWithFallback(path, {'limit': '50', 'hidebroken': 'true'}, filterType: _FilterType.category, filterVal: cleanCat);
   }
 
   Future<List<StationModel>> byCountry(String countryCode) async {
-    final path = '/stations/bycodeexact/${countryCode.trim().toLowerCase()}';
-    return _fetchWithFallback(path, {'limit': '50', 'hidebroken': 'true'});
+    final cleanCode = countryCode.trim().toUpperCase();
+    final path = '/stations/bycodeexact/${cleanCode.toLowerCase()}';
+    return _fetchWithFallback(path, {'limit': '50', 'hidebroken': 'true'}, filterType: _FilterType.country, filterVal: cleanCode);
   }
 
   Future<List<StationModel>> topStations() async {
-    return _fetchWithFallback('/stations/topclick/50', {});
+    return _fetchWithFallback('/stations/topclick/50', {}, filterType: _FilterType.none, filterVal: '');
   }
 
-  Future<List<StationModel>> _fetchWithFallback(String path, Map<String, String> queryParams) async {
+  Future<List<StationModel>> _fetchWithFallback(
+    String path,
+    Map<String, String> queryParams, {
+    required _FilterType filterType,
+    required String filterVal,
+  }) async {
     for (final host in _hosts) {
       final uri = Uri.https(host, '/json$path', queryParams.isEmpty ? null : queryParams);
       try {
@@ -232,15 +265,49 @@ class RadioService {
         // Try next mirror host
       }
     }
-    return _offlineFallback();
+    return _offlineFallback(filterType: filterType, filterVal: filterVal);
   }
 
-  Future<List<StationModel>> _offlineFallback() async {
+  Future<List<StationModel>> _offlineFallback({
+    required _FilterType filterType,
+    required String filterVal,
+  }) async {
+    List<StationModel> streams = [];
     try {
-      final offline = await _radioDbService.loadStreams();
-      if (offline.isNotEmpty) return offline;
+      streams = await _radioDbService.loadStreams();
     } catch (_) {}
-    return fallbackStations;
+
+    if (streams.isEmpty) {
+      streams = fallbackStations;
+    }
+
+    if (filterVal.isEmpty || filterType == _FilterType.none) {
+      return streams;
+    }
+
+    final valLower = filterVal.toLowerCase();
+
+    switch (filterType) {
+      case _FilterType.country:
+        final countryMatches = streams.where((s) {
+          final codeMatch = (s.countryCode ?? '').toUpperCase() == filterVal.toUpperCase();
+          final nameMatch = s.country.toLowerCase().contains(valLower);
+          return codeMatch || nameMatch;
+        }).toList();
+        return countryMatches;
+
+      case _FilterType.category:
+        return streams.where((s) => s.category.toLowerCase().contains(valLower)).toList();
+
+      case _FilterType.search:
+        return streams.where((s) {
+          final fullText = '${s.name} ${s.category} ${s.country}'.toLowerCase();
+          return fullText.contains(valLower);
+        }).toList();
+
+      case _FilterType.none:
+        return streams;
+    }
   }
 
   bool _isSafePublicStation(StationModel station) {
@@ -260,3 +327,5 @@ class RadioService {
     return !blockedTerms.any(text.contains);
   }
 }
+
+enum _FilterType { none, country, category, search }

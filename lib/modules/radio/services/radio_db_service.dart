@@ -11,11 +11,12 @@ class RadioDbService {
     final rows = await db.query('radio_streams');
     return rows
         .map((row) => StationModel(
-              id: row['name'] as String,
+              id: (row['name'] as String).toLowerCase().replaceAll(' ', '-'),
               name: row['name'] as String,
               streamUrl: row['url'] as String,
-              category: (row['codec'] as String?) ?? 'MP3',
-              country: '',
+              category: (row['codec'] as String?) ?? 'Pop',
+              country: (row['country'] as String?) ?? 'United States',
+              countryCode: (row['countrycode'] as String?) ?? 'US',
             ))
         .where((s) => s.streamUrl.startsWith('https://'))
         .toList();
