@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/auth/auth_provider.dart';
+import '../core/config/build_config.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -29,7 +30,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       body: SafeArea(
@@ -37,7 +37,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
+              constraints: const BoxConstraints(maxWidth: 440),
               child: Card(
                 elevation: 3,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -48,10 +48,45 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       Icon(Icons.lock_person_rounded, size: 56, color: theme.colorScheme.primary),
                       const SizedBox(height: 12),
-                      Text('Welcome to OmniToolkit', textAlign: TextAlign.center, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 6),
-                      Text('Sign in to start your 7-day free trial.', textAlign: TextAlign.center, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey)),
-                      const SizedBox(height: 28),
+                      Text(
+                        'Welcome to OmniToolkit',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+
+                      if (BuildConfig.isStoreBuild)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: theme.brightness == Brightness.dark
+                                ? const Color(0xFF1E1B4B)
+                                : const Color(0xFFEEF2FF),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: theme.brightness == Brightness.dark
+                                  ? const Color(0xFF4338CA)
+                                  : const Color(0xFFC7D2FE),
+                            ),
+                          ),
+                          child: const Text(
+                            BuildConfig.storeComplianceLockMessage,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              height: 1.4,
+                            ),
+                          ),
+                        )
+                      else
+                        Text(
+                          'Sign in to start your 7-day free trial.',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                        ),
+
+                      const SizedBox(height: 24),
 
                       // Google Sign In
                       OutlinedButton.icon(
@@ -60,7 +95,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
-                        label: const Text('Continue with Google', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                        label: const Text(
+                          'Continue with Google',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                        ),
                         onPressed: () {
                           ref.read(appAuthProvider.notifier).signInMock();
                           Navigator.pushReplacementNamed(context, '/');
@@ -70,7 +108,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const SizedBox(height: 20),
                       Row(children: [
                         const Expanded(child: Divider()),
-                        Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: Text('OR', style: TextStyle(color: Colors.grey[500], fontSize: 12))),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text('OR', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                        ),
                         const Expanded(child: Divider()),
                       ]),
                       const SizedBox(height: 20),
@@ -91,7 +132,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         icon: const Icon(Icons.auto_awesome_rounded),
-                        label: const Text('Send Magic Link', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                        label: const Text(
+                          'Send Magic Link',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                        ),
                         onPressed: _sendMagicLink,
                       ),
 

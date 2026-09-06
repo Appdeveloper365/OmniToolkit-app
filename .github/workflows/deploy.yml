@@ -1,0 +1,51 @@
+name: Dual Build & Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - feature/remove-weather-module
+      - omnitoolkit-pwa-publishing-update
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v3
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter Engine
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Run Test Suite
+        run: flutter test --concurrency=1
+
+      - name: Build Web PWA (IS_STORE_BUILD = false)
+        run: flutter build web --release --base-href "/OmniToolkit-app/"
+
+      - name: Build Store-Safe Android APK (IS_STORE_BUILD = true)
+        run: flutter build apk --release --dart-define=IS_STORE_BUILD=true
+
+      - name: Package APK into Web Release Directory
+        run: |
+          mkdir -p build/web/downloads
+          cp build/app/outputs/flutter-apk/app-release.apk build/web/downloads/productivity-radio.apk
+
+      - name: Deploy Web PWA & APK to GitHub Pages
+        uses: PeaceIris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
+          publish_branch: gh-pages

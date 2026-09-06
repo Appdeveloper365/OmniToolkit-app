@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/auth/auth_provider.dart';
+import '../core/config/build_config.dart';
 
 class PricingScreen extends ConsumerStatefulWidget {
   const PricingScreen({super.key});
@@ -21,7 +22,6 @@ class _PricingScreenState extends ConsumerState<PricingScreen> {
       return;
     }
 
-    // Record disclaimer acceptance with timestamp
     ref.read(appAuthProvider.notifier).acceptDisclaimer();
 
     const checkoutUrl = 'https://checkout.stripe.com/pay/cs_live_omnitoolkit_999';
@@ -100,7 +100,6 @@ class _PricingScreenState extends ConsumerState<PricingScreen> {
 
                     const SizedBox(height: 16),
 
-                    // User Purchase Email Display
                     if (isAuthenticated && userEmail.isNotEmpty)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -152,84 +151,111 @@ class _PricingScreenState extends ConsumerState<PricingScreen> {
 
                     const SizedBox(height: 24),
 
-                    // Account Linking Disclaimer Box
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'Account Linking Disclaimer:',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey),
-                          ),
-                          SizedBox(height: 6),
-                          Text(
-                            'Lifetime access is permanently linked to the Google account used to sign in and complete this purchase.\n\n'
-                            'Please use the same Google account when accessing OomniToolkit in the future.\n\n'
-                            'Automatic transfer of purchases between different email accounts is not supported.\n\n'
-                            'If you lose access to your Google account, contact support before creating a new account.',
-                            style: TextStyle(fontSize: 11, height: 1.4),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Required Acknowledgment Checkbox & Summary
-                    if (isAuthenticated) ...[
-                      InkWell(
-                        onTap: () => setState(() => _disclaimerChecked = !_disclaimerChecked),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Checkbox(
-                              value: _disclaimerChecked,
-                              onChanged: (val) => setState(() => _disclaimerChecked = val ?? false),
-                            ),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 10),
-                                child: Text(
-                                  'By continuing, I understand that my purchase will be linked to my current Google account.',
-                                  style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600, height: 1.3),
-                                ),
+                    // CONDITIONAL BILLING COMPLIANCE SWITCH
+                    if (BuildConfig.isStoreBuild) ...[
+                      // STORE APK BUILD (IS_STORE_BUILD = true): Hide Stripe Checkout button. Show Store compliance notice.
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E1B4B) : const Color(0xFFEEF2FF),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: isDark ? const Color(0xFF4338CA) : const Color(0xFFC7D2FE), width: 1.5),
+                        ),
+                        child: Column(
+                          children: const [
+                            Icon(Icons.storefront_rounded, color: Colors.indigo, size: 36),
+                            SizedBox(height: 8),
+                            Text(
+                              BuildConfig.storeComplianceLockMessage,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                height: 1.4,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      FilledButton.icon(
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        ),
-                        icon: const Icon(Icons.shopping_cart_checkout_rounded),
-                        label: const Text('Buy Now (\$9.99 USD)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        onPressed: _disclaimerChecked ? () => _buyNow(context, ref) : null,
-                      ),
                     ] else ...[
-                      const SizedBox(height: 12),
-                      FilledButton.icon(
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      // WEB BUILD (IS_STORE_BUILD = false): Show Stripe Checkout button and disclaimer.
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
                         ),
-                        icon: const Icon(Icons.login_rounded),
-                        label: const Text('Sign in with Google to Purchase', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        onPressed: () => Navigator.pushNamed(context, '/login'),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              'Account Linking Disclaimer:',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              'Lifetime access is permanently linked to the Google account used to sign in and complete this purchase.\n\n'
+                              'Please use the same Google account when accessing OomniToolkit in the future.\n\n'
+                              'Automatic transfer of purchases between different email accounts is not supported.\n\n'
+                              'If you lose access to your Google account, contact support before creating a new account.',
+                              style: TextStyle(fontSize: 11, height: 1.4),
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
 
-                    const SizedBox(height: 12),
-                    const Text('Secure 256-bit Encrypted Checkout via Stripe', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: Colors.grey)),
+                      const SizedBox(height: 16),
+
+                      if (isAuthenticated) ...[
+                        InkWell(
+                          onTap: () => setState(() => _disclaimerChecked = !_disclaimerChecked),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Checkbox(
+                                value: _disclaimerChecked,
+                                onChanged: (val) => setState(() => _disclaimerChecked = val ?? false),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: Text(
+                                    'By continuing, I understand that my purchase will be linked to my current Google account.',
+                                    style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600, height: 1.3),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          icon: const Icon(Icons.shopping_cart_checkout_rounded),
+                          label: const Text('Buy Now (\$9.99 USD)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          onPressed: _disclaimerChecked ? () => _buyNow(context, ref) : null,
+                        ),
+                      ] else ...[
+                        const SizedBox(height: 12),
+                        FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          icon: const Icon(Icons.login_rounded),
+                          label: const Text('Sign in with Google to Purchase', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          onPressed: () => Navigator.pushNamed(context, '/login'),
+                        ),
+                      ],
+
+                      const SizedBox(height: 12),
+                      const Text('Secure 256-bit Encrypted Checkout via Stripe', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: Colors.grey)),
+                    ],
                   ],
                 ),
               ),
