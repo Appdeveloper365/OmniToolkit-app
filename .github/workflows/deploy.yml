@@ -17,18 +17,24 @@ jobs:
 
     steps:
       - name: Checkout Codebase
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup Java JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Setup Flutter Engine
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
+        shell: bash
+        run: |
+          set -euo pipefail
+          FLUTTER_DIR="$RUNNER_TEMP/flutter-stable"
+          git clone --depth 1 --branch stable https://github.com/flutter/flutter.git "$FLUTTER_DIR"
+          echo "$FLUTTER_DIR/bin" >> "$GITHUB_PATH"
+          "$FLUTTER_DIR/bin/flutter" --version
 
       - name: Install Android CMake
         run: $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager 'cmake;3.22.1'
@@ -63,9 +69,24 @@ jobs:
           cp build/app/outputs/flutter-apk/app-release.apk build/web/downloads/productivity-radio.apk
 
       - name: Deploy Web PWA & APK to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/web
-          publish_branch: gh-pages
-
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git worktree add --detach ../gh-pages-deploy origin/gh-pages || git worktree add --detach ../gh-pages-deploy
+          if [ -f ../gh-pages-deploy/CNAME ] && [ ! -f build/web/CNAME ]; then
+            cp ../gh-pages-deploy/CNAME build/web/CNAME
+          fi
+          find ../gh-pages-deploy -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -R build/web/. ../gh-pages-deploy/
+          cd ../gh-pages-deploy
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No GitHub Pages changes to deploy."
+            exit 0
+          fi
+          git commit -m "deploy: ${GITHUB_SHA}"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:gh-pages
