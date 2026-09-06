@@ -1,3 +1,4 @@
+/// FILE: lib/core/settings/settings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'settings_provider.dart';
@@ -30,6 +31,17 @@ class SettingsScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: 16),
+                Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: ListTile(
+                    leading: const Icon(Icons.manage_accounts_rounded, color: Colors.blue),
+                    title: const Text('Account & Billing', style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: const Text('View trial status, license details, and logout'),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => Navigator.pushNamed(context, '/account'),
+                  ),
+                ),
                 const SizedBox(height: 24),
                 Card(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -40,7 +52,7 @@ class SettingsScreen extends ConsumerWidget {
                       children: [
                         Text('About OmniToolkit', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
-                        const Text('OmniToolkit is a modern daily productivity suite featuring Weather, Calendar with Notes & Date Difference, Calculator & Unit Converter, World Radio, US Lookup, and Password Generator.'),
+                        const Text('OmniToolkit is a modern daily productivity suite featuring Calendar with Clock & Notes, 3D Calculator & Unit Converter, World Radio Explorer, US Lookup, and Password Generator.'),
                         const SizedBox(height: 12),
                         const Text('Version: 1.0.0+1', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
                       ],

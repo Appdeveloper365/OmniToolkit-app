@@ -1,5 +1,5 @@
 name: omnitoolkit
-description: "OmniToolkit - daily tools for Windows: weather with dual time display, calendar with notes, calculator, internet radio directory, and US ZIP/area code/city lookup."
+description: "OmniToolkit - daily tools for Windows: calendar with notes, calculator, internet radio directory, US ZIP/area code/city lookup, and password generator."
 
 publish_to: "none"
 
@@ -43,6 +43,12 @@ dependencies:
   # Calculator expression parsing
   math_expressions: ^2.6.0
   sqflite_common_ffi_web: ^1.1.2
+
+  # Firebase Monetization
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:
