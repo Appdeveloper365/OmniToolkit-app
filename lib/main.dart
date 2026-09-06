@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 import 'package:media_kit/media_kit.dart';
@@ -12,12 +13,15 @@ import 'package:timezone/data/latest.dart' as tz_data;
 import 'core/data/asset_importer.dart';
 import 'core/navigation/route_guard.dart';
 import 'core/theme/app_theme.dart';
+import 'firebase_options.dart';
 import 'screens/share_target_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     tz_data.initializeTimeZones();
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
     await AssetImporter.importFirstLaunch();
 
     // Initialize media_kit backend for Windows/Linux audio playback

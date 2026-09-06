@@ -1,4 +1,4 @@
-/// FILE: lib/core/auth/user_model.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
   const UserModel({
@@ -14,12 +14,13 @@ class UserModel {
     this.stripeSessionId,
     this.disclaimerAccepted = false,
     this.disclaimerAcceptedAt,
+    this.premiumActive = false,
   });
 
   final String uid;
   final String email;
   final DateTime createdAt;
-  final String paymentStatus; // "unpaid" | "paid"
+  final String paymentStatus;
   final bool hasLifetimeAccess;
   final DateTime trialStartDate;
   final DateTime trialExpiresAt;
@@ -28,8 +29,10 @@ class UserModel {
   final String? stripeSessionId;
   final bool disclaimerAccepted;
   final DateTime? disclaimerAcceptedAt;
+  final bool premiumActive;
 
-  bool get isPaid => paymentStatus == 'paid' || hasLifetimeAccess;
+  bool get isPaid =>
+      paymentStatus == 'paid' || hasLifetimeAccess || premiumActive;
 
   bool get isTrialActive => DateTime.now().isBefore(trialExpiresAt);
 
@@ -48,18 +51,24 @@ class UserModel {
       createdAt: _parseDate(map['createdAt']),
       paymentStatus: map['paymentStatus'] as String? ?? 'unpaid',
       hasLifetimeAccess: map['hasLifetimeAccess'] as bool? ?? false,
+      premiumActive: map['premium_active'] as bool? ?? false,
       trialStartDate: _parseDate(map['trialStartDate']),
       trialExpiresAt: _parseDate(map['trialExpiresAt']),
-      purchaseDate: map['purchaseDate'] != null ? _parseDate(map['purchaseDate']) : null,
+      purchaseDate:
+          map['purchaseDate'] != null ? _parseDate(map['purchaseDate']) : null,
       stripeCustomerId: map['stripeCustomerId'] as String?,
       stripeSessionId: map['stripeSessionId'] as String?,
       disclaimerAccepted: map['disclaimerAccepted'] as bool? ?? false,
-      disclaimerAcceptedAt: map['disclaimerAcceptedAt'] != null ? _parseDate(map['disclaimerAcceptedAt']) : null,
+      disclaimerAcceptedAt: map['disclaimerAcceptedAt'] != null
+          ? _parseDate(map['disclaimerAcceptedAt'])
+          : null,
     );
   }
 
   static DateTime _parseDate(dynamic val) {
     if (val == null) return DateTime.now();
+    if (val is Timestamp) return val.toDate();
+    if (val is DateTime) return val;
     if (val is String) return DateTime.tryParse(val) ?? DateTime.now();
     return DateTime.now();
   }
@@ -70,12 +79,15 @@ class UserModel {
         'createdAt': createdAt.toIso8601String(),
         'paymentStatus': paymentStatus,
         'hasLifetimeAccess': hasLifetimeAccess,
+        'premium_active': premiumActive,
         'trialStartDate': trialStartDate.toIso8601String(),
         'trialExpiresAt': trialExpiresAt.toIso8601String(),
-        if (purchaseDate != null) 'purchaseDate': purchaseDate!.toIso8601String(),
+        if (purchaseDate != null)
+          'purchaseDate': purchaseDate!.toIso8601String(),
         if (stripeCustomerId != null) 'stripeCustomerId': stripeCustomerId,
         if (stripeSessionId != null) 'stripeSessionId': stripeSessionId,
         'disclaimerAccepted': disclaimerAccepted,
-        if (disclaimerAcceptedAt != null) 'disclaimerAcceptedAt': disclaimerAcceptedAt!.toIso8601String(),
+        if (disclaimerAcceptedAt != null)
+          'disclaimerAcceptedAt': disclaimerAcceptedAt!.toIso8601String(),
       };
 }

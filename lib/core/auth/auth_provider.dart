@@ -1,5 +1,7 @@
-/// FILE: lib/core/auth/auth_provider.dart
 import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,7 +11,7 @@ class AuthState {
   const AuthState({
     this.userModel,
     this.isAuthenticated = false,
-    this.isLoading = false,
+    this.isLoading = true,
     this.errorMessage,
   });
 
@@ -33,90 +35,168 @@ class AuthState {
   }
 }
 
-final appAuthProvider = NotifierProvider<AppAuthNotifier, AuthState>(AppAuthNotifier.new);
+final appAuthProvider =
+    NotifierProvider<AppAuthNotifier, AuthState>(AppAuthNotifier.new);
 
 class AppAuthNotifier extends Notifier<AuthState> {
+  StreamSubscription<User?>? _authSubscription;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userSubscription;
+
+  FirebaseAuth get _auth => FirebaseAuth.instance;
+  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
+
   @override
   AuthState build() {
-    // Default fallback mock user for desktop/offline mode so monetization doesn't break offline builds
-    final now = DateTime.now();
-    final trialUser = UserModel(
-      uid: 'offline_local_user',
-      email: 'guest@omnitoolkit.app',
-      createdAt: now,
-      paymentStatus: 'unpaid',
-      hasLifetimeAccess: false,
-      trialStartDate: now,
-      trialExpiresAt: now.add(const Duration(days: 7)),
-    );
+    if (kIsWeb) {
+      _auth.setPersistence(Persistence.LOCAL);
+    }
+    _authSubscription = _auth.authStateChanges().listen(_handleFirebaseUser);
+    ref.onDispose(() {
+      _authSubscription?.cancel();
+      _userSubscription?.cancel();
+    });
 
-    return AuthState(
-      userModel: trialUser,
-      isAuthenticated: true,
-      isLoading: false,
-    );
+    return const AuthState(isLoading: true);
   }
 
-  void signInMock() {
-    final now = DateTime.now();
-    state = state.copyWith(
-      isAuthenticated: true,
-      userModel: () => UserModel(
-        uid: 'user_123',
-        email: 'user@example.com',
-        createdAt: now,
-        paymentStatus: 'unpaid',
-        hasLifetimeAccess: false,
-        trialStartDate: now,
-        trialExpiresAt: now.add(const Duration(days: 7)),
-      ),
-    );
+  Future<void> signInWithGoogle() async {
+    state = state.copyWith(isLoading: true, errorMessage: () => null);
+    try {
+      final provider = GoogleAuthProvider()
+        ..addScope('email')
+        ..addScope('profile');
+      await _auth.signInWithProvider(provider);
+    } on FirebaseAuthException catch (error) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: () =>
+            error.message ?? 'Google sign-in failed. Please try again.',
+      );
+    } on FirebaseException catch (error) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: () =>
+            error.message ?? 'Authentication service is unavailable.',
+      );
+    }
   }
 
-  void acceptDisclaimer() {
-    if (state.userModel == null) return;
-    final u = state.userModel!;
-    state = state.copyWith(
-      userModel: () => UserModel(
-        uid: u.uid,
-        email: u.email,
-        createdAt: u.createdAt,
-        paymentStatus: u.paymentStatus,
-        hasLifetimeAccess: u.hasLifetimeAccess,
-        trialStartDate: u.trialStartDate,
-        trialExpiresAt: u.trialExpiresAt,
-        purchaseDate: u.purchaseDate,
-        stripeCustomerId: u.stripeCustomerId,
-        stripeSessionId: u.stripeSessionId,
-        disclaimerAccepted: true,
-        disclaimerAcceptedAt: DateTime.now(),
-      ),
-    );
+  Future<void> acceptDisclaimer() async {
+    final firebaseUser = _auth.currentUser;
+    if (firebaseUser == null) {
+      state = state.copyWith(
+          errorMessage: () => 'Please sign in before purchasing.');
+      return;
+    }
+
+    try {
+      await _firestore.collection('users').doc(firebaseUser.uid).set({
+        'disclaimerAccepted': true,
+        'disclaimerAcceptedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } on FirebaseException catch (error) {
+      state = state.copyWith(
+        errorMessage: () =>
+            error.message ?? 'Could not save purchase acknowledgement.',
+      );
+      rethrow;
+    }
   }
 
-  void grantLifetimeAccessMock() {
-    if (state.userModel == null) return;
-    final u = state.userModel!;
-    state = state.copyWith(
-      userModel: () => UserModel(
-        uid: u.uid,
-        email: u.email,
-        createdAt: u.createdAt,
-        paymentStatus: 'paid',
-        hasLifetimeAccess: true,
-        trialStartDate: u.trialStartDate,
-        trialExpiresAt: u.trialExpiresAt,
-        purchaseDate: DateTime.now(),
-        disclaimerAccepted: true,
-        disclaimerAcceptedAt: u.disclaimerAcceptedAt ?? DateTime.now(),
-      ),
-    );
+  Future<void> signOut() async {
+    await _auth.signOut();
   }
 
-  void signOut() {
+  Future<void> _handleFirebaseUser(User? firebaseUser) async {
+    await _userSubscription?.cancel();
+    _userSubscription = null;
+
+    if (firebaseUser == null) {
+      state = const AuthState(isAuthenticated: false, isLoading: false);
+      return;
+    }
+
     state = state.copyWith(
-      isAuthenticated: false,
-      userModel: () => null,
-    );
+        isAuthenticated: true, isLoading: true, errorMessage: () => null);
+    try {
+      await _ensureUserDocument(firebaseUser);
+      _userSubscription = _firestore
+          .collection('users')
+          .doc(firebaseUser.uid)
+          .snapshots()
+          .listen(
+        (snapshot) {
+          final data = snapshot.data();
+          if (data == null) {
+            state = state.copyWith(
+              userModel: () => null,
+              isAuthenticated: true,
+              isLoading: false,
+              errorMessage: () =>
+                  'Account record is unavailable. Please sign in again.',
+            );
+            return;
+          }
+
+          state = state.copyWith(
+            userModel: () => UserModel.fromMap(data, firebaseUser.uid),
+            isAuthenticated: true,
+            isLoading: false,
+            errorMessage: () => null,
+          );
+        },
+        onError: (Object error) {
+          state = state.copyWith(
+            isLoading: false,
+            errorMessage: () =>
+                'Could not load account entitlement. Please check your connection.',
+          );
+        },
+      );
+    } on FirebaseException catch (error) {
+      state = state.copyWith(
+        isAuthenticated: true,
+        isLoading: false,
+        errorMessage: () => error.message ?? 'Could not prepare your account.',
+      );
+    }
+  }
+
+  Future<void> _ensureUserDocument(User firebaseUser) async {
+    final userRef = _firestore.collection('users').doc(firebaseUser.uid);
+    await _firestore.runTransaction((transaction) async {
+      final snapshot = await transaction.get(userRef);
+      if (snapshot.exists) {
+        transaction.set(
+            userRef,
+            {
+              'uid': firebaseUser.uid,
+              'email': firebaseUser.email ?? '',
+              'lastLoginAt': FieldValue.serverTimestamp(),
+            },
+            SetOptions(merge: true));
+        return;
+      }
+
+      final now = Timestamp.now();
+      final trialExpiresAt =
+          Timestamp.fromDate(now.toDate().add(const Duration(days: 7)));
+      transaction.set(userRef, {
+        'uid': firebaseUser.uid,
+        'email': firebaseUser.email ?? '',
+        'createdAt': now,
+        'trialStartDate': now,
+        'trialExpiresAt': trialExpiresAt,
+        'paymentStatus': 'unpaid',
+        'hasLifetimeAccess': false,
+        'premium_active': false,
+        'purchaseDate': null,
+        'stripeCustomerId': null,
+        'stripeSessionId': null,
+        'disclaimerAccepted': false,
+        'disclaimerAcceptedAt': null,
+        'lastLoginAt': FieldValue.serverTimestamp(),
+      });
+    });
   }
 }

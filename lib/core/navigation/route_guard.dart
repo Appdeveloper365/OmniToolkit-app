@@ -15,9 +15,19 @@ Route<dynamic> generateProtectedRoutes(RouteSettings settings, WidgetRef ref) {
   final uri = Uri.parse(settings.name ?? '/');
   final path = uri.path;
 
+  if (authState.isLoading) {
+    return MaterialPageRoute(
+      builder: (_) => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+    );
+  }
+
   // Unauthenticated -> Redirect to Login
   if (!authState.isAuthenticated) {
-    if (path == '/pricing' || path == '/payment-success' || path == '/payment-cancelled') {
+    if (path == '/pricing' ||
+        path == '/payment-success' ||
+        path == '/payment-cancelled') {
       // Allow public checkout return views
     } else {
       return MaterialPageRoute(builder: (_) => const LoginScreen());
@@ -29,7 +39,9 @@ Route<dynamic> generateProtectedRoutes(RouteSettings settings, WidgetRef ref) {
 
   if (user != null && !user.isEntitled) {
     // Trial expired & Unpaid -> Force Pricing Page
-    if (path != '/account' && path != '/payment-success' && path != '/payment-cancelled') {
+    if (path != '/account' &&
+        path != '/payment-success' &&
+        path != '/payment-cancelled') {
       return MaterialPageRoute(builder: (_) => const PricingScreen());
     }
   }

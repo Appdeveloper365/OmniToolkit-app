@@ -30,7 +30,8 @@ class AccountScreen extends ConsumerWidget {
                     children: [
                       // User Info Header Card
                       Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                         child: Padding(
                           padding: const EdgeInsets.all(20),
                           child: Column(
@@ -41,16 +42,25 @@ class AccountScreen extends ConsumerWidget {
                                   CircleAvatar(
                                     radius: 26,
                                     backgroundColor: theme.colorScheme.primary,
-                                    child: const Icon(Icons.person_rounded, color: Colors.white, size: 28),
+                                    child: const Icon(Icons.person_rounded,
+                                        color: Colors.white, size: 28),
                                   ),
                                   const SizedBox(width: 14),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text(user.email, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                                        Text(user.email,
+                                            style: theme.textTheme.titleMedium
+                                                ?.copyWith(
+                                                    fontWeight:
+                                                        FontWeight.bold)),
                                         const SizedBox(height: 2),
-                                        Text('UID: ${user.uid}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                        Text('UID: ${user.uid}',
+                                            style: const TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.grey)),
                                       ],
                                     ),
                                   ),
@@ -64,17 +74,22 @@ class AccountScreen extends ConsumerWidget {
 
                       // Subscription / License Card
                       Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                         child: Padding(
                           padding: const EdgeInsets.all(20),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Access & Entitlement Status', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                              Text('Access & Entitlement Status',
+                                  style: theme.textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 14),
                               _StatusRow(
                                 label: 'License Type',
-                                value: user.isPaid ? 'Lifetime Pass' : '7-Day Free Trial',
+                                value: user.isPaid
+                                    ? 'Lifetime Pass'
+                                    : '7-Day Free Trial',
                                 isHighlight: user.isPaid,
                               ),
                               _StatusRow(
@@ -95,12 +110,17 @@ class AccountScreen extends ConsumerWidget {
                                 const SizedBox(height: 12),
                                 FilledButton.icon(
                                   style: FilledButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
                                   ),
                                   icon: const Icon(Icons.star_rounded),
-                                  label: const Text(r'Buy Lifetime Access ($9.99 USD)'),
-                                  onPressed: () => Navigator.pushNamed(context, '/pricing'),
+                                  label: const Text(
+                                      r'Buy Lifetime Access ($9.99 USD)'),
+                                  onPressed: () =>
+                                      Navigator.pushNamed(context, '/pricing'),
                                 ),
                               ],
                             ],
@@ -114,16 +134,24 @@ class AccountScreen extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                          color: isDark
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFFF8FAFC),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                          border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFE2E8F0)),
                         ),
-                        child: Column(
+                        child: const Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children: [
                             Text(
                               'Google Account Linking Notice:',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  color: Colors.grey),
                             ),
                             SizedBox(height: 6),
                             Text(
@@ -143,10 +171,12 @@ class AccountScreen extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           foregroundColor: Colors.red,
                           side: const BorderSide(color: Colors.red),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                         icon: const Icon(Icons.logout_rounded),
-                        label: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.bold)),
+                        label: const Text('Sign Out',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
                         onPressed: () {
                           ref.read(appAuthProvider.notifier).signOut();
                           Navigator.pushReplacementNamed(context, '/login');
@@ -162,7 +192,8 @@ class AccountScreen extends ConsumerWidget {
 }
 
 class _StatusRow extends StatelessWidget {
-  const _StatusRow({required this.label, required this.value, this.isHighlight = false});
+  const _StatusRow(
+      {required this.label, required this.value, this.isHighlight = false});
   final String label;
   final String value;
   final bool isHighlight;
