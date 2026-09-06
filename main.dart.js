@@ -108620,7 +108620,7 @@ r=t.p
 s=A.j8(A.bO(A.b([A.aC0(o,new A.azX(b),B.a5j,B.a5d,n.a)],r),B.n,B.m,B.o),o,o,o,new A.cK(s,B.r))
 q=A.cv(16)
 p=m.ok.w
-s=A.Hs(A.b([s,B.jS,A.j8(new A.aG(B.bd,A.bO(A.b([A.aw("About OmniToolkit",o,o,o,o,p==null?o:p.pW(B.ag),o,o,o),B.du,B.a5E,B.aR,B.a5r],r),B.aP,B.m,B.o),o),o,o,o,new A.cK(q,B.r))],r),B.bd,o,B.X,!1)}return A.rd(l,s,o,o)}}
+s=A.Hs(A.b([s,B.jS,A.j8(new A.aG(B.bd,A.bO(A.b([A.aw("About OmniToolkit",o,o,o,o,p==null?o:p.pW(B.ag),o,o,o),B.du,B.a5E,B.aR,B.a5s],r),B.aP,B.m,B.o),o),o,o,o,new A.cK(q,B.r))],r),B.bd,o,B.X,!1)}return A.rd(l,s,o,o)}}
 A.azX.prototype={
 $1(a){return this.a.b0($.b14().gcv(),t.oV).Jl(a)},
 $S:6}
@@ -110217,7 +110217,7 @@ return A.ds(A.aw("Lookup failed: "+A.k(a),s,s,s,s,s,s,s,s),s,s)},
 $S:102}
 A.aLb.prototype={
 $1(a){var s=null,r=J.aX(a)
-if(r.ga5(a))return A.ds(A.bO(A.b([A.ex(B.Nb,this.a?B.cp:B.dO,s,48),B.aR,B.a5H,B.ff,B.a5q],t.p),B.n,B.c2,B.o),s,s)
+if(r.ga5(a))return A.ds(A.bO(A.b([A.ex(B.Nb,this.a?B.cp:B.dO,s,48),B.aR,B.a5H,B.ff,B.a5r],t.p),B.n,B.c2,B.o),s,s)
 return A.zr(s,new A.aLa(a,this.a),r.gF(a),B.iz,s,!1,!1)},
 $S:728}
 A.aLa.prototype={
@@ -110938,7 +110938,7 @@ $S:103}
 A.A5.prototype={
 abN(a,b,c,d){var s,r,q,p=$.b0c(),o=c?"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ":"abcdefghijklmnopqrstuvwxyz"
 if(a)o+="0123456789"
-if(b)o+="!@#$%^&*()_+-=[]{}|;:,.<>?"
+if(b)o+="@$&#"
 s=o.charCodeAt(0)==0?o:o
 o=s.length
 if(o===0)return""
@@ -110998,7 +110998,7 @@ k=B.d.aC(d)
 k=A.bY(A.b([A.aw("Length: "+k,e,e,e,e,B.DM,e,e,e),A.dB(A.b5b(26,B.e.j(k),32,6,new A.asG(a6),d),1)],c),B.n,B.m,B.o,0,e)
 j=A.aC0(B.R,new A.asH(a6),e,B.a5B,b)
 h=A.aC0(B.R,new A.asI(a6),e,B.a5F,a)
-g=A.aC0(B.R,new A.asJ(a6),e,B.a5u,a0)
+g=A.aC0(B.R,new A.asJ(a6),e,B.a5q,a0)
 f=A.bgm(e,e,B.qP,new A.cK(A.cv(12),B.r),e)
 q=A.b([A.j8(new A.aG(B.d9,A.bO(A.b([m,B.bG,l,B.bG,k,j,h,g,B.aR,new A.Go(!0,new A.asK(this,a6),e,e,e,f,B.q,e,!1,e,!0,e,new A.a31(B.a5N,B.NT,f,e,e),e)],c),B.bB,B.m,B.o),e),e,2,e,new A.cK(q,B.r)),B.jS],c)
 if(r.gbX(a2)){m=r.gF(a2)
@@ -111737,7 +111737,7 @@ A.aNI.prototype={
 $0(){},
 $S:0}
 A.aNL.prototype={
-$1(a){var s,r,q=null,p=this.a,o=this.b,n=A.b([new A.aG(B.lu,A.Uy(B.a5s,new A.aNG(o),p==null),q)],t.p)
+$1(a){var s,r,q=null,p=this.a,o=this.b,n=A.b([new A.aG(B.lu,A.Uy(B.a5t,new A.aNG(o),p==null),q)],t.p)
 for(s=J.aP(a);s.A();){r=s.gL()
 n.push(new A.aG(B.lu,A.Uy(A.aw(r,q,q,q,q,q,q,q,q),new A.aNH(o,r),p===r),q))}return A.Hs(n,B.lx,q,B.ao,!1)},
 $S:754}
@@ -121795,8 +121795,8 @@ B.Pg=s([B.IT,B.Ke],t.W)
 B.PF=s([4,9,14,19],t.t)
 B.a5O=new A.cb("Add",null,null,null,null,null,null,null,null,null,null)
 B.GC=new A.hR(!0,null,B.a5O,t.Mt)
-B.a5t=new A.cb("Subtract",null,null,null,null,null,null,null,null,null,null)
-B.Gz=new A.hR(!1,null,B.a5t,t.Mt)
+B.a5u=new A.cb("Subtract",null,null,null,null,null,null,null,null,null,null)
+B.Gz=new A.hR(!1,null,B.a5u,t.Mt)
 B.PI=s([B.GC,B.Gz],A.ai("F<hR<L>>"))
 B.Sk=s([137,80,78,71,13,10,26,10],t.Z)
 B.Of=new A.qr(0,"png")
@@ -124147,11 +124147,11 @@ B.a5k=new A.cb("Shared Content",null,null,null,null,null,null,null,null,null,nul
 B.a5m=new A.cb("Clear Target",null,null,null,null,null,null,null,null,null,null)
 B.a5n=new A.cb("Add Note",null,null,null,null,null,null,null,null,null,null)
 B.a5p=new A.cb("Close",null,null,null,null,null,null,null,null,null,null)
-B.a5q=new A.cb("Type a 3-digit area code (e.g. 212, 415, 704) above.",null,B.hK,B.cl,null,null,null,null,null,null,null)
+B.a5q=new A.cb("Symbols (@$&#)",null,null,null,null,null,null,null,null,null,null)
+B.a5r=new A.cb("Type a 3-digit area code (e.g. 212, 415, 704) above.",null,B.hK,B.cl,null,null,null,null,null,null,null)
 B.a3n=new A.G(!0,B.bn,null,null,null,null,null,B.ag,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a5r=new A.cb("Version: 1.0.0+1",null,B.a3n,null,null,null,null,null,null,null,null)
-B.a5s=new A.cb("Top Stations",null,null,null,null,null,null,null,null,null,null)
-B.a5u=new A.cb("Symbols (!@#$)",null,null,null,null,null,null,null,null,null,null)
+B.a5s=new A.cb("Version: 1.0.0+1",null,B.a3n,null,null,null,null,null,null,null,null)
+B.a5t=new A.cb("Top Stations",null,null,null,null,null,null,null,null,null,null)
 B.a5z=new A.cb("Settings",null,null,null,null,null,null,null,null,null,null)
 B.a5A=new A.cb("Password Generator",null,null,null,null,null,null,null,null,null,null)
 B.a5B=new A.cb("Uppercase letters (A-Z)",null,null,null,null,null,null,null,null,null,null)
