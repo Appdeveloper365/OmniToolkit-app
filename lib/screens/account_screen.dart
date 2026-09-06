@@ -24,7 +24,7 @@ class AccountScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(20),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
+                  constraints: const BoxConstraints(maxWidth: 520),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -99,12 +99,39 @@ class AccountScreen extends ConsumerWidget {
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
                                   icon: const Icon(Icons.star_rounded),
-                                  label: const Text('Upgrade to Lifetime Pass (\$4.99)'),
+                                  label: const Text(r'Buy Lifetime Access ($9.99 USD)'),
                                   onPressed: () => Navigator.pushNamed(context, '/pricing'),
                                 ),
                               ],
                             ],
                           ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Account Disclaimer Info Box
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              'Google Account Linking Notice:',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              'Lifetime access is permanently linked to your Google account. Please use the same Google account when signing in across your devices.\n\n'
+                              'Automatic transfer of purchases between different email accounts is not supported. If you lose access to your Google account, contact support before creating a new account.',
+                              style: TextStyle(fontSize: 11, height: 1.4),
+                            ),
+                          ],
                         ),
                       ),
 

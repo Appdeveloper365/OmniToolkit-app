@@ -73,6 +73,27 @@ class AppAuthNotifier extends Notifier<AuthState> {
     );
   }
 
+  void acceptDisclaimer() {
+    if (state.userModel == null) return;
+    final u = state.userModel!;
+    state = state.copyWith(
+      userModel: () => UserModel(
+        uid: u.uid,
+        email: u.email,
+        createdAt: u.createdAt,
+        paymentStatus: u.paymentStatus,
+        hasLifetimeAccess: u.hasLifetimeAccess,
+        trialStartDate: u.trialStartDate,
+        trialExpiresAt: u.trialExpiresAt,
+        purchaseDate: u.purchaseDate,
+        stripeCustomerId: u.stripeCustomerId,
+        stripeSessionId: u.stripeSessionId,
+        disclaimerAccepted: true,
+        disclaimerAcceptedAt: DateTime.now(),
+      ),
+    );
+  }
+
   void grantLifetimeAccessMock() {
     if (state.userModel == null) return;
     final u = state.userModel!;
@@ -86,6 +107,8 @@ class AppAuthNotifier extends Notifier<AuthState> {
         trialStartDate: u.trialStartDate,
         trialExpiresAt: u.trialExpiresAt,
         purchaseDate: DateTime.now(),
+        disclaimerAccepted: true,
+        disclaimerAcceptedAt: u.disclaimerAcceptedAt ?? DateTime.now(),
       ),
     );
   }

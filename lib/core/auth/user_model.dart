@@ -12,6 +12,8 @@ class UserModel {
     this.purchaseDate,
     this.stripeCustomerId,
     this.stripeSessionId,
+    this.disclaimerAccepted = false,
+    this.disclaimerAcceptedAt,
   });
 
   final String uid;
@@ -24,6 +26,8 @@ class UserModel {
   final DateTime? purchaseDate;
   final String? stripeCustomerId;
   final String? stripeSessionId;
+  final bool disclaimerAccepted;
+  final DateTime? disclaimerAcceptedAt;
 
   bool get isPaid => paymentStatus == 'paid' || hasLifetimeAccess;
 
@@ -49,6 +53,8 @@ class UserModel {
       purchaseDate: map['purchaseDate'] != null ? _parseDate(map['purchaseDate']) : null,
       stripeCustomerId: map['stripeCustomerId'] as String?,
       stripeSessionId: map['stripeSessionId'] as String?,
+      disclaimerAccepted: map['disclaimerAccepted'] as bool? ?? false,
+      disclaimerAcceptedAt: map['disclaimerAcceptedAt'] != null ? _parseDate(map['disclaimerAcceptedAt']) : null,
     );
   }
 
@@ -69,5 +75,7 @@ class UserModel {
         if (purchaseDate != null) 'purchaseDate': purchaseDate!.toIso8601String(),
         if (stripeCustomerId != null) 'stripeCustomerId': stripeCustomerId,
         if (stripeSessionId != null) 'stripeSessionId': stripeSessionId,
+        'disclaimerAccepted': disclaimerAccepted,
+        if (disclaimerAcceptedAt != null) 'disclaimerAcceptedAt': disclaimerAcceptedAt!.toIso8601String(),
       };
 }
