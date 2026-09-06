@@ -21,26 +21,45 @@ Write-Host "==========================================" -ForegroundColor Cyan
 flutter build apk --release --dart-define=IS_STORE_BUILD=true
 
 Write-Host "`n==========================================" -ForegroundColor Cyan
-Write-Host "STEP 4: Moving APK to Public Downloads Directory..." -ForegroundColor Cyan
+Write-Host "STEP 4: Preserving Static Legal Docs..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+if (Test-Path "docs") {
+    New-Item -ItemType Directory -Path "build/web/docs" -Force | Out-Null
+    Copy-Item -Path "docs/*" -Destination "build/web/docs" -Recurse -Force
+}
+
+Write-Host "`n==========================================" -ForegroundColor Cyan
+Write-Host "STEP 5: Moving APK to Public Downloads Directory..." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 New-Item -ItemType Directory -Path "public/downloads" -Force | Out-Null
+New-Item -ItemType Directory -Path "build/web/downloads" -Force | Out-Null
 Copy-Item -Path "build/app/outputs/flutter-apk/app-release.apk" -Destination "public/downloads/productivity-radio.apk" -Force
 Copy-Item -Path "build/app/outputs/flutter-apk/app-release.apk" -Destination "build/web/downloads/productivity-radio.apk" -Force
 
 Write-Host "`n==========================================" -ForegroundColor Cyan
-Write-Host "STEP 5: Deploying Web Build to gh-pages Branch..." -ForegroundColor Cyan
+Write-Host "STEP 6: Deploying Web Build to gh-pages Branch..." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Copy-Item -Path "build/web/*" -Destination "../omnitoolkit-gh-pages" -Recurse -Force
 git -C "../omnitoolkit-gh-pages" add .
-git -C "../omnitoolkit-gh-pages" commit -m "Deploy Web PWA and downloadable Store APK ($CommitMessage)"
-git -C "../omnitoolkit-gh-pages" push origin gh-pages
+$ghPagesChanged = git -C "../omnitoolkit-gh-pages" status --porcelain
+if ($ghPagesChanged) {
+    git -C "../omnitoolkit-gh-pages" commit -m "Deploy Web PWA and downloadable Store APK ($CommitMessage)"
+    git -C "../omnitoolkit-gh-pages" push origin gh-pages
+} else {
+    Write-Host "No GitHub Pages changes to commit." -ForegroundColor Yellow
+}
 
 Write-Host "`n==========================================" -ForegroundColor Cyan
-Write-Host "STEP 6: Committing Source & Pushing to Main Branch..." -ForegroundColor Cyan
+Write-Host "STEP 7: Committing Source & Pushing Branch..." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 git add .
-git commit -m "$CommitMessage"
-git push origin feature/remove-weather-module
+$sourceChanged = git status --porcelain
+if ($sourceChanged) {
+    git commit -m "$CommitMessage"
+    git push origin feature/remove-weather-module
+} else {
+    Write-Host "No source changes to commit." -ForegroundColor Yellow
+}
 
 Write-Host "`n==========================================" -ForegroundColor Green
 Write-Host "SUCCESS: Dual Build & Deployment Complete!" -ForegroundColor Green
