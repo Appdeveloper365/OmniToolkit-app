@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      // Users can only read their own document
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Users can create their record on signup, defaulting to unpaid
+      allow create: if request.auth != null 
+                    && request.auth.uid == userId
+                    && request.resource.data.paymentStatus == "unpaid"
+                    && request.resource.data.hasLifetimeAccess == false;
+
+      // Users CANNOT modify paymentStatus or hasLifetimeAccess from client SDK.
+      // Entitlements are set strictly by Firebase Cloud Functions Admin SDK.
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
