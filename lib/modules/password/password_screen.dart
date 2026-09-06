@@ -142,7 +142,7 @@ class PasswordScreen extends ConsumerWidget {
                         ),
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
-                          title: const Text(r'Symbols (!@#$)'),
+                          title: const Text(r'Symbols (@$&#)'),
                           value: includeSymbols,
                           onChanged: (v) => ref.read(includeSymbolsProvider.notifier).state = v,
                         ),

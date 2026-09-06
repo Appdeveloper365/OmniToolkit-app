@@ -4,7 +4,7 @@ class PasswordGeneratorService {
   static const _lowercase = 'abcdefghijklmnopqrstuvwxyz';
   static const _uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   static const _numbers = '0123456789';
-  static const _symbols = r'!@#$%^&*()_+-=[]{}|;:,.<>?';
+  static const _symbols = r'@$&#';
 
   String generate({
     int length = 16,
