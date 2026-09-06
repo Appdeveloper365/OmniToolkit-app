@@ -109246,16 +109246,16 @@ return A.j(o.pF("Bool","use24HourFormat",a),$async$JA)
 case 2:return A.q(null,r)}})
 return A.r($async$JA,r)}}
 A.ZU.prototype={
-h2(a,b){var s,r,q,p,o,n=null,m=A.fP(b.bn($.b2G(),t.Ct)),l=A.E(a),k=A.ya(n,B.a73)
+h2(a,b){var s,r,q,p,o,n=null,m=A.fP(b.bn($.b2G(),t.Ct)),l=A.E(a),k=A.ya(n,B.a72)
 if(m==null)s=B.dS
 else{s=A.bP(16)
 r=t.p
-s=A.ff(A.by(A.b([A.aD8(n,new A.aB3(b),B.a6H,B.a6y,m.a)],r),B.n,B.l,B.o),n,n,n,new A.bY(s,B.p))
+s=A.ff(A.by(A.b([A.aD8(n,new A.aB3(b),B.a6G,B.a6y,m.a)],r),B.n,B.l,B.o),n,n,n,new A.bY(s,B.p))
 q=A.bP(16)
-q=A.ff(A.zI(!1,n,n,n,!0,n,n,n,!0,n,B.Ot,n,n,n,n,new A.aB4(a),!1,n,n,n,n,B.a6Y,n,B.a7_,B.Pb,n),n,n,n,new A.bY(q,B.p))
+q=A.ff(A.zI(!1,n,n,n,!0,n,n,n,!0,n,B.Ot,n,n,n,n,new A.aB4(a),!1,n,n,n,n,B.a6X,n,B.a6Z,B.Pb,n),n,n,n,new A.bY(q,B.p))
 p=A.bP(16)
 o=l.ok.w
-s=A.HR(A.b([s,B.b_,q,B.hN,A.ff(new A.ay(B.b5,A.by(A.b([A.am("About OmniToolkit",n,n,n,n,o==null?n:o.jn(B.U),n,n,n),B.cX,B.a6z,B.aA,B.a6T],r),B.aF,B.l,B.o),n),n,n,n,new A.bY(p,B.p))],r),B.b5,n,B.S,!1)}return A.jG(k,s,n,n)}}
+s=A.HR(A.b([s,B.b_,q,B.hN,A.ff(new A.ay(B.b5,A.by(A.b([A.am("About OmniToolkit",n,n,n,n,o==null?n:o.jn(B.U),n,n,n),B.cX,B.a6z,B.aA,B.a6S],r),B.aF,B.l,B.o),n),n,n,n,new A.bY(p,B.p))],r),B.b5,n,B.S,!1)}return A.jG(k,s,n,n)}}
 A.aB3.prototype={
 $1(a){return this.a.aV($.b2G().gc9(),t.oV).JA(a)},
 $S:7}
@@ -109273,7 +109273,7 @@ h2(a,b){var s,r,q=null,p=b.bn($.tH(),t.FB).a
 if(p==null||p.d==="paid"||p.e)return B.ab
 s=p.gaah()
 r=s===1?"day":"days"
-return A.ed(!1,B.E,!0,q,new A.ay(B.ML,A.bJ(A.b([B.OA,B.cW,A.cY(A.am("You have "+s+" "+r+" remaining in your free trial.",q,q,q,q,B.a4k,q,q,q),1),A.rE(B.a6D,q,q,new A.aEI(a),q,A.a0_(q,q,A.a9(51,B.m.q()>>>16&255,B.m.q()>>>8&255,B.m.q()&255),q,q,q,q,q,q,B.k,q,q,B.lM,q,new A.bY(A.bP(8),B.p),q,q,q,q,q))],t.p),B.n,B.l,B.o,0,q),q),B.q,B.lh,0,q,q,q,q,q,B.bl)}}
+return A.ed(!1,B.E,!0,q,new A.ay(B.ML,A.bJ(A.b([B.OA,B.cW,A.cY(A.am("You have "+s+" "+r+" remaining in your free trial.",q,q,q,q,B.a4k,q,q,q),1),A.rE(B.a7a,q,q,new A.aEI(a),q,A.a0_(q,q,A.a9(51,B.m.q()>>>16&255,B.m.q()>>>8&255,B.m.q()&255),q,q,q,q,q,q,B.k,q,q,B.lM,q,new A.bY(A.bP(8),B.p),q,q,q,q,q))],t.p),B.n,B.l,B.o,0,q),q),B.q,B.lh,0,q,q,q,q,q,B.bl)}}
 A.aEI.prototype={
 $0(){return A.asU(this.a,"/pricing",t.X)},
 $S:0}
@@ -110108,7 +110108,7 @@ case 2:q=d
 if(q!=null)b.aV(p.gc9(),t.Uu).en(q)
 return A.q(null,r)}})
 return A.r($async$ER,r)},
-h2(a5,a6){var s,r,q,p,o,n,m=null,l=a6.bn($.xX(),t.W7),k=a6.bn($.ac8(),t.Q0),j=a6.bn($.b2D(),t.lS),i=a6.bn($.b2v(),t.aS),h=a6.aV($.b2C(),t.CQ),g=A.E(a5),f=g.ax,e=f.a===B.W,d=t.p,c=A.ya(A.b([A.en(m,m,m,B.Pe,m,m,new A.afg(a6,a5,l),m,m,m,"Holidays & Observance Days")],d),B.a7b),b=A.ff(B.XX,m,2,m,new A.bY(A.bP(16),B.p)),a=e?B.bO:B.eH,a0=A.bP(12),a1=A.iu(e?B.bZ:B.cL,1),a2=$.bbx().iQ(l),a3=g.ok.w,a4=a3==null
+h2(a5,a6){var s,r,q,p,o,n,m=null,l=a6.bn($.xX(),t.W7),k=a6.bn($.ac8(),t.Q0),j=a6.bn($.b2D(),t.lS),i=a6.bn($.b2v(),t.aS),h=a6.aV($.b2C(),t.CQ),g=A.E(a5),f=g.ax,e=f.a===B.W,d=t.p,c=A.ya(A.b([A.en(m,m,m,B.Pe,m,m,new A.afg(a6,a5,l),m,m,m,"Holidays & Observance Days")],d),B.a7c),b=A.ff(B.XX,m,2,m,new A.bY(A.bP(16),B.p)),a=e?B.bO:B.eH,a0=A.bP(12),a1=A.iu(e?B.bZ:B.cL,1),a2=$.bbx().iQ(l),a3=g.ok.w,a4=a3==null
 if(a4)s=m
 else s=a3.A5(e?B.b3:B.b2,B.U)
 r=t.l7
@@ -110120,13 +110120,13 @@ a=A.ec(B.NS,f,m,m)
 a=A.b([A.bJ(A.b([a,B.cW,A.am("Date Difference Calculator",m,m,m,m,a4?m:a3.jn(B.U),m,m,m)],d),B.n,B.l,B.o,0,m)],d)
 a2=k==null
 a3=!a2
-if(a3)a.push(A.rE(B.a6L,m,m,new A.afn(a6),m,m))
+if(a3)a.push(A.rE(B.a6J,m,m,new A.afn(a6),m,m))
 a=A.bJ(a,B.n,B.dt,B.o,0,m)
 a4=$.b1y()
-s=A.cY(A.by(A.b([B.a7i,A.am(a4.iQ(l),m,m,m,m,B.fr,m,m,m)],d),B.aF,B.l,B.o),1)
+s=A.cY(A.by(A.b([B.a7j,A.am(a4.iQ(l),m,m,m,m,B.fr,m,m,m)],d),B.aF,B.l,B.o),1)
 q=A.bP(6)
 a3=a3?a4.iQ(k):"Select Date"
-f=A.b([a,B.aA,A.bJ(A.b([s,B.Ph,A.cY(new A.e_(B.kP,m,m,A.by(A.b([B.a78,A.k9(!1,q,!0,new A.ay(B.r8,A.bJ(A.b([A.am(a3,m,m,m,m,A.dA(m,m,a2?f:m,m,m,m,m,m,m,m,m,15,m,m,B.U,m,m,!0,m,m,m,m,m,m,m,m),m,m,m),B.hL,B.ON],d),B.n,B.l,B.aa,0,m),m),m,!0,m,m,m,m,m,m,m,m,m,m,new A.afo(this,a5,a6),m,m,m,m,m,m,m)],d),B.db,B.l,B.o),m),1)],d),B.n,B.l,B.o,0,m),B.qW],d)
+f=A.b([a,B.aA,A.bJ(A.b([s,B.Ph,A.cY(new A.e_(B.kP,m,m,A.by(A.b([B.a77,A.k9(!1,q,!0,new A.ay(B.r8,A.bJ(A.b([A.am(a3,m,m,m,m,A.dA(m,m,a2?f:m,m,m,m,m,m,m,m,m,15,m,m,B.U,m,m,!0,m,m,m,m,m,m,m,m),m,m,m),B.hL,B.ON],d),B.n,B.l,B.aa,0,m),m),m,!0,m,m,m,m,m,m,m,m,m,m,new A.afo(this,a5,a6),m,m,m,m,m,m,m)],d),B.db,B.l,B.o),m),1)],d),B.n,B.l,B.o,0,m),B.qW],d)
 if(a2)f.push(B.J7)
 else{a=$.bbw()
 p=a.Gz(l,k)
@@ -110135,7 +110135,7 @@ n=a.zU(l,k)
 a=n.a
 a2=n.b
 a3=""+n.c
-f.push(A.by(A.b([A.bJ(A.b([new A.xv("Total Days",""+p+" Days",m),new A.xv("Weeks",""+o.a+" wks, "+o.b+" d",m)],d),B.n,B.l,B.o,0,m),B.cX,A.bJ(A.b([new A.xv("Months & Days",""+(a*12+a2)+" mos, "+a3+" d",m),new A.xv("Full Breakdown",""+a+"y "+a2+"m "+a3+"d",m)],d),B.n,B.l,B.o,0,m)],d),B.n,B.l,B.o))}return A.jG(c,A.ku(A.by(A.b([B.IZ,B.b_,b,B.b_,a0,B.aA,r,B.hN,A.ff(new A.ay(B.b5,A.by(f,B.b8,B.l,B.o),m),m,2,m,new A.bY(a1,B.p))],d),B.b8,B.l,B.o),m,B.O,m,B.b5,m,!1,B.S),m,new A.uG(B.Pi,"Add note",m,m,B.IA,new A.afp(this,a5,a6),m,!0,B.ES,B.a6M,m))}}
+f.push(A.by(A.b([A.bJ(A.b([new A.xv("Total Days",""+p+" Days",m),new A.xv("Weeks",""+o.a+" wks, "+o.b+" d",m)],d),B.n,B.l,B.o,0,m),B.cX,A.bJ(A.b([new A.xv("Months & Days",""+(a*12+a2)+" mos, "+a3+" d",m),new A.xv("Full Breakdown",""+a+"y "+a2+"m "+a3+"d",m)],d),B.n,B.l,B.o,0,m)],d),B.n,B.l,B.o))}return A.jG(c,A.ku(A.by(A.b([B.IZ,B.b_,b,B.b_,a0,B.aA,r,B.hN,A.ff(new A.ay(B.b5,A.by(f,B.b8,B.l,B.o),m),m,2,m,new A.bY(a1,B.p))],d),B.b8,B.l,B.o),m,B.O,m,B.b5,m,!1,B.S),m,new A.uG(B.Pi,"Add note",m,m,B.IA,new A.afp(this,a5,a6),m,!0,B.ES,B.a6K,m))}}
 A.af8.prototype={
 $1(a){return new A.vy(this.a,this.b,null)},
 $S:707}
@@ -110159,7 +110159,7 @@ return r?q+" (International)":q+" ("+s+")"},
 $S:283}
 A.aff.prototype={
 $1(a){var s=null,r=A.am("Holidays for "+$.b1y().iQ(this.a),s,s,s,s,s,s,s,s),q=A.am(this.b,s,s,s,s,s,s,s,s)
-return A.b2R(A.b([A.rE(B.a6O,s,s,new A.afb(this.c),s,s)],t.p),q,r)},
+return A.b2R(A.b([A.rE(B.a6M,s,s,new A.afb(this.c),s,s)],t.p),q,r)},
 $S:709}
 A.afb.prototype={
 $0(){A.fU(this.a,!1).ov(null)
@@ -110481,7 +110481,7 @@ s.K$=$.aj()
 s.T$=0
 this.aw()},
 H(a){var s=null,r=A.am(this.a.d==null?"Add Note":"Edit Note",s,s,s,s,s,s,s,s),q=t.p,p=A.ku(A.by(A.b([A.BU(s,B.aY,!0,s,!0,B.H,s,A.RP(),this.gNA(),s,s,s,s,s,2,B.PF,B.O,!0,s,!0,s,!1,s,B.bK,s,s,s,s,s,s,s,s,4,s,s,!1,"\u2022",s,s,s,s,s,!1,s,s,!1,s,!0,s,B.c0,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.at,s,B.dC,s,s,s,s)],q),B.n,B.l,B.aa),s,B.O,s,s,s,!1,B.S)
-return A.b2R(A.b([A.rE(B.a6B,s,s,new A.aNy(a),s,s),A.b4o(B.a6E,new A.aNz(this,a),s)],q),p,r)}}
+return A.b2R(A.b([A.rE(B.a6B,s,s,new A.aNy(a),s,s),A.b4o(B.a6D,new A.aNz(this,a),s)],q),p,r)}}
 A.aNy.prototype={
 $0(){A.fU(this.a,!1).ov(null)
 return null},
@@ -110789,7 +110789,7 @@ if(h){g=A.fP(j.bn($.beQ(),g))
 s=g==null?B.aY:g}else{g=A.fP(j.bn($.beZ(),g))
 s=g==null?B.aY:g}r=A.E(a)
 q=r.ax.a===B.W
-g=A.ya(k,B.a7h)
+g=A.ya(k,B.a7i)
 p=q?B.bO:B.eH
 o=A.bP(16)
 n=A.iu(q?B.bZ:B.da,1)
@@ -110838,7 +110838,7 @@ $1(a){this.a.gha().aV($.tK().gc9(),t.hU).en(a)},
 $S:33}
 A.aMu.prototype={
 $1(a){var s=null,r=J.aZ(a)
-if(r.ga5(a))return A.d0(A.by(A.b([A.ec(B.O9,this.a?B.cr:B.dU,s,48),B.aA,B.a7e,B.fo,B.a7j],t.p),B.n,B.bR,B.o),s,s)
+if(r.ga5(a))return A.d0(A.by(A.b([A.ec(B.O9,this.a?B.cr:B.dU,s,48),B.aA,B.a7f,B.fo,B.a7k],t.p),B.n,B.bR,B.o),s,s)
 return A.zK(s,new A.aMt(a,this.a),r.gF(a),B.iJ,s,!1,!1)},
 $S:734}
 A.aMt.prototype={
@@ -110861,7 +110861,7 @@ return A.d0(A.am("Lookup failed: "+A.k(a),s,s,s,s,s,s,s,s),s,s)},
 $S:84}
 A.aMq.prototype={
 $1(a){var s=null,r=J.aZ(a)
-if(r.ga5(a))return A.d0(A.by(A.b([A.ec(B.O5,this.a?B.cr:B.dU,s,48),B.aA,B.a7d,B.fo,B.a6R],t.p),B.n,B.bR,B.o),s,s)
+if(r.ga5(a))return A.d0(A.by(A.b([A.ec(B.O5,this.a?B.cr:B.dU,s,48),B.aA,B.a7e,B.fo,B.a6Q],t.p),B.n,B.bR,B.o),s,s)
 return A.zK(s,new A.aMp(a,this.a),r.gF(a),B.iJ,s,!1,!1)},
 $S:737}
 A.aMp.prototype={
@@ -111622,7 +111622,7 @@ d=t.p
 s=A.b([],d)
 r=J.aZ(a1)
 if(r.gbZ(a1))s.push(A.en(f,f,f,B.Ov,f,f,new A.atD(a5,a4),f,f,f,"Clear Session History"))
-s=A.ya(s,B.a75)
+s=A.ya(s,B.a74)
 q=A.bP(16)
 p=a2.ok
 o=p.w
@@ -111639,7 +111639,7 @@ else g=g.aFZ(i?B.bc:f,"monospace",B.U)
 g=A.cY(A.b6C(h,g),1)
 l=A.dD(f,A.bJ(A.b([g,A.en(f,f,f,B.OP,f,f,i?f:new A.atE(this,a4,a0),f,f,f,"Copy Password")],d),B.n,B.l,B.o,0,f),B.q,f,f,new A.ck(l,f,j,k,f,f,B.a6),f,f,f,B.ra,f,f,f)
 k=B.d.aC(e)
-q=A.b([A.ff(new A.ay(B.c0,A.by(A.b([m,B.b_,l,B.b_,A.bJ(A.b([A.am("Length: "+k,f,f,f,f,B.Ej,f,f,f),A.cY(A.b6S(26,B.f.j(k),32,6,new A.atF(a5),e),1)],d),B.n,B.l,B.o,0,f),A.aD8(B.Q,new A.atG(a5),f,B.a77,c),A.aD8(B.Q,new A.atH(a5),f,B.a7a,b),A.aD8(B.Q,new A.atI(a5),f,B.a6Q,a),B.aA,A.UZ(B.P_,B.a7l,new A.atJ(this,a5),A.GO(f,f,B.dg,new A.bY(A.bP(12),B.p),f))],d),B.b8,B.l,B.o),f),f,2,f,new A.bY(q,B.p)),B.hN],d)
+q=A.b([A.ff(new A.ay(B.c0,A.by(A.b([m,B.b_,l,B.b_,A.bJ(A.b([A.am("Length: "+k,f,f,f,f,B.Ej,f,f,f),A.cY(A.b6S(26,B.f.j(k),32,6,new A.atF(a5),e),1)],d),B.n,B.l,B.o,0,f),A.aD8(B.Q,new A.atG(a5),f,B.a76,c),A.aD8(B.Q,new A.atH(a5),f,B.a7b,b),A.aD8(B.Q,new A.atI(a5),f,B.a6P,a),B.aA,A.UZ(B.P_,B.a7m,new A.atJ(this,a5),A.GO(f,f,B.dg,new A.bY(A.bP(12),B.p),f))],d),B.b8,B.l,B.o),f),f,2,f,new A.bY(q,B.p)),B.hN],d)
 if(r.gbZ(a1)){m=r.gF(a1)
 o=n?f:o.jn(B.U)
 o=A.am("Session History ("+m+")",f,f,f,f,o,f,f,f)
@@ -112376,7 +112376,7 @@ A.aP0.prototype={
 $0(){},
 $S:0}
 A.aP3.prototype={
-$1(a){var s,r,q=null,p=this.a,o=this.b,n=A.b([new A.ay(B.lJ,A.V_(B.a6U,new A.aOZ(o),p==null),q)],t.p)
+$1(a){var s,r,q=null,p=this.a,o=this.b,n=A.b([new A.ay(B.lJ,A.V_(B.a6T,new A.aOZ(o),p==null),q)],t.p)
 for(s=J.aR(a);s.A();){r=s.gL()
 n.push(new A.ay(B.lJ,A.V_(A.am(r,q,q,q,q,q,q,q,q),new A.aP_(o,r),p===r),q))}return A.HR(n,B.iK,q,B.ap,!1)},
 $S:763}
@@ -113163,13 +113163,13 @@ q=A.bP(16)
 r=A.am("Access & Entitlement Status",l,l,l,l,o?l:p.jn(B.U),l,l,l)
 p=k.d
 o=p!=="paid"
-m=!o||k.e?"Lifetime Pass":"7-Day Free Trial"
+m=!o||k.e?"Lifetime Access Pass":"7-Day Free Trial"
 r=A.b([r,B.a0Q,new A.xz("License Type",m,!o||k.e,l),new A.xz("Payment Status",p.toUpperCase(),!1,l)],n)
 if(!(!o||k.e))r.push(new A.xz("Trial Days Remaining",""+k.gaah()+" Days",!1,l))
 p=k.w
 if(p!=null)r.push(new A.xz("Purchase Date",$.bbp().iQ(p),!1,l))
-if(!(!o||k.e))B.b.P(r,A.b([B.aA,A.UZ(B.P8,B.a6J,new A.acl(a),A.GO(l,l,B.dg,new A.bY(A.bP(12),B.p),l))],n))
-s=A.ku(A.d0(new A.d7(B.Gx,A.by(A.b([s,B.b_,A.ff(new A.ay(B.c0,A.by(r,B.aF,B.l,B.o),l),l,l,l,new A.bY(q,B.p)),B.hM,A.b5P(B.OX,B.a6W,new A.acm(b,a),A.b_4(l,l,l,l,l,l,l,l,l,B.jq,l,l,B.dg,l,new A.bY(A.bP(12),B.p),B.Gh,l,l,l,l))],n),B.b8,B.l,B.o),l),l,l),l,B.O,l,B.c0,l,!1,B.S)}return A.jG(i,s,l,l)}}
+if(!(!o||k.e))B.b.P(r,A.b([B.aA,A.UZ(B.P8,B.a78,new A.acl(a),A.GO(l,l,B.dg,new A.bY(A.bP(12),B.p),l))],n))
+s=A.ku(A.d0(new A.d7(B.Gx,A.by(A.b([s,B.b_,A.ff(new A.ay(B.c0,A.by(r,B.aF,B.l,B.o),l),l,l,l,new A.bY(q,B.p)),B.hM,A.b5P(B.OX,B.a6V,new A.acm(b,a),A.b_4(l,l,l,l,l,l,l,l,l,B.jq,l,l,B.dg,l,new A.bY(A.bP(12),B.p),B.Gh,l,l,l,l))],n),B.b8,B.l,B.o),l),l,l),l,B.O,l,B.c0,l,!1,B.S)}return A.jG(i,s,l,l)}}
 A.acl.prototype={
 $0(){return A.asU(this.a,"/pricing",t.X)},
 $S:0}
@@ -113196,7 +113196,7 @@ H(a){var s,r=this,q=null,p=A.E(a),o=A.bP(20),n=A.ec(B.Oj,p.ax.b,q,56),m=p.ok,l=m
 l=A.am("Welcome to OmniToolkit",q,q,q,q,l==null?q:l.jn(B.U),B.aQ,q,q)
 m=m.z
 s=t.p
-m=A.b([n,B.aA,l,B.fp,A.am("Sign in to start your 7-day free trial.",q,q,q,q,m==null?q:m.bm(B.bc),B.aQ,q,q),B.k4,A.b5P(B.Om,B.a6F,new A.aMo(r,a),A.b_4(q,q,q,q,q,q,q,q,q,q,q,q,B.dg,q,new A.bY(A.bP(12),B.p),q,q,q,q,q)),B.hM,A.bJ(A.b([B.rm,new A.ay(B.iK,A.am("OR",q,q,q,q,A.dA(q,q,B.fZ,q,q,q,q,q,q,q,q,12,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q,q),q),B.rm],s),B.n,B.l,B.o,0,q),B.hM,A.BU(q,B.aY,!1,q,!0,B.H,q,A.RP(),r.w,q,q,q,q,q,2,A.W9(q,new A.hr(4,A.bP(12),B.kY),q,q,q,q,q,q,!0,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,"Enter your email address",q,q,q,q,q,q,q,q,q,!0,!0,!1,q,B.Ow,q,q,q,q,q,q,q,q,q,q,q,q),B.O,!0,q,!0,q,!1,q,B.bK,q,q,q,q,q,q,q,q,1,q,q,!1,"\u2022",q,q,q,q,q,!1,q,q,!1,q,!0,q,B.c0,q,q,q,q,q,q,q,q,q,q,q,q,!0,B.at,q,B.dC,q,q,q,q),B.aA,A.UZ(B.OS,B.a7c,r.gazJ(),A.GO(q,q,B.dg,new A.bY(A.bP(12),B.p),q))],s)
+m=A.b([n,B.aA,l,B.fp,A.am("Sign in to start your 7-day free trial.",q,q,q,q,m==null?q:m.bm(B.bc),B.aQ,q,q),B.k4,A.b5P(B.Om,B.a6E,new A.aMo(r,a),A.b_4(q,q,q,q,q,q,q,q,q,q,q,q,B.dg,q,new A.bY(A.bP(12),B.p),q,q,q,q,q)),B.hM,A.bJ(A.b([B.rm,new A.ay(B.iK,A.am("OR",q,q,q,q,A.dA(q,q,B.fZ,q,q,q,q,q,q,q,q,12,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q,q),q),B.rm],s),B.n,B.l,B.o,0,q),B.hM,A.BU(q,B.aY,!1,q,!0,B.H,q,A.RP(),r.w,q,q,q,q,q,2,A.W9(q,new A.hr(4,A.bP(12),B.kY),q,q,q,q,q,q,!0,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,"Enter your email address",q,q,q,q,q,q,q,q,q,!0,!0,!1,q,B.Ow,q,q,q,q,q,q,q,q,q,q,q,q),B.O,!0,q,!0,q,!1,q,B.bK,q,q,q,q,q,q,q,q,1,q,q,!1,"\u2022",q,q,q,q,q,!1,q,q,!1,q,!0,q,B.c0,q,q,q,q,q,q,q,q,q,q,q,q,!0,B.at,q,B.dC,q,q,q,q),B.aA,A.UZ(B.OS,B.a7d,r.gazJ(),A.GO(q,q,B.dg,new A.bY(A.bP(12),B.p),q))],s)
 if(r.x){n=A.a9(38,B.ci.q()>>>16&255,B.ci.q()>>>8&255,B.ci.q()&255)
 l=A.bP(10)
 B.b.P(m,A.b([B.b_,A.dD(q,B.a6x,B.q,q,q,new A.ck(n,q,A.iu(B.ci,1),l,q,q,B.a6),q,q,q,B.h8,q,q,q)],s))}return A.jG(q,A.kp(!0,A.d0(A.ku(new A.d7(B.kZ,A.ff(new A.ay(B.rd,A.by(m,B.b8,B.l,B.o),q),q,3,q,new A.bY(o,B.p)),q),q,B.O,q,B.iL,q,!1,B.S),q,q),!0,!1,B.Q,!0,!0),q,q)}}
@@ -113210,7 +113210,7 @@ A.Aa(this.b,"/",s,s)},
 $S:0}
 A.Ar.prototype={
 H(a){var s=null,r=A.E(a),q=A.bP(24),p=A.dD(s,B.OY,B.q,s,s,new A.ck(A.a9(38,B.jr.q()>>>16&255,B.jr.q()>>>8&255,B.jr.q()&255),s,s,s,s,s,B.cH),s,s,s,B.b5,s,s,s),o=r.ok.f,n=t.p
-return A.jG(s,A.kp(!0,A.d0(new A.ay(B.iL,new A.d7(B.kZ,A.ff(new A.ay(B.re,A.by(A.b([p,B.hM,A.am("Payment Cancelled",s,s,s,s,o==null?s:o.jn(B.U),B.aQ,s,s),B.DM,B.a7m,B.k4,A.bJ(A.b([A.cY(new A.Ix(!1,new A.atM(a),s,s,s,A.b_4(s,s,s,s,s,s,s,s,s,s,s,s,B.dg,s,s,s,s,s,s,s),s,s,!1,s,!0,s,B.a6X,s),1),B.k3,A.cY(A.b4o(B.a7k,new A.atN(a),A.GO(s,s,B.dg,s,s)),1)],n),B.n,B.l,B.o,0,s)],n),B.n,B.l,B.aa),s),s,3,s,new A.bY(q,B.p)),s),s),s,s),!0,!1,B.Q,!0,!0),s,s)}}
+return A.jG(s,A.kp(!0,A.d0(new A.ay(B.iL,new A.d7(B.kZ,A.ff(new A.ay(B.re,A.by(A.b([p,B.hM,A.am("Payment Cancelled",s,s,s,s,o==null?s:o.jn(B.U),B.aQ,s,s),B.DM,B.a7n,B.k4,A.bJ(A.b([A.cY(new A.Ix(!1,new A.atM(a),s,s,s,A.b_4(s,s,s,s,s,s,s,s,s,s,s,s,B.dg,s,s,s,s,s,s,s),s,s,!1,s,!0,s,B.a6W,s),1),B.k3,A.cY(A.b4o(B.a7l,new A.atN(a),A.GO(s,s,B.dg,s,s)),1)],n),B.n,B.l,B.o,0,s)],n),B.n,B.l,B.aa),s),s,3,s,new A.bY(q,B.p)),s),s),s,s),!0,!1,B.Q,!0,!0),s,s)}}
 A.atM.prototype={
 $0(){var s=t.X
 return A.Aa(this.a,"/",s,s)},
@@ -113221,7 +113221,7 @@ return A.Aa(this.a,"/pricing",s,s)},
 $S:0}
 A.As.prototype={
 H(a){var s=null,r=A.E(a),q=A.bP(24),p=A.dD(s,B.Ou,B.q,s,s,new A.ck(A.a9(38,B.ci.q()>>>16&255,B.ci.q()>>>8&255,B.ci.q()&255),s,s,s,s,s,B.cH),s,s,s,B.b5,s,s,s),o=r.ok.f
-return A.jG(s,A.kp(!0,A.d0(new A.ay(B.iL,new A.d7(B.kZ,A.ff(new A.ay(B.re,A.by(A.b([p,B.hM,A.am("Payment Successful!",s,s,s,s,o==null?s:o.jn(B.U),B.aQ,s,s),B.DM,B.a7g,B.k4,A.UZ(B.P9,B.a76,new A.atO(a),A.GO(s,s,B.MO,new A.bY(A.bP(12),B.p),s))],t.p),B.n,B.l,B.aa),s),s,3,s,new A.bY(q,B.p)),s),s),s,s),!0,!1,B.Q,!0,!0),s,s)}}
+return A.jG(s,A.kp(!0,A.d0(new A.ay(B.iL,new A.d7(B.kZ,A.ff(new A.ay(B.re,A.by(A.b([p,B.hM,A.am("Payment Successful!",s,s,s,s,o==null?s:o.jn(B.U),B.aQ,s,s),B.DM,B.a7h,B.k4,A.UZ(B.P9,B.a75,new A.atO(a),A.GO(s,s,B.MO,new A.bY(A.bP(12),B.p),s))],t.p),B.n,B.l,B.aa),s),s,3,s,new A.bY(q,B.p)),s),s),s,s),!0,!1,B.Q,!0,!0),s,s)}}
 A.atO.prototype={
 $0(){var s=t.X
 return A.Aa(this.a,"/",s,s)},
@@ -113234,7 +113234,7 @@ s=p}for(;;)switch(s){case 0:l=$.tH()
 if(b.aV(l,t.FB).a==null){A.asU(a,"/login",t.X)
 s=1
 break}p=4
-n=A.dm("https://checkout.stripe.com/pay/cs_test_omnitoolkit",0,null)
+n=A.dm("https://checkout.stripe.com/pay/cs_live_omnitoolkit_999",0,null)
 s=10
 return A.j(A.b0Q(n),$async$yj)
 case 10:s=d?7:9
@@ -113259,16 +113259,16 @@ break
 case 6:case 1:return A.q(q,r)
 case 2:return A.p(o.at(-1),r)}})
 return A.r($async$yj,r)},
-h2(a,b){var s,r,q,p=null,o=A.E(a),n=o.ax,m=n.a===B.W,l=A.ya(p,B.a6S),k=A.bP(24),j=m?B.b3:B.b2
+h2(a,b){var s,r,q,p=null,o=A.E(a),n=o.ax,m=n.a===B.W,l=A.ya(p,B.a6R),k=A.bP(24),j=m?B.b3:B.b2
 j=A.a9(38,j.q()>>>16&255,j.q()>>>8&255,j.q()&255)
 s=A.bP(20)
 j=A.dD(p,A.am("ONE-TIME PURCHASE \u2022 NO SUBSCRIPTION",p,p,p,p,A.dA(p,p,m?B.b3:B.b2,p,p,p,p,p,p,p,p,11,p,p,B.U,p,p,!0,p,0.5,p,p,p,p,p,p),B.aQ,p,p),B.q,p,p,new A.ck(j,p,p,s,p,p,B.a6),p,p,p,B.lM,p,p,p)
 s=o.ok
 r=s.f
-r=A.am("OmniToolkit Lifetime Pass",p,p,p,p,r==null?p:r.jn(B.U),B.aQ,p,p)
+r=A.am("OomniToolkit Lifetime Access",p,p,p,p,r==null?p:r.jn(B.U),B.aQ,p,p)
 s=s.b
 q=t.p
-return A.jG(l,A.ku(A.d0(new A.d7(B.Go,A.ff(new A.ay(B.rd,A.by(A.b([j,B.b_,r,B.cX,A.bJ(A.b([A.am("$4.99",p,p,p,p,s==null?p:s.A5(n.b,B.U),p,p,p),B.hL,B.a74],q),B.dc,B.bR,B.o,0,B.v),B.hN,B.iH,B.b_,new A.p9(B.mw,"Unlimited Calendar & Live Dual Clock",p),new A.p9(B.rK,"3D Standard, Scientific & Date Calculators",p),new A.p9(B.rT,"World Radio Explorer with Live Streaming",p),new A.p9(B.rP,"100% Offline US ZIP, City & Area Lookup",p),new A.p9(B.rS,"Secure Password Generator with Memory History",p),new A.p9(B.NM,"Lifetime Access on All Devices & Web",p),B.k4,A.UZ(B.Op,B.a7n,new A.auC(this,a,b),A.GO(p,p,B.Mv,new A.bY(A.bP(14),B.p),p)),B.aA,B.a6P],q),B.b8,B.l,B.o),p),p,4,p,new A.bY(k,B.p)),p),p,p),p,B.O,p,B.iL,p,!1,B.S),p,p)}}
+return A.jG(l,A.ku(A.d0(new A.d7(B.Go,A.ff(new A.ay(B.rd,A.by(A.b([j,B.b_,r,B.cX,A.bJ(A.b([A.am("$9.99",p,p,p,p,s==null?p:s.A5(n.b,B.U),p,p,p),B.hL,B.a73],q),B.dc,B.bR,B.o,0,B.v),B.hN,B.iH,B.b_,new A.p9(B.mw,"Unlimited Calendar & Live Dual Clock",p),new A.p9(B.rK,"3D Standard, Scientific & Date Calculators",p),new A.p9(B.rT,"World Radio Explorer with Live Streaming",p),new A.p9(B.rP,"100% Offline US ZIP, City & Area Lookup",p),new A.p9(B.rS,"Secure Password Generator with Memory History",p),new A.p9(B.NM,"Lifetime Access on All Devices & Web",p),B.k4,A.UZ(B.Op,B.a6O,new A.auC(this,a,b),A.GO(p,p,B.Mv,new A.bY(A.bP(14),B.p),p)),B.aA,B.a6N],q),B.b8,B.l,B.o),p),p,4,p,new A.bY(k,B.p)),p),p,p),p,B.O,p,B.iL,p,!1,B.S),p,p)}}
 A.auC.prototype={
 $0(){return this.a.yj(this.b,this.c)},
 $S:0}
@@ -113283,7 +113283,7 @@ l=this.e
 r=l!=null&&B.c.aR(l).length!==0?B.c.aR(l):m
 A.c4().$1("PWA Share Target Received -> title: "+A.k(k)+", text: "+A.k(s)+", url: "+A.k(r))
 q=k!=null||s!=null||r!=null
-l=A.ya(m,B.a6I)
+l=A.ya(m,B.a6H)
 p=t.p
 p=A.b([A.ff(new A.ay(B.b5,A.by(A.b([A.bJ(A.b([A.ec(B.Nw,A.E(a).ax.b,m,m),B.cW,A.am("Web Share Target Received",m,m,m,m,A.E(a).ok.w,m,m,m)],p),B.n,B.l,B.o,0,m),B.qW,new A.DG(B.Nx,"Title",k,!1,m),B.aA,new A.DG(B.Nu,"Text",s,!1,m),B.aA,new A.DG(B.Ns,"URL",r,!0,m)],p),B.aF,B.l,B.o),m),m,m,m,m),B.b_],p)
 if(!q){o=A.E(a).ax
@@ -121932,8 +121932,8 @@ B.q5=new A.v(1,0.12941176470588237,0.12941176470588237,0.12941176470588237,B.e)
 B.VN=new A.cy([50,B.qs,100,B.Ky,200,B.Kj,300,B.qu,350,B.eG,400,B.dU,500,B.fZ,600,B.dV,700,B.cr,800,B.d8,850,B.li,900,B.q5],t.pl)
 B.bc=new A.qT(B.VN,1,0.6196078431372549,0.6196078431372549,0.6196078431372549,B.e)
 B.hV=new A.G(!0,B.bc,null,null,null,null,12,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a6G=new A.bA("No session history yet",null,B.hV,null,null,null,null,null,null,null,null)
-B.J6=new A.fg(B.P,null,null,B.a6G,null)
+B.a6F=new A.bA("No session history yet",null,B.hV,null,null,null,null,null,null,null,null)
+B.J6=new A.fg(B.P,null,null,B.a6F,null)
 B.e1=new A.ap(0,8,0,8)
 B.Em=new A.G(!0,B.bc,null,null,null,null,13,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.aQ=new A.p1(2,"center")
@@ -121946,8 +121946,8 @@ B.abR=new A.aFJ(0,"material")
 B.Jf=new A.yB(null,null)
 B.dS=new A.fg(B.P,null,null,B.Jf,null)
 B.a5V=new A.G(!0,B.bc,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a6Z=new A.bA('No notes for this date. Tap "Add Note" to create one.',null,B.a5V,null,null,null,null,null,null,null,null)
-B.Ja=new A.fg(B.P,null,null,B.a6Z,null)
+B.a6Y=new A.bA('No notes for this date. Tap "Add Note" to create one.',null,B.a5V,null,null,null,null,null,null,null,null)
+B.Ja=new A.fg(B.P,null,null,B.a6Y,null)
 B.Jb=new A.Fv(null,null,null,null,null,null,null,null,null)
 B.eF=new A.yx(0,0,"none")
 B.dT=new A.yx(1,1,"isTrue")
@@ -122731,8 +122731,8 @@ B.Qu=s([B.Jz,B.L1],t.W)
 B.QT=s([4,9,14,19],t.t)
 B.a7p=new A.bA("Add",null,null,null,null,null,null,null,null,null,null)
 B.Hg=new A.hV(!0,null,B.a7p,t.Mt)
-B.a6V=new A.bA("Subtract",null,null,null,null,null,null,null,null,null,null)
-B.Hd=new A.hV(!1,null,B.a6V,t.Mt)
+B.a6U=new A.bA("Subtract",null,null,null,null,null,null,null,null,null,null)
+B.Hd=new A.hV(!1,null,B.a6U,t.Mt)
 B.QW=s([B.Hg,B.Hd],A.ag("H<hV<L>>"))
 B.Ty=s([137,80,78,71,13,10,26,10],t.Z)
 B.Pp=new A.qB(0,"png")
@@ -122948,8 +122948,8 @@ B.Sh=s([B.GP],t.V)
 B.JB=new A.v(1,0.2901960784313726,0.3333333333333333,0.40784313725490196,B.e)
 B.KD=new A.v(1,0.21568627450980393,0.2549019607843137,0.3176470588235294,B.e)
 B.Si=s([B.JB,B.KD],t.W)
-B.a6N=new A.bA("Edit",null,null,null,null,null,null,null,null,null,null)
-B.YO=new A.oB("edit",B.a6N,null,t.wI)
+B.a6L=new A.bA("Edit",null,null,null,null,null,null,null,null,null,null)
+B.YO=new A.oB("edit",B.a6L,null,t.wI)
 B.a6w=new A.bA("Delete",null,null,null,null,null,null,null,null,null,null)
 B.YN=new A.oB("delete",B.a6w,null,t.wI)
 B.Sk=s([B.YO,B.YN],A.ag("H<oB<h>>"))
@@ -123137,8 +123137,8 @@ B.Hb=new A.hV(B.EN,B.OI,B.a79,t.UJ)
 B.a9M=new A.lP(1,"addSubtract")
 B.Nq=new A.aH(57930,"MaterialIcons",!1)
 B.Oq=new A.bk(B.Nq,null,null,null,null)
-B.a71=new A.bA("Add / Subtract",null,null,null,null,null,null,null,null,null,null)
-B.He=new A.hV(B.a9M,B.Oq,B.a71,t.UJ)
+B.a70=new A.bA("Add / Subtract",null,null,null,null,null,null,null,null,null,null)
+B.He=new A.hV(B.a9M,B.Oq,B.a70,t.UJ)
 B.a9N=new A.lP(2,"age")
 B.Nz=new A.aH(61199,"MaterialIcons",!1)
 B.OB=new A.bk(B.Nz,null,null,null,null)
@@ -123147,8 +123147,8 @@ B.Hf=new A.hV(B.a9N,B.OB,B.a6A,t.UJ)
 B.a9O=new A.lP(3,"businessDays")
 B.Ny=new A.aH(61194,"MaterialIcons",!1)
 B.OO=new A.bk(B.Ny,null,null,null,null)
-B.a6K=new A.bA("Business Days",null,null,null,null,null,null,null,null,null,null)
-B.Hc=new A.hV(B.a9O,B.OO,B.a6K,t.UJ)
+B.a6I=new A.bA("Business Days",null,null,null,null,null,null,null,null,null,null)
+B.Hc=new A.hV(B.a9O,B.OO,B.a6I,t.UJ)
 B.U_=s([B.Hb,B.He,B.Hf,B.Hc],A.ag("H<hV<lP>>"))
 B.tN=s([31,-1,31,30,31,30,31,31,30,31,30,31],t.t)
 B.U2=s([0.015176349177441876,0.045529047532325624,0.07588174588720938,0.10623444424209313,0.13658714259697685,0.16693984095186062,0.19729253930674434,0.2276452376616281,0.2579979360165119,0.28835063437139563,0.3188300904430532,0.350925934958123,0.3848314933096426,0.42057480301049466,0.458183274052838,0.4976837250274023,0.5391024159806381,0.5824650784040898,0.6277969426914107,0.6751227633498623,0.7244668422128921,0.775853049866786,0.829304845476233,0.8848452951698498,0.942497089126609,1.0022825574869039,1.0642236851973577,1.1283421258858297,1.1946592148522128,1.2631959812511864,1.3339731595349034,1.407011200216447,1.4823302800086415,1.5599503113873272,1.6398909516233677,1.7221716113234105,1.8068114625156377,1.8938294463134073,1.9832442801866852,2.075074464868551,2.1693382909216234,2.2660538449872063,2.36523901573795,2.4669114995532007,2.5710888059345764,2.6777882626779785,2.7870270208169257,2.898822059350997,3.0131901897720907,3.1301480604002863,3.2497121605402226,3.3718988244681087,3.4967242352587946,3.624204428461639,3.754355295633311,3.887192587735158,4.022731918402185,4.160988767090289,4.301978482107941,4.445716283538092,4.592217266055746,4.741496401646282,4.893568542229298,5.048448422192488,5.20615066083972,5.3666897647573375,5.5300801301023865,5.696336044816294,5.865471690767354,6.037501145825082,6.212438385869475,6.390297286737924,6.571091626112461,6.7548350853498045,6.941541251256611,7.131223617812143,7.323895587840543,7.5195704746346665,7.7182615035334345,7.919981813454504,8.124744458384042,8.332562408825165,8.543448553206703,8.757415699253682,8.974476575321063,9.194643831691977,9.417930041841839,9.644347703669503,9.873909240696694,10.106627003236781,10.342513269534024,10.58158024687427,10.8238400726681,11.069304815507364,11.317986476196008,11.569896988756009,11.825048221409341,12.083451977536606,12.345119996613247,12.610063955123938,12.878295467455942,13.149826086772048,13.42466730586372,13.702830557985108,13.984327217668513,14.269168601521828,14.55736596900856,14.848930523210871,15.143873411576273,15.44220572664832,15.743938506781891,16.04908273684337,16.35764934889634,16.66964922287304,16.985093187232053,17.30399201960269,17.62635644741625,17.95219714852476,18.281524751807332,18.614349837764564,18.95068293910138,19.290534541298456,19.633915083172692,19.98083495742689,20.331304511189067,20.685334046541502,21.042933821039977,21.404114048223256,21.76888489811322,22.137256497705877,22.50923893145328,22.884842241736916,23.264076429332462,23.6469514538663,24.033477234264016,24.42366364919083,24.817520537484558,25.21505769858089,25.61628489293138,26.021211842414342,26.429848230738664,26.842203703840827,27.258287870275353,27.678110301598522,28.10168053274597,28.529008062403893,28.96010235337422,29.39497283293396,29.83362889318845,30.276079891419332,30.722335150426627,31.172403958865512,31.62629557157785,32.08401920991837,32.54558406207592,33.010999283389665,33.4802739966603,33.953417292456834,34.430438229418264,34.911345834551085,35.39614910352207,35.88485700094671,36.37747846067349,36.87402238606382,37.37449765026789,37.87891309649659,38.38727753828926,38.89959975977785,39.41588851594697,39.93615253289054,40.460400508064545,40.98864111053629,41.520882981230194,42.05713473317016,42.597404951718396,43.141702194811224,43.6900349931913,44.24241185063697,44.798841244188324,45.35933162437017,45.92389141541209,46.49252901546552,47.065252796817916,47.64207110610409,48.22299226451468,48.808024568002054,49.3971762874833,49.9904556690408,50.587870934119984,51.189430279724725,51.79514187861014,52.40501387947288,53.0190544071392,53.637271562750364,54.259673423945976,54.88626804504493,55.517063457223934,56.15206766869424,56.79128866487574,57.43473440856916,58.08241284012621,58.734331877617365,59.39049941699807,60.05092333227251,60.715611475655585,61.38457167773311,62.057811747619894,62.7353394731159,63.417162620860914,64.10328893648692,64.79372614476921,65.48848194977529,66.18756403501224,66.89098006357258,67.59873767827808,68.31084450182222,69.02730813691093,69.74813616640164,70.47333615344107,71.20291564160104,71.93688215501312,72.67524319850172,73.41800625771542,74.16517879925733,74.9167682708136,75.67278210128072,76.43322770089146,77.1981124613393,77.96744375590167,78.74122893956174,79.51947534912904,80.30219030335869,81.08938110306934,81.88105503125999,82.67721935322541,83.4778813166706,84.28304815182372,85.09272707154808,85.90692527145302,86.72564993000343,87.54890820862819,88.3767072518277,89.2090541872801,90.04595612594655,90.88742016217518,91.73345337380438,92.58406282226491,93.43925555268066,94.29903859396902,95.16341895893969,96.03240364439274,96.9059996312159,97.78421388448044,98.6670533535366,99.55452497210776],t.n)
@@ -124294,8 +124294,8 @@ B.XQ=new A.Xy(0,"start")
 B.XR=new A.Xy(1,"end")
 B.z0=new A.Xz(0,"nearestOverlay")
 B.XS=new A.Xz(1,"rootOverlay")
-B.a72=new A.bA("No query parameters received. Open URL format:\n/share?title=Example&text=Hello&url=https://example.com",null,null,null,null,null,null,null,null,null,null)
-B.XT=new A.ay(B.b5,B.a72,null)
+B.a71=new A.bA("No query parameters received. Open URL format:\n/share?title=Example&text=Hello&url=https://example.com",null,null,null,null,null,null,null,null,null,null)
+B.XT=new A.ay(B.b5,B.a71,null)
 B.Mw=new A.ap(0,16,0,8)
 B.FW=new A.Sx(null)
 B.fo=new A.co(null,4,null,null)
@@ -124678,10 +124678,10 @@ B.a0Y=new A.mO(3,"hide")
 B.abO=new A.mO(4,"remove")
 B.a0Z=new A.mO(5,"timeout")
 B.a1_=new A.Bq(null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a7f=new A.bA("Password copied to clipboard",null,null,null,null,null,null,null,null,null,null)
-B.DP=new A.ry(B.a7f,null,null,null,null,null,null,null,null,null,null,null,null,B.h5,!1,null,null,null,B.H,null)
-B.a70=new A.bA("Session history cleared",null,null,null,null,null,null,null,null,null,null)
-B.a10=new A.ry(B.a70,null,null,null,null,null,null,null,null,null,null,null,null,B.bF,!1,null,null,null,B.H,null)
+B.a7g=new A.bA("Password copied to clipboard",null,null,null,null,null,null,null,null,null,null)
+B.DP=new A.ry(B.a7g,null,null,null,null,null,null,null,null,null,null,null,null,B.h5,!1,null,null,null,B.H,null)
+B.a7_=new A.bA("Session history cleared",null,null,null,null,null,null,null,null,null,null)
+B.a10=new A.ry(B.a7_,null,null,null,null,null,null,null,null,null,null,null,null,B.bF,!1,null,null,null,B.H,null)
 B.DQ=new A.KB(0,"permissive")
 B.a11=new A.KB(1,"normal")
 B.a12=new A.KB(2,"forced")
@@ -125079,49 +125079,49 @@ B.a6x=new A.bA("\u2728 Magic link sent! Check your inbox to sign in.",null,B.a2f
 B.a6y=new A.bA("Use 24-hour time",null,null,null,null,null,null,null,null,null,null)
 B.a6z=new A.bA("OmniToolkit is a modern daily productivity suite featuring Calendar with Clock & Notes, 3D Calculator & Unit Converter, World Radio Explorer, US Lookup, and Password Generator.",null,null,null,null,null,null,null,null,null,null)
 B.a6B=new A.bA("Cancel",null,null,null,null,null,null,null,null,null,null)
-B.a4t=new A.G(!0,null,null,null,null,null,12,B.U,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a6D=new A.bA("Lifetime Access ($4.99 One-Time)",null,B.a4t,null,null,null,null,null,null,null,null)
-B.a6E=new A.bA("Save",null,null,null,null,null,null,null,null,null,null)
-B.a6F=new A.bA("Continue with Google",null,B.fr,null,null,null,null,null,null,null,null)
-B.a6H=new A.bA("Display time in 24-hour format across modules",null,null,null,null,null,null,null,null,null,null)
-B.a6I=new A.bA("Shared Content",null,null,null,null,null,null,null,null,null,null)
-B.a6J=new A.bA("Upgrade to Lifetime Pass ($4.99)",null,null,null,null,null,null,null,null,null,null)
-B.a6L=new A.bA("Clear Target",null,null,null,null,null,null,null,null,null,null)
-B.a6M=new A.bA("Add Note",null,null,null,null,null,null,null,null,null,null)
-B.a6O=new A.bA("Close",null,null,null,null,null,null,null,null,null,null)
-B.a6P=new A.bA("Secure 256-bit Encrypted Checkout via Stripe",null,B.oq,B.aQ,null,null,null,null,null,null,null)
-B.a6Q=new A.bA("Symbols (@$&#)",null,null,null,null,null,null,null,null,null,null)
-B.a6R=new A.bA("Type a 3-digit area code (e.g. 212, 415, 704) above.",null,B.hV,B.aQ,null,null,null,null,null,null,null)
-B.a6S=new A.bA("Unlock Lifetime Access",null,null,null,null,null,null,null,null,null,null)
-B.El=new A.G(!0,B.bc,null,null,null,null,null,B.U,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a6T=new A.bA("Version: 1.0.0+1",null,B.El,null,null,null,null,null,null,null,null)
-B.a6U=new A.bA("Top Stations",null,null,null,null,null,null,null,null,null,null)
-B.a6W=new A.bA("Sign Out",null,B.dD,null,null,null,null,null,null,null,null)
-B.a6X=new A.bA("Go Home",null,null,null,null,null,null,null,null,null,null)
-B.a6Y=new A.bA("View trial status, license details, and logout",null,null,null,null,null,null,null,null,null,null)
-B.a7_=new A.bA("Account & Billing",null,B.dD,null,null,null,null,null,null,null,null)
-B.a73=new A.bA("Settings",null,null,null,null,null,null,null,null,null,null)
-B.a74=new A.bA("USD",null,B.El,null,null,null,null,null,null,null,null)
-B.a75=new A.bA("Password Generator",null,null,null,null,null,null,null,null,null,null)
-B.a76=new A.bA("Continue to App",null,B.fr,null,null,null,null,null,null,null,null)
-B.a77=new A.bA("Uppercase letters (A-Z)",null,null,null,null,null,null,null,null,null,null)
-B.a78=new A.bA("Target Date:",null,B.hV,null,null,null,null,null,null,null,null)
-B.a7a=new A.bA("Numbers (0-9)",null,null,null,null,null,null,null,null,null,null)
-B.a7b=new A.bA("Calendar & Clock",null,null,null,null,null,null,null,null,null,null)
-B.a7c=new A.bA("Send Magic Link",null,B.fr,null,null,null,null,null,null,null,null)
-B.Eh=new A.G(!0,B.bc,null,null,null,null,15,B.aq,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a7d=new A.bA("No area code results found.",null,B.Eh,null,null,null,null,null,null,null,null)
-B.a7e=new A.bA("No lookup results found.",null,B.Eh,null,null,null,null,null,null,null,null)
-B.Ek=new A.G(!0,B.bc,null,null,null,null,14,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a7g=new A.bA("Thank you for your purchase! You now have unlimited lifetime access to OmniToolkit across all your devices.",null,B.Ek,B.aQ,null,null,null,null,null,null,null)
-B.a7h=new A.bA("US Location & Area Code Lookup",null,null,null,null,null,null,null,null,null,null)
-B.a7i=new A.bA("Start Date:",null,B.hV,null,null,null,null,null,null,null,null)
-B.a7j=new A.bA("Type a ZIP code (e.g. 90210), City (e.g. Dallas), or County name above.",null,B.hV,B.aQ,null,null,null,null,null,null,null)
-B.a7k=new A.bA("Retry Checkout",null,null,null,null,null,null,null,null,null,null)
+B.a6D=new A.bA("Save",null,null,null,null,null,null,null,null,null,null)
+B.a6E=new A.bA("Continue with Google",null,B.fr,null,null,null,null,null,null,null,null)
+B.a6G=new A.bA("Display time in 24-hour format across modules",null,null,null,null,null,null,null,null,null,null)
+B.a6H=new A.bA("Shared Content",null,null,null,null,null,null,null,null,null,null)
+B.a6J=new A.bA("Clear Target",null,null,null,null,null,null,null,null,null,null)
+B.a6K=new A.bA("Add Note",null,null,null,null,null,null,null,null,null,null)
+B.a6M=new A.bA("Close",null,null,null,null,null,null,null,null,null,null)
+B.a6N=new A.bA("Secure 256-bit Encrypted Checkout via Stripe",null,B.oq,B.aQ,null,null,null,null,null,null,null)
 B.Eo=new A.G(!0,null,null,null,null,null,16,B.U,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a7l=new A.bA("Generate Password",null,B.Eo,null,null,null,null,null,null,null,null)
-B.a7m=new A.bA("Your checkout process was cancelled. No charges were made to your account.",null,B.Ek,B.aQ,null,null,null,null,null,null,null)
-B.a7n=new A.bA("Get Lifetime Access Now",null,B.Eo,null,null,null,null,null,null,null,null)
+B.a6O=new A.bA("Buy Now ($9.99 USD)",null,B.Eo,null,null,null,null,null,null,null,null)
+B.a6P=new A.bA("Symbols (@$&#)",null,null,null,null,null,null,null,null,null,null)
+B.a6Q=new A.bA("Type a 3-digit area code (e.g. 212, 415, 704) above.",null,B.hV,B.aQ,null,null,null,null,null,null,null)
+B.a6R=new A.bA("Unlock Lifetime Access",null,null,null,null,null,null,null,null,null,null)
+B.El=new A.G(!0,B.bc,null,null,null,null,null,B.U,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
+B.a6S=new A.bA("Version: 1.0.0+1",null,B.El,null,null,null,null,null,null,null,null)
+B.a6T=new A.bA("Top Stations",null,null,null,null,null,null,null,null,null,null)
+B.a6V=new A.bA("Sign Out",null,B.dD,null,null,null,null,null,null,null,null)
+B.a6W=new A.bA("Go Home",null,null,null,null,null,null,null,null,null,null)
+B.a6X=new A.bA("View trial status, license details, and logout",null,null,null,null,null,null,null,null,null,null)
+B.a6Z=new A.bA("Account & Billing",null,B.dD,null,null,null,null,null,null,null,null)
+B.a72=new A.bA("Settings",null,null,null,null,null,null,null,null,null,null)
+B.a73=new A.bA("USD",null,B.El,null,null,null,null,null,null,null,null)
+B.a74=new A.bA("Password Generator",null,null,null,null,null,null,null,null,null,null)
+B.a75=new A.bA("Continue to App",null,B.fr,null,null,null,null,null,null,null,null)
+B.a76=new A.bA("Uppercase letters (A-Z)",null,null,null,null,null,null,null,null,null,null)
+B.a77=new A.bA("Target Date:",null,B.hV,null,null,null,null,null,null,null,null)
+B.a78=new A.bA("Buy Lifetime Access ($9.99 USD)",null,null,null,null,null,null,null,null,null,null)
+B.a4t=new A.G(!0,null,null,null,null,null,12,B.U,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
+B.a7a=new A.bA("Lifetime Access ($9.99 One-Time)",null,B.a4t,null,null,null,null,null,null,null,null)
+B.a7b=new A.bA("Numbers (0-9)",null,null,null,null,null,null,null,null,null,null)
+B.a7c=new A.bA("Calendar & Clock",null,null,null,null,null,null,null,null,null,null)
+B.a7d=new A.bA("Send Magic Link",null,B.fr,null,null,null,null,null,null,null,null)
+B.Eh=new A.G(!0,B.bc,null,null,null,null,15,B.aq,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
+B.a7e=new A.bA("No area code results found.",null,B.Eh,null,null,null,null,null,null,null,null)
+B.a7f=new A.bA("No lookup results found.",null,B.Eh,null,null,null,null,null,null,null,null)
+B.Ek=new A.G(!0,B.bc,null,null,null,null,14,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
+B.a7h=new A.bA("Thank you for your purchase! You now have unlimited lifetime access to OmniToolkit across all your devices.",null,B.Ek,B.aQ,null,null,null,null,null,null,null)
+B.a7i=new A.bA("US Location & Area Code Lookup",null,null,null,null,null,null,null,null,null,null)
+B.a7j=new A.bA("Start Date:",null,B.hV,null,null,null,null,null,null,null,null)
+B.a7k=new A.bA("Type a ZIP code (e.g. 90210), City (e.g. Dallas), or County name above.",null,B.hV,B.aQ,null,null,null,null,null,null,null)
+B.a7l=new A.bA("Retry Checkout",null,null,null,null,null,null,null,null,null,null)
+B.a7m=new A.bA("Generate Password",null,B.Eo,null,null,null,null,null,null,null,null)
+B.a7n=new A.bA("Your checkout process was cancelled. No charges were made to your account.",null,B.Ek,B.aQ,null,null,null,null,null,null,null)
 B.Ep=new A.a0f(0,"system")
 B.a7q=new A.a0f(2,"dark")
 B.Xo=new A.i(0.056,0.024)
