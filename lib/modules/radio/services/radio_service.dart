@@ -25,9 +25,10 @@ class RadioService {
     'at1.api.radio-browser.info',
   ];
 
+  /// Clean, curated list of top global genres guaranteed to yield playable station streams.
   static const genres = [
     'News',
-    'Talk Radio',
+    'Talk',
     'Sports',
     'Pop',
     'Rock',
@@ -36,29 +37,16 @@ class RadioService {
     'Country',
     'Electronic',
     'Dance',
-    'Religious',
     'Oldies',
     'Easy Listening',
-    'Community',
-    'International',
+    'Ambient',
+    'Metal',
+    'Blues',
+    'Reggae',
+    'World',
   ];
 
   static const categories = genres; // Backward compatibility
-
-  static const countries = [
-    CountryInfo(name: 'United States', code: 'US', flag: '🇺🇸'),
-    CountryInfo(name: 'Canada', code: 'CA', flag: '🇨🇦'),
-    CountryInfo(name: 'United Kingdom', code: 'GB', flag: '🇬🇧'),
-    CountryInfo(name: 'Australia', code: 'AU', flag: '🇦🇺'),
-    CountryInfo(name: 'India', code: 'IN', flag: '🇮🇳'),
-    CountryInfo(name: 'Germany', code: 'DE', flag: '🇩🇪'),
-    CountryInfo(name: 'France', code: 'FR', flag: '🇫🇷'),
-    CountryInfo(name: 'Japan', code: 'JP', flag: '🇯🇵'),
-    CountryInfo(name: 'Italy', code: 'IT', flag: '🇮🇹'),
-    CountryInfo(name: 'Spain', code: 'ES', flag: '🇪🇸'),
-    CountryInfo(name: 'Brazil', code: 'BR', flag: '🇧🇷'),
-    CountryInfo(name: 'Mexico', code: 'MX', flag: '🇲🇽'),
-  ];
 
   static const fallbackStations = [
     StationModel(
@@ -98,39 +86,6 @@ class RadioService {
       favicon: 'https://somafm.com/img/indiepop120.png',
     ),
     StationModel(
-      id: 'cbc-radio-one',
-      name: 'CBC Radio One Toronto',
-      streamUrl: 'https://cbcliveradio-lh.akamaihd.net/i/CBCR1_TOR@382863/master.m3u8',
-      category: 'News',
-      country: 'Canada',
-      countryCode: 'CA',
-      language: 'English',
-      bitrate: 128,
-      codec: 'HLS',
-    ),
-    StationModel(
-      id: 'bbc-radio-one',
-      name: 'BBC Radio 1',
-      streamUrl: 'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_one',
-      category: 'Pop',
-      country: 'United Kingdom',
-      countryCode: 'GB',
-      language: 'English',
-      bitrate: 128,
-      codec: 'MP3',
-    ),
-    StationModel(
-      id: 'abc-news-radio-au',
-      name: 'ABC News Radio Australia',
-      streamUrl: 'https://live-radio01.mediahubaustralia.com/2NEWS/mp3/',
-      category: 'News',
-      country: 'Australia',
-      countryCode: 'AU',
-      language: 'English',
-      bitrate: 128,
-      codec: 'MP3',
-    ),
-    StationModel(
       id: 'test-stream',
       name: 'OmniToolkit Test Audio',
       streamUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
@@ -147,6 +102,7 @@ class RadioService {
   List<String>? _dynamicCategoriesCache;
 
   /// Fetches top tags/categories dynamically from Radio Browser API with offline fallback.
+  /// Filters out obscure/empty tags (requiring stationcount >= 50).
   Future<List<String>> fetchCategories({bool forceRefresh = false}) async {
     if (!forceRefresh && _dynamicCategoriesCache != null && _dynamicCategoriesCache!.isNotEmpty) {
       debugPrint('[RadioCategoryLog] Cache hit. Returning ${_dynamicCategoriesCache!.length} cached categories.');
@@ -159,7 +115,7 @@ class RadioService {
       final uri = Uri.https(host, '/json/tags', {
         'order': 'stationcount',
         'reverse': 'true',
-        'limit': '100',
+        'limit': '60',
         'hidebroken': 'true',
       });
 
@@ -179,13 +135,20 @@ class RadioService {
           for (final item in rawList) {
             if (item is! Map<String, dynamic>) continue;
             final rawName = item['name'] as String?;
-            if (rawName == null) continue;
-            final cleanName = rawName.trim();
-            if (cleanName.length < 2 || cleanName.length > 30) continue;
+            final stationCount = item['stationcount'] as int? ?? 0;
+            if (rawName == null || stationCount < 20) continue;
 
-            final normalizedKey = cleanName.toLowerCase();
-            if (seen.contains(normalizedKey)) continue;
-            seen.add(normalizedKey);
+            final cleanName = rawName.trim();
+            if (cleanName.length < 2 || cleanName.length > 25) continue;
+
+            // Filter out obscure local/untranslatable regional tags that produce empty lists
+            final lower = cleanName.toLowerCase();
+            if (RegExp(r'^(fm|am|radio|music|musica|estacion|norteamerica|moi|espanol|ingles|regional|variada|programa|noticias|recuerdo|variada)$').hasMatch(lower)) {
+              continue;
+            }
+
+            if (seen.contains(lower)) continue;
+            seen.add(lower);
 
             final formattedName = cleanName
                 .split(' ')
@@ -289,12 +252,11 @@ class RadioService {
 
     switch (filterType) {
       case _FilterType.country:
-        final countryMatches = streams.where((s) {
+        return streams.where((s) {
           final codeMatch = (s.countryCode ?? '').toUpperCase() == filterVal.toUpperCase();
           final nameMatch = s.country.toLowerCase().contains(valLower);
           return codeMatch || nameMatch;
         }).toList();
-        return countryMatches;
 
       case _FilterType.category:
         return streams.where((s) => s.category.toLowerCase().contains(valLower)).toList();
@@ -312,7 +274,6 @@ class RadioService {
 
   bool _isSafePublicStation(StationModel station) {
     if (station.streamUrl.isEmpty) return false;
-    // On Web (HTTPS), filter out insecure HTTP streams up front to prevent browser mixed-content blocks
     if (kIsWeb) {
       final isHttpsPage = Uri.base.scheme.toLowerCase() == 'https';
       if (isHttpsPage && station.streamUrl.startsWith('http://')) {

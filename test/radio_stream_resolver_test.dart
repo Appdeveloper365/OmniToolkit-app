@@ -52,11 +52,9 @@ void main() {
       expect(model.favicon, 'https://test.stream/logo.png');
     });
 
-    test('RadioService country and genre directories are configured', () {
+    test('RadioService genre directory is configured', () {
       expect(RadioService.genres, contains('Jazz'));
       expect(RadioService.genres, contains('Pop'));
-      expect(RadioService.countries.any((c) => c.code == 'US'), isTrue);
-      expect(RadioService.countries.any((c) => c.code == 'GB'), isTrue);
     });
   });
 }

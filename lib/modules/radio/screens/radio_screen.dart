@@ -25,31 +25,22 @@ class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProv
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabChange);
   }
 
   void _handleTabChange() {
     if (_tabController.indexIsChanging) {
-      // Clear filter selections when switching primary tabs so other tabs aren't overridden
       switch (_tabController.index) {
         case 0: // Browse tab
-          ref.read(selectedCountryProvider.notifier).state = null;
           ref.read(selectedGenreProvider.notifier).state = null;
           break;
-        case 1: // Countries tab
+        case 1: // Genres tab
           ref.read(selectedCategoryProvider.notifier).state = null;
-          ref.read(selectedGenreProvider.notifier).state = null;
           ref.read(radioSearchQueryProvider.notifier).state = '';
           _searchController.clear();
           break;
-        case 2: // Genres tab
-          ref.read(selectedCategoryProvider.notifier).state = null;
-          ref.read(selectedCountryProvider.notifier).state = null;
-          ref.read(radioSearchQueryProvider.notifier).state = '';
-          _searchController.clear();
-          break;
-        case 3: // Favorites tab
+        case 2: // Favorites tab
           break;
       }
     }
@@ -70,7 +61,6 @@ class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProv
 
     final selectedCategory = ref.watch(selectedCategoryProvider);
     final selectedGenre = ref.watch(selectedGenreProvider);
-    final selectedCountry = ref.watch(selectedCountryProvider);
     final stationsAsync = ref.watch(stationListProvider);
     final favoritesAsync = ref.watch(favoritesProvider);
     final categoriesAsync = ref.watch(radioCategoriesProvider(_forceRefreshCategories));
@@ -88,7 +78,6 @@ class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProv
                 labelStyle: const TextStyle(fontWeight: FontWeight.bold),
                 tabs: const [
                   Tab(icon: Icon(Icons.search_rounded, size: 20), text: 'Browse'),
-                  Tab(icon: Icon(Icons.public_rounded, size: 20), text: 'Countries'),
                   Tab(icon: Icon(Icons.category_rounded, size: 20), text: 'Genres'),
                   Tab(icon: Icon(Icons.favorite_rounded, size: 20), text: 'Favorites'),
                 ],
@@ -107,16 +96,7 @@ class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProv
                       isDark,
                     ),
 
-                    // Tab 2: Country Directory
-                    _buildCountriesTab(
-                      context,
-                      ref,
-                      selectedCountry,
-                      stationsAsync,
-                      isDark,
-                    ),
-
-                    // Tab 3: Genre Directory
+                    // Tab 2: Genre Directory
                     _buildGenresTab(
                       context,
                       ref,
@@ -126,7 +106,7 @@ class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProv
                       isDark,
                     ),
 
-                    // Tab 4: Favorites
+                    // Tab 3: Favorites
                     _buildFavoritesTab(
                       context,
                       ref,
@@ -257,52 +237,6 @@ class _RadioScreenState extends ConsumerState<RadioScreen> with SingleTickerProv
         const SizedBox(height: 6),
         Expanded(
           child: _buildStationListView(stationsAsync, 'Choose a station to begin listening.'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCountriesTab(
-    BuildContext context,
-    WidgetRef ref,
-    CountryInfo? selectedCountry,
-    AsyncValue<List<StationModel>> stationsAsync,
-    bool isDark,
-  ) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(12),
-          child: SizedBox(
-            height: 48,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: RadioService.countries.length,
-              itemBuilder: (context, index) {
-                final c = RadioService.countries[index];
-                final isSel = selectedCountry?.code == c.code;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    avatar: Text(c.flag, style: const TextStyle(fontSize: 16)),
-                    label: Text(c.name),
-                    selected: isSel,
-                    onSelected: (_) {
-                      ref.read(selectedCountryProvider.notifier).state = isSel ? null : c;
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-        Expanded(
-          child: _buildStationListView(
-            stationsAsync,
-            selectedCountry != null
-                ? 'No stations found for ${selectedCountry.name}'
-                : 'Select a country above to load radio stations.',
-          ),
         ),
       ],
     );
