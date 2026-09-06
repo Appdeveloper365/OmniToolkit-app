@@ -44,9 +44,103 @@ class RadioService {
     'Blues',
     'Reggae',
     'World',
+    '80s',
+    '90s',
+    '2000s',
+    'House',
+    'Techno',
+    'Chillout',
+    'Disco',
+    'Soul',
+    'Funk',
+    'Folk',
+    'Alternative',
+    'Christian',
+    'Gospel',
+    'Lounge',
   ];
 
   static const categories = genres; // Backward compatibility
+
+  /// Blacklist of tags specified by user that yield empty/broken lists or non-genre metadata.
+  static const _blacklistedTags = {
+    'estacion',
+    'estación',
+    'mexico',
+    'méxico',
+    'norteamerica',
+    'norteamérica',
+    'moi merino',
+    'musica',
+    'música',
+    'latinoamerica',
+    'latinoamérica',
+    'espanol',
+    'español',
+    'america',
+    'américa',
+    'pop music',
+    'top 40',
+    'top40',
+    'public radio',
+    'pop rock',
+    'classic rock',
+    'classic hits',
+    'adult contemporary',
+    'musica pop',
+    'música pop',
+    'community radio',
+    'local news',
+    'regional mexican',
+    'regional mexicana',
+    'musica popular mexicana',
+    'música popular mexicana',
+    'local radio',
+    'musica regional',
+    'música regional',
+    'mexican music',
+    'musica mexicana',
+    'música mexicana',
+    'music regional mexicana',
+    'musica regional mexicana',
+    'música regional mexicana',
+    'regional music',
+    'regional radio',
+    'entretenimiento',
+    'hits',
+    'information',
+    'juvenil',
+    'grupera',
+    'variety',
+    'programas en vivo',
+    'musica en espanol e ingles',
+    'música en español e inglés',
+    'musica y noticias',
+    'música y noticias',
+    'musica variada',
+    'música variada',
+    'traditional mexican music',
+    'musica del recuerdo',
+    'música del recuerdo',
+    'ciudad de mexico',
+    'ciudad de méxico',
+    'banda',
+    'radio hablada',
+    'valle de mexico',
+    'valle de méxico',
+    'am',
+    'fm',
+    'mexico city',
+    'cdmx',
+    'grupero',
+    'local',
+    'musica tradicional mexicana',
+    'música tradicional mexicana',
+    'full service',
+    'musica en ingles',
+    'música en inglés',
+    'rap',
+  };
 
   static const fallbackStations = [
     StationModel(
@@ -102,7 +196,7 @@ class RadioService {
   List<String>? _dynamicCategoriesCache;
 
   /// Fetches top tags/categories dynamically from Radio Browser API with offline fallback.
-  /// Filters out obscure/empty tags (requiring stationcount >= 50).
+  /// Filters out all requested empty, non-genre, or zero-result tags.
   Future<List<String>> fetchCategories({bool forceRefresh = false}) async {
     if (!forceRefresh && _dynamicCategoriesCache != null && _dynamicCategoriesCache!.isNotEmpty) {
       debugPrint('[RadioCategoryLog] Cache hit. Returning ${_dynamicCategoriesCache!.length} cached categories.');
@@ -115,7 +209,7 @@ class RadioService {
       final uri = Uri.https(host, '/json/tags', {
         'order': 'stationcount',
         'reverse': 'true',
-        'limit': '60',
+        'limit': '100',
         'hidebroken': 'true',
       });
 
@@ -136,14 +230,15 @@ class RadioService {
             if (item is! Map<String, dynamic>) continue;
             final rawName = item['name'] as String?;
             final stationCount = item['stationcount'] as int? ?? 0;
-            if (rawName == null || stationCount < 20) continue;
+            if (rawName == null || stationCount < 30) continue;
 
             final cleanName = rawName.trim();
             if (cleanName.length < 2 || cleanName.length > 25) continue;
 
-            // Filter out obscure local/untranslatable regional tags that produce empty lists
             final lower = cleanName.toLowerCase();
-            if (RegExp(r'^(fm|am|radio|music|musica|estacion|norteamerica|moi|espanol|ingles|regional|variada|programa|noticias|recuerdo|variada)$').hasMatch(lower)) {
+
+            // Check against explicit blacklist
+            if (_blacklistedTags.contains(lower)) {
               continue;
             }
 
@@ -160,7 +255,7 @@ class RadioService {
             freshCategories.add(formattedName);
           }
 
-          debugPrint('[RadioCategoryLog] Categories after filtering and deduplication count: ${freshCategories.length}');
+          debugPrint('[RadioCategoryLog] Categories after filtering count: ${freshCategories.length}');
 
           if (freshCategories.isNotEmpty) {
             _dynamicCategoriesCache = freshCategories;
