@@ -134,7 +134,7 @@ void main() {
       initialRoute: '/login',
     );
 
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Welcome to OmniToolkit'), findsNothing);
     expect(find.text('Calendar'), findsWidgets);
@@ -152,7 +152,7 @@ void main() {
       initialRoute: '/login',
     );
 
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Welcome to OmniToolkit'), findsNothing);
     expect(find.text('Unlock Lifetime Access'), findsOneWidget);
@@ -170,7 +170,7 @@ void main() {
       initialRoute: '/login?next=%2Faccount',
     );
 
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Welcome to OmniToolkit'), findsNothing);
     expect(find.text('Account & Billing'), findsOneWidget);
@@ -188,7 +188,7 @@ void main() {
       initialRoute: '/login?next=https%3A%2F%2Fexample.com%2Faccount',
     );
 
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Welcome to OmniToolkit'), findsNothing);
     expect(find.text('Calendar'), findsWidgets);
@@ -206,7 +206,7 @@ void main() {
       initialRoute: '/login?next=%2Flogin',
     );
 
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Welcome to OmniToolkit'), findsNothing);
     expect(find.text('Calendar'), findsWidgets);

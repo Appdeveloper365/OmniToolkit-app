@@ -57,28 +57,6 @@ class _ProtectedRouteView extends ConsumerWidget {
       );
     }
 
-    if (authState.isAuthenticated && path == '/login') {
-      final nextLocation = uri.queryParameters['next'];
-      final nextUri = nextLocation == null || nextLocation.isEmpty
-          ? null
-          : Uri.tryParse(nextLocation);
-      final isSupportedNextRoute = nextUri != null &&
-          !nextUri.hasScheme &&
-          nextUri.host.isEmpty &&
-          nextUri.userInfo.isEmpty &&
-          !nextUri.hasFragment &&
-          nextUri.path.isNotEmpty &&
-          nextUri.path.startsWith('/') &&
-          nextUri.path != '/login';
-      if (isSupportedNextRoute) {
-        return _ProtectedRouteView(uri: nextUri);
-      }
-      if (!user.isEntitled) {
-        return const PricingScreen();
-      }
-      return const MainNavigation();
-    }
-
     if (user != null &&
         !user.isEntitled &&
         path != '/login' &&
