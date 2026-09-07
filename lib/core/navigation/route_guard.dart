@@ -58,6 +58,13 @@ class _ProtectedRouteView extends ConsumerWidget {
     }
 
     if (authState.isAuthenticated && path == '/login') {
+      final nextLocation = uri.queryParameters['next'];
+      final nextUri = nextLocation == null || nextLocation.isEmpty
+          ? null
+          : Uri.tryParse(nextLocation);
+      if (nextUri != null && nextUri.path.isNotEmpty && nextUri.path != '/login') {
+        return _ProtectedRouteView(uri: nextUri);
+      }
       if (!user.isEntitled) {
         return const PricingScreen();
       }

@@ -157,4 +157,22 @@ void main() {
     expect(find.text('Welcome to OmniToolkit'), findsNothing);
     expect(find.text('Unlock Lifetime Access'), findsOneWidget);
   });
+
+  testWidgets('authenticated login redirect preserves supported next route',
+      (WidgetTester tester) async {
+    await _pumpGuardedApp(
+      tester,
+      initialState: AuthState(
+        isAuthenticated: true,
+        isLoading: false,
+        userModel: _buildUser(entitled: true),
+      ),
+      initialRoute: '/login?next=%2Faccount',
+    );
+
+    await tester.pump();
+
+    expect(find.text('Welcome to OmniToolkit'), findsNothing);
+    expect(find.text('Account & Billing'), findsOneWidget);
+  });
 }
