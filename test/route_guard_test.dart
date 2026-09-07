@@ -121,4 +121,22 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsNothing);
     expect(find.text('Unlock Lifetime Access'), findsOneWidget);
   });
+
+  testWidgets('authenticated users are redirected away from login',
+      (WidgetTester tester) async {
+    await _pumpGuardedApp(
+      tester,
+      initialState: AuthState(
+        isAuthenticated: true,
+        isLoading: false,
+        userModel: _buildUser(entitled: true),
+      ),
+      initialRoute: '/login',
+    );
+
+    await tester.pump();
+
+    expect(find.text('Welcome to OmniToolkit'), findsNothing);
+    expect(find.text('Calendar'), findsWidgets);
+  });
 }
