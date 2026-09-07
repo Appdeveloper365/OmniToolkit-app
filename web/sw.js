@@ -1,4 +1,4 @@
-const CACHE_NAME = 'omnitoolkit-v1';
+const CACHE_NAME = 'omnitoolkit-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -34,9 +34,27 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  const isDownloadRequest = url.pathname.includes('/downloads/');
+  const isNavigationRequest = event.request.mode === 'navigate';
+
+  if (isDownloadRequest) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request).catch(() => caches.match('./index.html'));
+      if (response) {
+        return response;
+      }
+
+      return fetch(event.request).catch(() => {
+        if (isNavigationRequest) {
+          return caches.match('./index.html');
+        }
+        throw new Error(`Network request failed for ${url.pathname}`);
+      });
     })
   );
 });
