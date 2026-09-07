@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:io' as io;
+
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'user_model.dart';
@@ -80,8 +80,8 @@ class AppAuthNotifier extends Notifier<AuthState> {
     
     try {
       // Windows and Web use Firebase OAuth provider (googleSignIn not supported on Windows)
-      if (kIsWeb || (io.Platform.isWindows)) {
-        debugPrint('[Auth] SIGNIN: Using Firebase OAuth provider flow (kIsWeb=$kIsWeb, isWindows=${io.Platform.isWindows})');
+      if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
+        debugPrint('[Auth] SIGNIN: Using Firebase OAuth provider flow (kIsWeb=$kIsWeb, platform=${defaultTargetPlatform})');
         final provider = GoogleAuthProvider()
           ..addScope('email')
           ..addScope('profile');
@@ -158,163 +158,127 @@ class AppAuthNotifier extends Notifier<AuthState> {
     final firebaseUser = _auth.currentUser;
     if (firebaseUser == null) {
       state = state.copyWith(
-          errorMessage: () => 'Please sign in before purchasing.');
+        isLoading: false,
+        errorMessage: () => 'User not found',
+      );
       return;
     }
 
     try {
-      await _firestore.collection('users').doc(firebaseUser.uid).set({
-        'disclaimerAccepted': true,
-        'disclaimerAcceptedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-    } on FirebaseException catch (error) {
+      await _firestore
+          .collection('users')
+          .doc(firebaseUser.uid)
+          .update({'disclaimerAccepted': true});
+    } catch (error) {
+      debugPrint('[Auth] ERROR: Failed to accept disclaimer: $error');
       state = state.copyWith(
-        errorMessage: () =>
-            error.message ?? 'Could not save purchase acknowledgement.',
+        isLoading: false,
+        errorMessage: () => 'Failed to accept disclaimer',
       );
-      rethrow;
     }
   }
 
   Future<void> signOut() async {
-    debugPrint('[Auth] SIGNOUT: Starting sign out');
-    if (!kIsWeb) {
-      debugPrint('[Auth] SIGNOUT: Signing out from GoogleSignIn');
-      await GoogleSignIn().signOut();
+    debugPrint('[Auth] SIGNOUT: Starting sign-out');
+    try {
+      await _auth.signOut();
+      if (!kIsWeb && defaultTargetPlatform != TargetPlatform.windows) {
+        await GoogleSignIn().signOut();
+      }
+    } catch (error, st) {
+      debugPrint('[Auth] ERROR: Failed to sign out: $error');
+      debugPrint('[Auth] STACKTRACE:\n$st');
     }
-    debugPrint('[Auth] SIGNOUT: Signing out from Firebase');
-    await _auth.signOut();
-    debugPrint('[Auth] SIGNOUT: Sign out completed');
   }
 
-  Future<void> _handleFirebaseUser(User? firebaseUser) async {
-    debugPrint('[Auth] HANDLE: Firebase user changed. User: ${firebaseUser?.email ?? "null"}');
-    
-    await _userSubscription?.cancel();
-    _userSubscription = null;
+  void _handleFirebaseUser(User? firebaseUser) async {
+    debugPrint('[Auth] HANDLE: Processing Firebase user. Email: ${firebaseUser?.email}');
 
     if (firebaseUser == null) {
-      debugPrint('[Auth] HANDLE: No user, setting unauthenticated state');
-      state = const AuthState(isAuthenticated: false, isLoading: false);
+      debugPrint('[Auth] HANDLE: User is null, setting to unauthenticated');
+      state = const AuthState(
+        isAuthenticated: false,
+        isLoading: false,
+      );
       return;
     }
 
-    debugPrint('[Auth] HANDLE: User authenticated, setting loading=true to fetch user doc');
-    state = state.copyWith(
-        isAuthenticated: true, isLoading: true, errorMessage: () => null);
-    
     try {
-      debugPrint('[Auth] HANDLE: Ensuring user document exists for UID: ${firebaseUser.uid}');
-      await _ensureUserDocument(firebaseUser);
-      debugPrint('[Auth] HANDLE: User document ensured, setting up listener');
-      
-      _userSubscription = _firestore
+      final userDoc = await _firestore
           .collection('users')
           .doc(firebaseUser.uid)
-          .snapshots()
-          .listen(
-        (snapshot) {
-          debugPrint('[Auth] LISTENER: User document snapshot received');
-          final data = snapshot.data();
-          if (data == null) {
-            debugPrint('[Auth] LISTENER: User document is null, setting error state');
-            state = state.copyWith(
-              userModel: () => null,
-              isAuthenticated: true,
-              isLoading: false,
-              errorMessage: () =>
-                  'Account record is unavailable. Please sign in again.',
-            );
-            return;
-          }
+          .get();
 
-          debugPrint('[Auth] LISTENER: User data loaded successfully, setting loading=false');
-          state = state.copyWith(
-            userModel: () => UserModel.fromMap(data, firebaseUser.uid),
-            isAuthenticated: true,
-            isLoading: false,
-            errorMessage: () => null,
-          );
-        },
-        onError: (Object error) {
-          debugPrint('[Auth] LISTENER ERROR: Failed to load user document: $error');
-          state = state.copyWith(
-            isLoading: false,
-            errorMessage: () =>
-                'Could not load account. Please check your connection.',
-          );
-        },
-      );
-      debugPrint('[Auth] HANDLE: Listener set up successfully');
-    } on FirebaseException catch (error, st) {
-      debugPrint('[Auth] HANDLE ERROR: FirebaseException - ${error.code}: ${error.message}');
-      debugPrint('[Auth] STACKTRACE:\n$st');
-      state = state.copyWith(
-        isAuthenticated: true,
-        isLoading: false,
-        errorMessage: () => error.message ?? 'Could not prepare your account.',
-      );
-    } catch (error, st) {
-      debugPrint('[Auth] HANDLE ERROR: Generic Exception - ${error.runtimeType}: $error');
-      debugPrint('[Auth] STACKTRACE:\n$st');
-      state = state.copyWith(
-        isAuthenticated: true,
-        isLoading: false,
-        errorMessage: () => 'Error preparing your account. Please try again.',
-      );
-    }
-  }
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+        final userModel = UserModel.fromMap(userData, firebaseUser.uid);
+        debugPrint('[Auth] HANDLE: User document found. Email: ${userModel.email}');
 
-  Future<void> _ensureUserDocument(User firebaseUser) async {
-    debugPrint('[Auth] ENSURE_USER: Creating user document if needed for UID: ${firebaseUser.uid}');
-    final userRef = _firestore.collection('users').doc(firebaseUser.uid);
-    
-    try {
-      await _firestore.runTransaction((transaction) async {
-        final snapshot = await transaction.get(userRef);
-        if (snapshot.exists) {
-          debugPrint('[Auth] ENSURE_USER: User document already exists, updating lastLoginAt');
-          transaction.set(
-            userRef,
-            {
-              'uid': firebaseUser.uid,
-              'email': firebaseUser.email ?? '',
-              'lastLoginAt': FieldValue.serverTimestamp(),
-            },
-            SetOptions(merge: true),
-          );
-          return;
+        state = AuthState(
+          userModel: userModel,
+          isAuthenticated: true,
+          isLoading: false,
+        );
+
+        // If new user, set to false. If old user and hasn't accepted, show disclaimer
+        if (userModel.disclaimerAccepted) {
+          debugPrint('[Auth] HANDLE: Disclaimer already accepted');
+        } else {
+          debugPrint('[Auth] HANDLE: Disclaimer not accepted yet');
         }
+      } else {
+        // New user document
+        debugPrint('[Auth] HANDLE: User document not found. Creating new user.');
+        final now = DateTime.now();
+        final trialStart = now;
+        final trialEnd = now.add(Duration(days: 7));
+        
+        final newUser = UserModel(
+          uid: firebaseUser.uid,
+          email: firebaseUser.email ?? 'unknown',
+          createdAt: now,
+          paymentStatus: 'unpaid',
+          hasLifetimeAccess: false,
+          trialStartDate: trialStart,
+          trialExpiresAt: trialEnd,
+          disclaimerAccepted: false,
+          premiumActive: false,
+        );
 
-        debugPrint('[Auth] ENSURE_USER: Creating new user document');
-        final now = Timestamp.now();
-        final trialExpiresAt =
-            Timestamp.fromDate(now.toDate().add(const Duration(days: 7)));
-        transaction.set(userRef, {
-          'uid': firebaseUser.uid,
-          'email': firebaseUser.email ?? '',
-          'createdAt': now,
-          'trialStartDate': now,
-          'trialExpiresAt': trialExpiresAt,
-          'paymentStatus': 'unpaid',
-          'hasLifetimeAccess': false,
-          'premium_active': false,
-          'purchaseDate': null,
-          'stripeCustomerId': null,
-          'stripeSessionId': null,
-          'disclaimerAccepted': false,
-          'disclaimerAcceptedAt': null,
-          'lastLoginAt': FieldValue.serverTimestamp(),
-        });
-        debugPrint('[Auth] ENSURE_USER: New user document created successfully');
-      });
-    } catch (error, st) {
-      debugPrint('[Auth] ENSURE_USER ERROR: $error');
+        // Create new user document
+        await _firestore
+            .collection('users')
+            .doc(firebaseUser.uid)
+            .set(newUser.toMap());
+
+        debugPrint('[Auth] HANDLE: Created new user document for ${firebaseUser.email}');
+
+        state = AuthState(
+          userModel: newUser,
+          isAuthenticated: true,
+          isLoading: false,
+        );
+      }
+    } on FirebaseException catch (error, st) {
+      debugPrint('[Auth] ERROR: Failed to fetch user: ${error.code} - ${error.message}');
       debugPrint('[Auth] STACKTRACE:\n$st');
-      rethrow;
+
+      // Still authenticated, but user model unavailable
+      state = AuthState(
+        isAuthenticated: true,
+        isLoading: false,
+        errorMessage: 'Unable to load user profile: ${error.message}',
+      );
+    } catch (error, st) {
+      debugPrint('[Auth] ERROR: Unexpected error: $error');
+      debugPrint('[Auth] STACKTRACE:\n$st');
+
+      state = AuthState(
+        isAuthenticated: true,
+        isLoading: false,
+        errorMessage: 'An error occurred while loading your profile',
+      );
     }
   }
 }
-
-
 
