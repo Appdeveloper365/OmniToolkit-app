@@ -51,6 +51,13 @@ class _ProtectedRouteView extends ConsumerWidget {
     }
 
     final user = authState.userModel;
+    if (authState.isAuthenticated && path == '/login') {
+      if (user == null || !user.isEntitled) {
+        return const PricingScreen();
+      }
+      return const MainNavigation();
+    }
+
     if (user != null &&
         !user.isEntitled &&
         path != '/account' &&
