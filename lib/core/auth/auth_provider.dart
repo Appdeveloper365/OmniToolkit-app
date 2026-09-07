@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:io' as io;
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'user_model.dart';
@@ -78,8 +79,9 @@ class AppAuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(isLoading: true, errorMessage: () => null);
     
     try {
-      if (kIsWeb) {
-        debugPrint('[Auth] SIGNIN: Using web flow');
+      // Windows and Web use Firebase OAuth provider (googleSignIn not supported on Windows)
+      if (kIsWeb || (io.Platform.isWindows)) {
+        debugPrint('[Auth] SIGNIN: Using Firebase OAuth provider flow (kIsWeb=$kIsWeb, isWindows=${io.Platform.isWindows})');
         final provider = GoogleAuthProvider()
           ..addScope('email')
           ..addScope('profile');
@@ -90,7 +92,8 @@ class AppAuthNotifier extends Notifier<AuthState> {
         return;
       }
 
-      debugPrint('[Auth] SIGNIN: Using native platform flow ($defaultTargetPlatform)');
+      // Android, iOS, macOS use native GoogleSignIn
+      debugPrint('[Auth] SIGNIN: Using native GoogleSignIn flow ($defaultTargetPlatform)');
       debugPrint('[Auth] SIGNIN: Starting GoogleSignIn().signIn()');
       final googleUser = await GoogleSignIn(scopes: ['email', 'profile']).signIn();
       
@@ -312,5 +315,6 @@ class AppAuthNotifier extends Notifier<AuthState> {
     }
   }
 }
+
 
 
