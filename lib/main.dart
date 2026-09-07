@@ -18,27 +18,28 @@ import 'screens/share_target_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize timezone data
+  runApp(const ProviderScope(child: AppStartupGate()));
+}
+
+Future<void> initializeApplication() async {
   try {
     tz_data.initializeTimeZones();
+    debugPrint('[App] Timezone initialized');
   } catch (e) {
     debugPrint('[App] Timezone initialization warning: $e');
   }
 
-  // Initialize Firebase with error handling
   try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    await DefaultFirebaseOptions.initializeFirebaseApp();
     debugPrint('[Firebase] Successfully initialized');
   } catch (error, stackTrace) {
     debugPrint('[Firebase] Initialization failed: $error\n$stackTrace');
+    debugPrint('[Firebase] Error description: ${DefaultFirebaseOptions.describeInitializationFailure(error)}');
   }
 
-  // Initialize app assets
   try {
     await AssetImporter.importFirstLaunch();
+    debugPrint('[App] Assets imported successfully');
   } catch (e) {
     debugPrint('[AssetImporter] Failed to import assets: $e');
   }
@@ -67,9 +68,77 @@ Future<void> main() async {
       debugPrint('[Audio] JustAudioBackground initialization failed: $e');
     }
   }
-
-  runApp(const ProviderScope(child: OmniToolkitApp()));
 }
+
+class AppStartupGate extends ConsumerWidget {
+  const AppStartupGate({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final initFuture = ref.watch(appStartupProvider);
+    return initFuture.when(
+      data: (_) => const OmniToolkitApp(),
+      loading: () => MaterialApp(
+        title: 'OmniToolkit',
+        home: Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: CircularProgressIndicator(),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Initializing OmniToolkit...',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      error: (error, stackTrace) => MaterialApp(
+        title: 'OmniToolkit',
+        home: Scaffold(
+          appBar: AppBar(title: const Text('Initialization Error')),
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Colors.red[700],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Failed to initialize app',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    error.toString(),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+final appStartupProvider = FutureProvider<void>((ref) async {
+  await initializeApplication();
+});
 
 class OmniToolkitApp extends ConsumerWidget {
   const OmniToolkitApp({super.key});
