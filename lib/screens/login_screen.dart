@@ -16,16 +16,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final theme = Theme.of(context);
     final authState = ref.watch(appAuthProvider);
 
-    if (authState.isAuthenticated &&
-        authState.userModel != null &&
-        !authState.isLoading) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, '/');
-        }
-      });
-    }
-
     ref.listen(appAuthProvider, (previous, next) {
       if (next.isAuthenticated && next.userModel != null && !next.isLoading) {
         Navigator.pushReplacementNamed(context, '/');
