@@ -11,6 +11,10 @@ permissions:
   contents: write
   pages: write
 
+concurrency:
+  group: dual-build-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -68,6 +72,9 @@ jobs:
           mkdir -p build/web/downloads
           cp build/app/outputs/flutter-apk/app-release.apk build/web/downloads/productivity-radio.apk
 
+      - name: Ensure GitHub Pages Metadata
+        run: touch build/web/.nojekyll
+
       - name: Deploy Web PWA & APK to GitHub Pages
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -76,7 +83,8 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git worktree add --detach ../gh-pages-deploy origin/gh-pages || git worktree add --detach ../gh-pages-deploy
+          git fetch origin gh-pages:refs/remotes/origin/gh-pages
+          git worktree add --detach ../gh-pages-deploy origin/gh-pages
           if [ -f ../gh-pages-deploy/CNAME ] && [ ! -f build/web/CNAME ]; then
             cp ../gh-pages-deploy/CNAME build/web/CNAME
           fi
@@ -89,4 +97,4 @@ jobs:
             exit 0
           fi
           git commit -m "deploy: ${GITHUB_SHA}"
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:gh-pages
+          git push --force-with-lease=gh-pages "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:gh-pages
