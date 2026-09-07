@@ -11,16 +11,41 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
+  bool _redirectScheduled = false;
+
+  String _resolveAuthenticatedDestination() {
+    final routeName = ModalRoute.of(context)?.settings.name;
+    final uri = Uri.tryParse(routeName ?? '/login');
+    final nextLocation = uri?.queryParameters['next'];
+    final nextUri = nextLocation == null || nextLocation.isEmpty
+        ? null
+        : Uri.tryParse(nextLocation);
+    final isSupportedNextRoute = nextUri != null &&
+        !nextUri.hasScheme &&
+        nextUri.host.isEmpty &&
+        nextUri.userInfo.isEmpty &&
+        !nextUri.hasFragment &&
+        nextUri.path.isNotEmpty &&
+        nextUri.path.startsWith('/') &&
+        nextUri.path != '/login';
+    return isSupportedNextRoute ? nextUri.toString() : '/';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final authState = ref.watch(appAuthProvider);
-
-    ref.listen(appAuthProvider, (previous, next) {
-      if (next.isAuthenticated && next.userModel != null && !next.isLoading) {
-        Navigator.pushReplacementNamed(context, '/');
-      }
-    });
+    final shouldRedirect =
+        authState.isAuthenticated && authState.userModel != null && !authState.isLoading;
+    if (shouldRedirect && !_redirectScheduled) {
+      _redirectScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(context, _resolveAuthenticatedDestination());
+      });
+    } else if (!shouldRedirect) {
+      _redirectScheduled = false;
+    }
 
     return Scaffold(
       body: SafeArea(

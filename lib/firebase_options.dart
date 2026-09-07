@@ -1,8 +1,21 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart'
-    show defaultTargetPlatform, kIsWeb, TargetPlatform;
+    show TargetPlatform, defaultTargetPlatform, kIsWeb, visibleForTesting;
 
 class DefaultFirebaseOptions {
+  @visibleForTesting
+  static bool shouldUseNativeAndroidInitialization({
+    required bool isWeb,
+    required TargetPlatform platform,
+  }) =>
+      !isWeb && platform == TargetPlatform.android;
+
+  static bool get useNativeAndroidInitialization =>
+      shouldUseNativeAndroidInitialization(
+        isWeb: kIsWeb,
+        platform: defaultTargetPlatform,
+      );
+
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
       return web;
@@ -42,4 +55,18 @@ class DefaultFirebaseOptions {
     storageBucket: String.fromEnvironment('FIREBASE_ANDROID_STORAGE_BUCKET',
         defaultValue: 'omnitoolkit-b7de8.firebasestorage.app'),
   );
+
+  static Future<FirebaseApp> initializeFirebaseApp() {
+    if (useNativeAndroidInitialization) {
+      return Firebase.initializeApp();
+    }
+    return Firebase.initializeApp(options: currentPlatform);
+  }
+
+  static String describeInitializationFailure(Object _) {
+    if (useNativeAndroidInitialization) {
+      return 'Android Firebase initialization failed. Confirm android/app/google-services.json matches com.omnitoolkit.app and the Android Firebase secrets were supplied for this build.';
+    }
+    return 'Firebase initialization failed. Please verify the configured Firebase options for this platform.';
+  }
 }
