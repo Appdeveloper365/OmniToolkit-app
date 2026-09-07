@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../core/auth/auth_provider.dart';
+import '../core/config/build_config.dart';
 
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
@@ -17,7 +18,9 @@ class AccountScreen extends ConsumerWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Account & Billing')),
+      appBar: AppBar(
+          title:
+              Text(BuildConfig.isStoreBuild ? 'Account' : 'Account & Billing')),
       body: user == null
           ? const Center(child: Text('No account logged in'))
           : SingleChildScrollView(
@@ -85,28 +88,45 @@ class AccountScreen extends ConsumerWidget {
                                   style: theme.textTheme.titleMedium
                                       ?.copyWith(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 14),
-                              _StatusRow(
-                                label: 'License Type',
-                                value: user.isPaid
-                                    ? 'Lifetime Pass'
-                                    : '7-Day Free Trial',
-                                isHighlight: user.isPaid,
-                              ),
-                              _StatusRow(
-                                label: 'Payment Status',
-                                value: user.paymentStatus.toUpperCase(),
-                              ),
-                              if (!user.isPaid)
+                              if (BuildConfig.isStoreBuild) ...[
                                 _StatusRow(
-                                  label: 'Trial Days Remaining',
-                                  value: '${user.remainingTrialDays} Days',
+                                  label: 'Access Status',
+                                  value: user.isPaid
+                                      ? 'Premium Active'
+                                      : 'Trial Active',
+                                  isHighlight: user.isPaid,
                                 ),
-                              if (user.purchaseDate != null)
+                                if (!user.isPaid)
+                                  _StatusRow(
+                                    label: 'Trial Days Remaining',
+                                    value: '${user.remainingTrialDays} Days',
+                                  ),
+                              ] else ...[
                                 _StatusRow(
-                                  label: 'Purchase Date',
-                                  value: _dateFormat.format(user.purchaseDate!),
+                                  label: 'License Type',
+                                  value: user.isPaid
+                                      ? 'Lifetime Pass'
+                                      : '7-Day Free Trial',
+                                  isHighlight: user.isPaid,
                                 ),
-                              if (!user.isPaid) ...[
+                                _StatusRow(
+                                  label: 'Payment Status',
+                                  value: user.paymentStatus.toUpperCase(),
+                                ),
+                                if (!user.isPaid)
+                                  _StatusRow(
+                                    label: 'Trial Days Remaining',
+                                    value: '${user.remainingTrialDays} Days',
+                                  ),
+                                if (user.purchaseDate != null)
+                                  _StatusRow(
+                                    label: 'Purchase Date',
+                                    value:
+                                        _dateFormat.format(user.purchaseDate!),
+                                  ),
+                              ],
+                              if (!user.isPaid &&
+                                  !BuildConfig.isStoreBuild) ...[
                                 const SizedBox(height: 12),
                                 FilledButton.icon(
                                   style: FilledButton.styleFrom(
@@ -130,38 +150,57 @@ class AccountScreen extends ConsumerWidget {
 
                       const SizedBox(height: 16),
 
-                      // Account Disclaimer Info Box
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF0F172A)
-                              : const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFF334155)
-                                  : const Color(0xFFE2E8F0)),
+                      if (BuildConfig.isStoreBuild)
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF0F172A)
+                                : const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFE2E8F0)),
+                          ),
+                          child: const Text(
+                            BuildConfig.storeComplianceLockMessage,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                height: 1.4),
+                          ),
+                        )
+                      else
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF0F172A)
+                                : const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFE2E8F0)),
+                          ),
+                          child: const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Google Account Linking Notice:',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                      color: Colors.grey)),
+                              SizedBox(height: 6),
+                              Text(
+                                'Lifetime access is permanently linked to your Google account. Please use the same Google account when signing in across your devices.\n\nAutomatic transfer of purchases between different email accounts is not supported. If you lose access to your Google account, contact support before creating a new account.',
+                                style: TextStyle(fontSize: 11, height: 1.4),
+                              ),
+                            ],
+                          ),
                         ),
-                        child: const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Google Account Linking Notice:',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                  color: Colors.grey),
-                            ),
-                            SizedBox(height: 6),
-                            Text(
-                              'Lifetime access is permanently linked to your Google account. Please use the same Google account when signing in across your devices.\n\n'
-                              'Automatic transfer of purchases between different email accounts is not supported. If you lose access to your Google account, contact support before creating a new account.',
-                              style: TextStyle(fontSize: 11, height: 1.4),
-                            ),
-                          ],
-                        ),
-                      ),
 
                       const SizedBox(height: 20),
 

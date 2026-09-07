@@ -62,6 +62,10 @@ class _PricingScreenState extends ConsumerState<PricingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (BuildConfig.isStoreBuild) {
+      return const _StoreAccessRequiredView();
+    }
+
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final authState = ref.watch(appAuthProvider);
@@ -351,6 +355,10 @@ class _BenefitRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (BuildConfig.isStoreBuild) {
+      return const _StoreAccessRequiredView();
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -362,6 +370,56 @@ class _BenefitRow extends StatelessWidget {
                   style: const TextStyle(
                       fontWeight: FontWeight.w600, fontSize: 14))),
         ],
+      ),
+    );
+  }
+}
+
+class _StoreAccessRequiredView extends StatelessWidget {
+  const _StoreAccessRequiredView();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      appBar: AppBar(title: const Text('Account Required')),
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 460),
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.verified_user_rounded,
+                          size: 48, color: theme.colorScheme.primary),
+                      const SizedBox(height: 16),
+                      const Text(
+                        BuildConfig.storeComplianceLockMessage,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            height: 1.4),
+                      ),
+                      const SizedBox(height: 20),
+                      FilledButton.icon(
+                        onPressed: () =>
+                            Navigator.pushReplacementNamed(context, '/login'),
+                        icon: const Icon(Icons.login_rounded),
+                        label: const Text('Log In'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

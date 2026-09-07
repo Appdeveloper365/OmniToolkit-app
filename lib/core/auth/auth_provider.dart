@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'user_model.dart';
 
@@ -62,10 +63,27 @@ class AppAuthNotifier extends Notifier<AuthState> {
   Future<void> signInWithGoogle() async {
     state = state.copyWith(isLoading: true, errorMessage: () => null);
     try {
-      final provider = GoogleAuthProvider()
-        ..addScope('email')
-        ..addScope('profile');
-      await _auth.signInWithProvider(provider);
+      if (kIsWeb) {
+        final provider = GoogleAuthProvider()
+          ..addScope('email')
+          ..addScope('profile');
+        await _auth.signInWithProvider(provider);
+        return;
+      }
+
+      final googleUser =
+          await GoogleSignIn(scopes: ['email', 'profile']).signIn();
+      if (googleUser == null) {
+        state = state.copyWith(isLoading: false, errorMessage: () => null);
+        return;
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      await _auth.signInWithCredential(credential);
     } on FirebaseAuthException catch (error) {
       state = state.copyWith(
         isLoading: false,
@@ -104,6 +122,9 @@ class AppAuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> signOut() async {
+    if (!kIsWeb) {
+      await GoogleSignIn().signOut();
+    }
     await _auth.signOut();
   }
 
@@ -168,13 +189,14 @@ class AppAuthNotifier extends Notifier<AuthState> {
       final snapshot = await transaction.get(userRef);
       if (snapshot.exists) {
         transaction.set(
-            userRef,
-            {
-              'uid': firebaseUser.uid,
-              'email': firebaseUser.email ?? '',
-              'lastLoginAt': FieldValue.serverTimestamp(),
-            },
-            SetOptions(merge: true));
+          userRef,
+          {
+            'uid': firebaseUser.uid,
+            'email': firebaseUser.email ?? '',
+            'lastLoginAt': FieldValue.serverTimestamp(),
+          },
+          SetOptions(merge: true),
+        );
         return;
       }
 

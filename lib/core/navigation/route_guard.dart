@@ -8,6 +8,7 @@ import '../../screens/payment_cancelled_screen.dart';
 import '../../screens/payment_success_screen.dart';
 import '../../screens/pricing_screen.dart';
 import '../auth/auth_provider.dart';
+import '../config/build_config.dart';
 import 'main_navigation.dart';
 
 Route<dynamic> generateProtectedRoutes(RouteSettings settings, WidgetRef ref) {
@@ -21,6 +22,13 @@ Route<dynamic> generateProtectedRoutes(RouteSettings settings, WidgetRef ref) {
         body: Center(child: CircularProgressIndicator()),
       ),
     );
+  }
+
+  if (BuildConfig.isStoreBuild &&
+      (path == '/pricing' ||
+          path == '/payment-success' ||
+          path == '/payment-cancelled')) {
+    return MaterialPageRoute(builder: (_) => const PricingScreen());
   }
 
   // Unauthenticated -> Redirect to Login

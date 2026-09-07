@@ -56,3 +56,9 @@ app.*.map.json
 
 # Local code-signing certificates
 windows/certs/
+
+# Android release signing and Firebase app config
+android/key.properties
+android/app/*.jks
+android/app/*.keystore
+android/app/google-services.json

@@ -6,6 +6,10 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("key.properties")
 if (localPropertiesFile.exists()) {
@@ -20,6 +24,7 @@ val decodedKeystorePath = System.getenv("ANDROID_KEYSTORE_BASE64")?.takeIf { it.
 }
 
 fun signingValue(name: String): String? = System.getenv(name)?.takeIf { it.isNotBlank() } ?: localProperties.getProperty(name)
+val releaseSigningConfigured = !decodedKeystorePath.isNullOrBlank() || !signingValue("ANDROID_KEYSTORE_PATH").isNullOrBlank()
 
 android {
     namespace = "com.omnitoolkit.app"
@@ -53,11 +58,10 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (signingConfigs.getByName("release").storeFile != null) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
+            if (!releaseSigningConfigured) {
+                throw GradleException("Release signing is required. Configure android/key.properties locally or ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD in CI.")
             }
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             isShrinkResources = false
         }
@@ -73,3 +77,4 @@ kotlin {
 flutter {
     source = "../.."
 }
+
