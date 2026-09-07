@@ -35,7 +35,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
-  const isDownloadRequest = url.pathname.includes('/downloads/');
+  const scopePath = new URL(self.registration.scope).pathname;
+  const downloadsPath = `${scopePath.endsWith('/') ? scopePath : `${scopePath}/`}downloads/`;
+  const isDownloadRequest = url.pathname.startsWith(downloadsPath);
   const isNavigationRequest = event.request.mode === 'navigate';
 
   if (isDownloadRequest) {
