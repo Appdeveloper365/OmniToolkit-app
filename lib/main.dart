@@ -18,10 +18,17 @@ import 'screens/share_target_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: AppStartupGate()));
+  runApp(
+    ProviderScope(
+      child: AppStartupGate(
+        initializeApp: _initializeApplication,
+        child: const OmniToolkitApp(),
+      ),
+    ),
+  );
 }
 
-Future<void> initializeApplication() async {
+Future<void> _initializeApplication() async {
   try {
     tz_data.initializeTimeZones();
     debugPrint('[App] Timezone initialized');
@@ -70,75 +77,118 @@ Future<void> initializeApplication() async {
   }
 }
 
-class AppStartupGate extends ConsumerWidget {
-  const AppStartupGate({super.key});
+class AppStartupGate extends StatefulWidget {
+  final Future<void> Function() initializeApp;
+  final Widget child;
+
+  const AppStartupGate({
+    required this.initializeApp,
+    required this.child,
+    super.key,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final initFuture = ref.watch(appStartupProvider);
-    return initFuture.when(
-      data: (_) => const OmniToolkitApp(),
-      loading: () => MaterialApp(
-        title: 'OmniToolkit',
-        home: Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(
-                  width: 60,
-                  height: 60,
-                  child: CircularProgressIndicator(),
+  State<AppStartupGate> createState() => _AppStartupGateState();
+}
+
+class _AppStartupGateState extends State<AppStartupGate> {
+  late Future<void> _initFuture;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _initFuture = widget.initializeApp().catchError((dynamic e) {
+      setState(() {
+        _error = e.toString();
+      });
+      throw e;
+    });
+  }
+
+  void _retry() {
+    setState(() {
+      _error = null;
+      _initFuture = widget.initializeApp().catchError((dynamic e) {
+        setState(() {
+          _error = e.toString();
+        });
+        throw e;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'OmniToolkit',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ThemeMode.system,
+      home: FutureBuilder<void>(
+        future: _initFuture,
+        builder: (context, snapshot) {
+          if (_error != null) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('Startup configuration problem')),
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Colors.red[700],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'App startup failed while preparing offline data. Please retry.',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 24),
+                      FilledButton(
+                        onPressed: _retry,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Initializing OmniToolkit...',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      error: (error, stackTrace) => MaterialApp(
-        title: 'OmniToolkit',
-        home: Scaffold(
-          appBar: AppBar(title: const Text('Initialization Error')),
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red[700],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Failed to initialize app',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    error.toString(),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
               ),
-            ),
-          ),
-        ),
+            );
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      width: 60,
+                      height: 60,
+                      child: CircularProgressIndicator(),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Preparing OmniToolkit...',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return widget.child;
+        },
       ),
     );
   }
 }
-
-final appStartupProvider = FutureProvider<void>((ref) async {
-  await initializeApplication();
-});
 
 class OmniToolkitApp extends ConsumerWidget {
   const OmniToolkitApp({super.key});
@@ -171,7 +221,7 @@ class OmniToolkitApp extends ConsumerWidget {
         }
 
         // Delegate all other routes to Protected Route Guard
-        return generateProtectedRoutes(settings, ref);
+        return generateProtectedRoutes(settings);
       },
     );
   }
