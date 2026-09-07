@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/station_model.dart';
@@ -328,13 +327,7 @@ class RadioNotifier extends Notifier<RadioState> {
         AudioSource.uri(
           Uri.parse(validation.resolvedUrl),
           headers: kIsWeb ? null : const {'User-Agent': 'OmniToolkit/1.0'},
-          tag: MediaItem(
-            id: station.id,
-            album: 'OmniToolkit Radio',
-            title: station.name,
-            artist: '${station.category}${station.country.isNotEmpty ? " • ${station.country}" : ""}',
-            artUri: station.favicon != null ? Uri.tryParse(station.favicon!) : null,
-          ),
+          tag: station.id, // Metadata for audio source
         ),
       );
 

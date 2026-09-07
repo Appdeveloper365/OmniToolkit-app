@@ -25,7 +25,7 @@ class StationCard extends ConsumerWidget {
 
     final cardBg = isSelected
         ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFE0F2FE))
-        : (isDark ? const Color(0xFF0F172A).withOpacity(0.7) : Colors.white);
+        : (isDark ? const Color(0xFF0F172A).withValues(alpha: 0.7) : Colors.white);
 
     final borderColor = isSelected
         ? (isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7))
@@ -43,7 +43,7 @@ class StationCard extends ConsumerWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
             blurRadius: isSelected ? 8 : 4,
             offset: const Offset(0, 2),
           ),

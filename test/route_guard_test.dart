@@ -5,6 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:omnitoolkit/core/auth/auth_provider.dart';
 import 'package:omnitoolkit/core/auth/user_model.dart';
 import 'package:omnitoolkit/core/navigation/route_guard.dart';
+import 'package:omnitoolkit/modules/calendar/models/holiday_record.dart';
+import 'package:omnitoolkit/modules/calendar/models/note_model.dart';
+import 'package:omnitoolkit/modules/calendar/providers/calendar_provider.dart';
+import 'package:omnitoolkit/modules/calendar/widgets/calendar_clock_widget.dart';
 
 class TestAuthNotifier extends AppAuthNotifier {
   TestAuthNotifier(this._initialState);
@@ -47,6 +51,22 @@ Future<TestAuthNotifier> _pumpGuardedApp(
         notifier = TestAuthNotifier(initialState);
         return notifier;
       }),
+      // The guard tests render the real MainNavigation, whose default
+      // Calendar tab starts a live 1s clock stream and SQLite reads. Under
+      // the widget-test fake-async zone those never settle: pumpAndSettle
+      // would time out and timers would still be pending when the test
+      // ends. Keep the harness hermetic with deterministic overrides.
+      clockTickProvider.overrideWith(
+        (ref) => Stream<DateTime>.value(DateTime(2026, 1, 1)),
+      ),
+      notesForSelectedDateProvider.overrideWith((ref) async => <NoteModel>[]),
+      datesWithNotesProvider.overrideWith((ref) async => <String>{}),
+      holidaysForSelectedDateProvider.overrideWith(
+        (ref) async => <HolidayRecord>[],
+      ),
+      holidayLabelsProvider.overrideWith(
+        (ref) async => <String, List<HolidayRecord>>{},
+      ),
     ],
   );
   addTearDown(container.dispose);

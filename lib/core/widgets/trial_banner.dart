@@ -34,7 +34,7 @@ class TrialBanner extends ConsumerWidget {
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white,
-                backgroundColor: Colors.black.withOpacity(0.2),
+                backgroundColor: Colors.black.withValues(alpha: 0.2),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               ),

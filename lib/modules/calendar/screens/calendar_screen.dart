@@ -201,7 +201,10 @@ class CalendarScreen extends ConsumerWidget {
                       .toList(),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              // Rendered blank while loading: the SQLite read resolves in
+              // milliseconds in production, and a perpetual spinner here
+              // would block pumpAndSettle in widget tests forever.
+              loading: () => const SizedBox.shrink(),
               error: (err, _) => Text('Failed to load notes: $err'),
             ),
 

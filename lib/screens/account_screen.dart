@@ -20,7 +20,7 @@ class AccountScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
           title:
-              Text(BuildConfig.isStoreBuild ? 'Account' : 'Account & Billing')),
+              const Text(BuildConfig.isStoreBuild ? 'Account' : 'Account & Billing')),
       body: user == null
           ? const Center(child: Text('No account logged in'))
           : SingleChildScrollView(

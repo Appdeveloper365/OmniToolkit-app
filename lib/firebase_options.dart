@@ -45,7 +45,7 @@ class DefaultFirebaseOptions {
   static FirebaseOptions get android {
     // Use environment variables with sensible fallbacks
     // If environment variables are not set, use web fallback credentials
-    return FirebaseOptions(
+    return const FirebaseOptions(
       apiKey: String.fromEnvironment('FIREBASE_ANDROID_API_KEY',
           defaultValue: 'AIzaSyDIPSQcYjNQA1lvig3yLcBRVrMCL-vTJE0'),
       appId: String.fromEnvironment('FIREBASE_ANDROID_APP_ID',

@@ -191,7 +191,7 @@ class _LookupScreenState extends ConsumerState<LookupScreen> {
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: (isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7)).withOpacity(0.3),
+                      color: (isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7)).withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),

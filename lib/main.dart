@@ -4,8 +4,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -19,10 +17,10 @@ import 'screens/share_target_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    ProviderScope(
+    const ProviderScope(
       child: AppStartupGate(
         initializeApp: _initializeApplication,
-        child: const OmniToolkitApp(),
+        child: OmniToolkitApp(),
       ),
     ),
   );
@@ -59,20 +57,6 @@ Future<void> _initializeApplication() async {
       debugPrint('[Audio] Media_kit initialized for ${Platform.isWindows ? 'Windows' : 'Linux'}');
     } catch (e) {
       debugPrint('[Audio] Media_kit initialization failed: $e');
-    }
-  }
-
-  // Initialize just_audio background playback for Android/iOS
-  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-    try {
-      await JustAudioBackground.init(
-        androidNotificationChannelId: 'com.omnitoolkit.channel.audio',
-        androidNotificationChannelName: 'OmniToolkit Radio',
-        androidNotificationOngoing: true,
-      );
-      debugPrint('[Audio] JustAudioBackground initialized for ${Platform.isAndroid ? 'Android' : 'iOS'}');
-    } catch (e) {
-      debugPrint('[Audio] JustAudioBackground initialization failed: $e');
     }
   }
 }
@@ -174,7 +158,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Preparing OmniToolkit...',
+                      'Preparing OmniToolkit',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ],
@@ -226,3 +210,4 @@ class OmniToolkitApp extends ConsumerWidget {
     );
   }
 }
+

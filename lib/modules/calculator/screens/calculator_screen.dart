@@ -11,14 +11,14 @@ class CalculatorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
+    return const DefaultTabController(
       length: 4,
       child: Scaffold(
         body: SafeArea(
           child: Column(
             children: [
               // Compact TabBar without large title header to maximize viewport
-              const Material(
+              Material(
                 elevation: 1,
                 child: TabBar(
                   isScrollable: true,
@@ -32,7 +32,7 @@ class CalculatorScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const Expanded(
+              Expanded(
                 child: TabBarView(
                   children: [
                     SimpleCalculatorTab(),

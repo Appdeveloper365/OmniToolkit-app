@@ -46,7 +46,7 @@ class _RadioHeaderState extends State<RadioHeader> with SingleTickerProviderStat
                     boxShadow: [
                       BoxShadow(
                         color: (isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7))
-                            .withOpacity(0.4 * _waveController.value),
+                            .withValues(alpha: 0.4 * _waveController.value),
                         blurRadius: 12,
                         spreadRadius: 2,
                       ),

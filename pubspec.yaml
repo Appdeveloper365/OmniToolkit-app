@@ -31,9 +31,8 @@ dependencies:
   path: ^1.9.0
   path_provider: ^2.1.4
 
-  # Audio streaming
+  # Audio streaming (Windows/Linux via media_kit)
   just_audio: ^0.9.42
-  just_audio_background: ^0.0.1-beta.15
 
   # Windows/Linux audio backend for just_audio
   media_kit: ^1.2.6
@@ -81,5 +80,4 @@ flutter:
     - assets/data/curated_us_zips.csv
     - assets/data/radio_streams.json
     - assets/data/area_codes.json
-
 
