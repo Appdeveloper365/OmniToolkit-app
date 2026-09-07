@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 import 'package:media_kit/media_kit.dart';
@@ -18,10 +17,10 @@ import 'screens/share_target_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  String? startupErrorMessage;
   try {
     tz_data.initializeTimeZones();
-    await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
+    await DefaultFirebaseOptions.initializeFirebaseApp();
     await AssetImporter.importFirstLaunch();
 
     // Initialize media_kit backend for Windows/Linux audio playback
@@ -40,15 +39,29 @@ Future<void> main() async {
     }
   } catch (error, stackTrace) {
     debugPrint('Startup initialization failed: $error\n$stackTrace');
+    startupErrorMessage = DefaultFirebaseOptions.describeInitializationFailure(error);
   }
-  runApp(const ProviderScope(child: OmniToolkitApp()));
+  runApp(ProviderScope(child: OmniToolkitApp(startupErrorMessage: startupErrorMessage)));
 }
 
 class OmniToolkitApp extends ConsumerWidget {
-  const OmniToolkitApp({super.key});
+  const OmniToolkitApp({super.key, this.startupErrorMessage});
+
+  final String? startupErrorMessage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (startupErrorMessage != null) {
+      return MaterialApp(
+        title: 'OmniToolkit',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
+        themeMode: ThemeMode.system,
+        home: StartupErrorScreen(message: startupErrorMessage!),
+      );
+    }
+
     return MaterialApp(
       title: 'OmniToolkit',
       debugShowCheckedModeBanner: false,
@@ -77,6 +90,57 @@ class OmniToolkitApp extends ConsumerWidget {
         // Delegate all other routes to Protected Route Guard
         return generateProtectedRoutes(settings);
       },
+    );
+  }
+}
+
+class StartupErrorScreen extends StatelessWidget {
+  const StartupErrorScreen({super.key, required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 460),
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.error_outline_rounded,
+                        size: 52,
+                        color: theme.colorScheme.error,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Startup configuration problem',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.titleLarge
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -62,6 +62,8 @@ GOOGLE_SERVICES_JSON_BASE64
 
 The pipeline passes the Firebase values into the Android build with `--dart-define` and decodes `GOOGLE_SERVICES_JSON_BASE64` to `android/app/google-services.json`, so Android uses the Android Firebase app registration instead of the web app ID.
 
+At runtime, the Android app must initialize Firebase from the native Android configuration (`google-services.json`). It must not silently fall back to the web app ID, or Google sign-in and entitlement lookup can break even when the PWA works.
+
 ## Release keystore
 
 A Galaxy Store release keystore was generated locally at:
