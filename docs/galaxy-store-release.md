@@ -110,6 +110,8 @@ https://appdeveloper365.github.io/OmniToolkit-app/downloads/productivity-radio.a
 https://appdeveloper365.github.io/OmniToolkit-app/downloads/productivity-radio.aab
 ```
 
+The PWA service worker must bypass SPA fallback handling for requests under `/OmniToolkit-app/downloads/`. If that bypass is removed, APK/AAB downloads can return `index.html` instead of the binary artifact.
+
 ## Store-safe monetization behavior
 
 The store build must show only this access message before entitlement:
@@ -125,4 +127,3 @@ paymentStatus
 hasLifetimeAccess
 premium_active
 ```
-
