@@ -12,6 +12,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _redirectScheduled = false;
+  bool _signInInProgress = false;
 
   String _resolveAuthenticatedDestination() {
     final routeName = ModalRoute.of(context)?.settings.name;
@@ -31,14 +32,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return isSupportedNextRoute ? nextUri.toString() : '/';
   }
 
+  Future<void> _handleSignIn() async {
+    if (_signInInProgress) {
+      debugPrint('[LoginScreen] Sign-in already in progress, ignoring duplicate click');
+      return;
+    }
+
+    _signInInProgress = true;
+    debugPrint('[LoginScreen] Starting sign-in process');
+
+    try {
+      // Call the sign-in method
+      ref.read(appAuthProvider.notifier).signInWithGoogle();
+
+      // Set a timeout to reset the flag if sign-in hangs
+      // This allows the user to try again after 30 seconds
+      await Future.delayed(const Duration(seconds: 30));
+      
+      if (mounted && _signInInProgress) {
+        debugPrint('[LoginScreen] Sign-in timeout after 30 seconds');
+        // Note: We don't reset _signInInProgress here, the button will be disabled
+        // if isLoading is true. Once the user manually checks the state, they can try again.
+      }
+    } catch (e) {
+      debugPrint('[LoginScreen] Error during sign-in: $e');
+      _signInInProgress = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final authState = ref.watch(appAuthProvider);
+    
+    // Reset sign-in flag if loading is false (sign-in completed or failed)
+    if (!authState.isLoading) {
+      _signInInProgress = false;
+    }
+    
     final shouldRedirect =
         authState.isAuthenticated && authState.userModel != null && !authState.isLoading;
     if (shouldRedirect && !_redirectScheduled) {
       _redirectScheduled = true;
+      debugPrint('[LoginScreen] Redirecting authenticated user to dashboard');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         Navigator.pushReplacementNamed(context, _resolveAuthenticatedDestination());
@@ -119,25 +155,87 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 15),
                           ),
-                          onPressed: authState.isLoading
-                              ? null
-                              : ref
-                                  .read(appAuthProvider.notifier)
-                                  .signInWithGoogle,
+                          onPressed: authState.isLoading ? null : _handleSignIn,
                         ),
                         if (authState.isLoading) ...[
                           const SizedBox(height: 16),
-                          const Center(child: CircularProgressIndicator()),
+                          const Center(
+                            child: Column(
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 12),
+                                Text(
+                                  'Signing in...',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'If this takes longer than 30 seconds, please check your connection.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: theme.colorScheme.secondary,
+                            ),
+                          ),
                         ],
                         if (authState.errorMessage != null) ...[
                           const SizedBox(height: 16),
-                          Text(
-                            authState.errorMessage!,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: theme.colorScheme.error,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.errorContainer,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.error_outline,
+                                      color: theme.colorScheme.error,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        authState.errorMessage!,
+                                        style: TextStyle(
+                                          color: theme.colorScheme.error,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (!authState.isLoading) ...[
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: theme.colorScheme.error,
+                                        padding: const EdgeInsets.symmetric(vertical: 8),
+                                      ),
+                                      onPressed: _handleSignIn,
+                                      child: Text(
+                                        'Try Again',
+                                        style: TextStyle(
+                                          color: theme.colorScheme.onError,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
                         ],
                       ],
