@@ -62,7 +62,15 @@ class _ProtectedRouteView extends ConsumerWidget {
       final nextUri = nextLocation == null || nextLocation.isEmpty
           ? null
           : Uri.tryParse(nextLocation);
-      if (nextUri != null && nextUri.path.isNotEmpty && nextUri.path != '/login') {
+      final isSupportedNextRoute = nextUri != null &&
+          !nextUri.hasScheme &&
+          nextUri.host.isEmpty &&
+          nextUri.userInfo.isEmpty &&
+          !nextUri.hasFragment &&
+          nextUri.path.isNotEmpty &&
+          nextUri.path.startsWith('/') &&
+          nextUri.path != '/login';
+      if (isSupportedNextRoute) {
         return _ProtectedRouteView(uri: nextUri);
       }
       if (!user.isEntitled) {

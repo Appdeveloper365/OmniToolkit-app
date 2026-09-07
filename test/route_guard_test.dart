@@ -175,4 +175,40 @@ void main() {
     expect(find.text('Welcome to OmniToolkit'), findsNothing);
     expect(find.text('Account & Billing'), findsOneWidget);
   });
+
+  testWidgets('authenticated login redirect ignores absolute next URLs',
+      (WidgetTester tester) async {
+    await _pumpGuardedApp(
+      tester,
+      initialState: AuthState(
+        isAuthenticated: true,
+        isLoading: false,
+        userModel: _buildUser(entitled: true),
+      ),
+      initialRoute: '/login?next=https%3A%2F%2Fexample.com%2Faccount',
+    );
+
+    await tester.pump();
+
+    expect(find.text('Welcome to OmniToolkit'), findsNothing);
+    expect(find.text('Calendar'), findsWidgets);
+  });
+
+  testWidgets('authenticated login redirect ignores login as next route',
+      (WidgetTester tester) async {
+    await _pumpGuardedApp(
+      tester,
+      initialState: AuthState(
+        isAuthenticated: true,
+        isLoading: false,
+        userModel: _buildUser(entitled: true),
+      ),
+      initialRoute: '/login?next=%2Flogin',
+    );
+
+    await tester.pump();
+
+    expect(find.text('Welcome to OmniToolkit'), findsNothing);
+    expect(find.text('Calendar'), findsWidgets);
+  });
 }
