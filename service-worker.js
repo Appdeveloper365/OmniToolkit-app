@@ -1,51 +1,41 @@
-// Service Worker for OmniToolkit with downloads bypass
-const CACHE_NAME = 'omnitoolkit-v1';
-const DOWNLOADS_PATH = '/OmniToolkit-app/downloads/';
+const CACHE_NAME = 'omnitoolkit-pwa-v3';
 
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installing...');
-  self.skipWaiting();
+  event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Activating...');
-  self.clients.claim();
+  event.waitUntil((async () => {
+    const cacheNames = await caches.keys();
+    await Promise.all(
+      cacheNames
+        .filter((name) => name.startsWith('omnitoolkit-pwa-') && name !== CACHE_NAME)
+        .map((name) => caches.delete(name)),
+    );
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-  
-  // IMPORTANT: Bypass service worker for downloads directory
-  // Return network response for all /downloads/* requests
-  if (url.pathname.includes(DOWNLOADS_PATH)) {
-    console.log('[Service Worker] Bypassing cache for download:', url.pathname);
-    event.respondWith(fetch(event.request));
-    return;
-  }
-  
-  // For other requests, use cache-first strategy
-  event.respondWith(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.match(event.request).then((response) => {
-        if (response) {
-          return response;
-        }
-        
-        return fetch(event.request).then((response) => {
-          // Don't cache non-successful responses
-          if (!response || response.status !== 200 || response.type === 'error') {
-            return response;
-          }
-          
-          // Clone and cache successful responses
-          const responseToCache = response.clone();
-          cache.put(event.request, responseToCache);
-          return response;
-        }).catch(() => {
-          // Return offline page if available
-          return new Response('Offline - No cached version available');
-        });
-      });
-    })
-  );
+  if (event.request.method !== 'GET') return;
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.origin !== self.location.origin || requestUrl.pathname.includes('/downloads/')) return;
+
+  const isNavigation = event.request.mode === 'navigate';
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    try {
+      const response = await fetch(event.request, { cache: 'no-store' });
+      if (response.ok) await cache.put(event.request, response.clone());
+      return response;
+    } catch (error) {
+      const cached = await cache.match(event.request);
+      if (cached) return cached;
+      if (isNavigation) {
+        const shell = await cache.match('./');
+        if (shell) return shell;
+      }
+      throw error;
+    }
+  })());
 });
