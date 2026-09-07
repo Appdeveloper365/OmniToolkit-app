@@ -51,11 +51,12 @@ self.addEventListener('fetch', (event) => {
         return response;
       }
 
-      return fetch(event.request).catch(() => {
+      const networkRequest = fetch(event.request);
+      return networkRequest.catch((error) => {
         if (isNavigationRequest) {
           return caches.match('./index.html');
         }
-        throw new Error(`Network request failed for ${url.pathname}`);
+        throw error;
       });
     })
   );
