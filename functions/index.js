@@ -30,43 +30,37 @@ function stripeClient() {
   return new Stripe(requiredEnv("STRIPE_SECRET_KEY"), { apiVersion: "2023-10-16" });
 }
 
-exports.createStripeCheckoutSession = functions.https.onCall(async (_data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("unauthenticated", "User must be authenticated.");
-  }
+function normalizeEmail(value) {
+  return (value || "").trim().toLowerCase();
+}
 
-  const uid = context.auth.uid;
-  const email = (context.auth.token.email || "").trim().toLowerCase();
-  const requestedBillingEmail = (_data?.billingEmail || "").trim().toLowerCase();
-  if (requestedBillingEmail && requestedBillingEmail !== email) {
-    throw new functions.https.HttpsError("invalid-argument", "Billing email must match the authenticated account email.");
-  }
-  if (!email) {
-    throw new functions.https.HttpsError("failed-precondition", "A verified account email is required before checkout.");
-  }
-  const userRef = db.collection("users").doc(uid);
-  const userSnapshot = await userRef.get();
-  const user = userSnapshot.data();
-
-  if (!userSnapshot.exists) {
-    throw new functions.https.HttpsError("failed-precondition", "User record was not found.");
-  }
-  if (user.hasLifetimeAccess === true || user.premium_active === true || user.paymentStatus === "paid") {
-    throw new functions.https.HttpsError("failed-precondition", "Lifetime access is already active for this account.");
-  }
-  if (user.disclaimerAccepted !== true) {
+// Anonymous visitors may purchase Lifetime Membership. Firebase Auth is
+// optional: if the caller happens to be signed in, their account email is
+// used as a checkout hint and linked immediately. Otherwise Stripe Checkout
+// collects the purchaser's email directly and entitlement is keyed by that
+// email so it can be matched against a future sign-in.
+exports.createStripeCheckoutSession = functions.https.onCall(async (data, context) => {
+  if (data?.disclaimerAccepted !== true) {
     throw new functions.https.HttpsError("failed-precondition", "Purchase acknowledgement is required before checkout.");
   }
+
+  const uid = context.auth?.uid || null;
+  const authenticatedEmail = normalizeEmail(context.auth?.token?.email);
+  const requestedEmail = normalizeEmail(data?.billingEmail);
+  if (authenticatedEmail && requestedEmail && authenticatedEmail !== requestedEmail) {
+    throw new functions.https.HttpsError("invalid-argument", "Billing email must match the signed-in account email.");
+  }
+  const emailHint = authenticatedEmail || requestedEmail || undefined;
 
   const appBaseUrl = configValue("APP_BASE_URL") || "https://appdeveloper365.github.io/OmniToolkit-app";
   const stripe = stripeClient();
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
-    customer_email: email,
-    client_reference_id: uid,
-    metadata: { uid, accountEmail: email },
+    customer_email: emailHint,
     customer_creation: "always",
+    client_reference_id: uid || undefined,
+    metadata: uid ? { uid } : {},
     line_items: [{ price: requiredEnv("STRIPE_PRICE_ID"), quantity: 1 }],
     success_url: `${appBaseUrl}/#/payment-success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${appBaseUrl}/#/payment-cancelled`,
@@ -94,20 +88,11 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
   }
 
   const session = event.data.object;
-  const uid = session.client_reference_id || session.metadata?.uid;
+  const billingEmail = normalizeEmail(session.customer_details?.email || session.customer_email);
 
-  if (!uid) {
-    console.error("[stripeWebhook.missingUid]", session.id);
-    res.status(400).send("Missing Firebase user reference.");
-    return;
-  }
-
-  const account = await admin.auth().getUser(uid);
-  const accountEmail = (account.email || "").trim().toLowerCase();
-  const billingEmail = (session.customer_details?.email || session.customer_email || "").trim().toLowerCase();
-  if (!accountEmail || !billingEmail || accountEmail !== billingEmail) {
-    console.error("[stripeWebhook.emailMismatch]", session.id, uid);
-    res.status(400).send("Billing email must match the authenticated account email.");
+  if (!billingEmail) {
+    console.error("[stripeWebhook.missingEmail]", session.id);
+    res.status(400).send("Checkout session did not include a purchaser email.");
     return;
   }
 
@@ -118,7 +103,10 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
   }
 
   const eventRef = db.collection("stripeWebhookEvents").doc(event.id);
-  const userRef = db.collection("users").doc(uid);
+  // Entitlements are keyed by the purchase email so that anonymous
+  // purchases can later be claimed by a matching authenticated sign-in.
+  const entitlementRef = db.collection("entitlements").doc(billingEmail);
+  const uid = session.client_reference_id || session.metadata?.uid || null;
 
   await db.runTransaction(async (transaction) => {
     const processed = await transaction.get(eventRef);
@@ -130,10 +118,10 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
       type: event.type,
       stripeSessionId: session.id,
       purchaseEmail: billingEmail,
-      uid,
       processedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-    transaction.set(userRef, {
+    transaction.set(entitlementRef, {
+      email: billingEmail,
       paymentStatus: "paid",
       hasLifetimeAccess: true,
       premium_active: true,
@@ -141,9 +129,76 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
       stripeCustomerId: session.customer || null,
       stripeSessionId: session.id,
       purchaseEmail: billingEmail,
+      linkedUid: uid,
     }, { merge: true });
+
+    if (uid) {
+      transaction.set(db.collection("users").doc(uid), {
+        paymentStatus: "paid",
+        hasLifetimeAccess: true,
+        premium_active: true,
+        purchaseDate: admin.firestore.FieldValue.serverTimestamp(),
+        stripeCustomerId: session.customer || null,
+        stripeSessionId: session.id,
+        purchaseEmail: billingEmail,
+      }, { merge: true });
+    }
   });
 
-  console.log(`[stripeWebhook.fulfilled] uid=${uid} session=${session.id}`);
+  console.log(`[stripeWebhook.fulfilled] email=${billingEmail} session=${session.id}`);
   res.json({ received: true });
+});
+
+// Public restore lookup: the app currently has no sign-in UI, so visitors
+// restore a Lifetime Membership by entering the email used at checkout.
+// Only entitlement existence/status is returned; no other account data.
+exports.checkEntitlementByEmail = functions.https.onCall(async (data) => {
+  const email = normalizeEmail(data?.email);
+  if (!email) {
+    throw new functions.https.HttpsError("invalid-argument", "A purchase email is required.");
+  }
+
+  const entitlementSnapshot = await db.collection("entitlements").doc(email).get();
+  if (!entitlementSnapshot.exists) {
+    return { hasLifetimeAccess: false, matched: false, reason: "no-purchase-found" };
+  }
+
+  const entitlement = entitlementSnapshot.data();
+  return {
+    hasLifetimeAccess: entitlement?.hasLifetimeAccess === true,
+    matched: true,
+    purchaseEmail: entitlement?.purchaseEmail || email,
+  };
+});
+// Called after sign-in to compare the authenticated account email against
+// any Lifetime Membership purchased anonymously (or under a different
+// account) with a matching email. Returns a clear match/mismatch result so
+// the client can grant access or explain how to resolve access.
+exports.checkEntitlementForSignedInUser = functions.https.onCall(async (_data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "User must be signed in to check entitlement.");
+  }
+
+  const accountEmail = normalizeEmail(context.auth.token.email);
+  if (!accountEmail) {
+    return { hasLifetimeAccess: false, matched: false, reason: "no-account-email" };
+  }
+
+  const entitlementSnapshot = await db.collection("entitlements").doc(accountEmail).get();
+  if (!entitlementSnapshot.exists) {
+    return { hasLifetimeAccess: false, matched: false, reason: "no-purchase-found" };
+  }
+
+  const entitlement = entitlementSnapshot.data();
+  const hasLifetimeAccess = entitlement?.hasLifetimeAccess === true;
+
+  if (hasLifetimeAccess && entitlement.linkedUid !== context.auth.uid) {
+    await entitlementSnapshot.ref.set({ linkedUid: context.auth.uid }, { merge: true });
+  }
+
+  return {
+    hasLifetimeAccess,
+    matched: true,
+    purchaseEmail: entitlement?.purchaseEmail || accountEmail,
+  };
 });

@@ -31,6 +31,17 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Lifetime Membership entitlements are keyed by the purchase email so
+    // anonymous purchases can be claimed by a later matching sign-in.
+    // Only Cloud Functions (Admin SDK) may write; clients may only read
+    // their own authenticated account's entitlement record.
+    match /entitlements/{email} {
+      allow read: if request.auth != null
+                  && request.auth.token.email is string
+                  && request.auth.token.email.lower() == email;
+      allow write: if false;
+    }
+
     match /stripeWebhookEvents/{eventId} {
       allow read, write: if false;
     }

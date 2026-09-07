@@ -3,6 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+/// Billing Notice: shown before Stripe Checkout. Anonymous visitors may
+/// purchase Lifetime Membership without signing in. If the visitor happens
+/// to be signed in, their account email is sent as a checkout hint so it is
+/// linked immediately; otherwise Stripe Checkout collects the purchaser's
+/// email directly and the purchase is later matched by email at sign-in.
 class BillingNoticeScreen extends StatefulWidget {
   const BillingNoticeScreen({super.key});
 
@@ -16,26 +21,23 @@ class BillingNoticeScreen extends StatefulWidget {
 }
 
 class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
+  bool _disclaimerAccepted = false;
   bool _isStartingCheckout = false;
 
   Future<void> _startCheckout() async {
-    if (_isStartingCheckout) return;
+    if (_isStartingCheckout || !_disclaimerAccepted) return;
     setState(() => _isStartingCheckout = true);
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      final email = user?.email?.trim().toLowerCase();
-      if (user == null || email == null || email.isEmpty) {
-        throw FirebaseFunctionsException(
-          code: 'unauthenticated',
-          message: 'An authenticated account with an email address is required before checkout.',
-        );
-      }
+      final signedInEmail =
+          FirebaseAuth.instance.currentUser?.email?.trim().toLowerCase();
 
       final callable = FirebaseFunctions.instance.httpsCallable(
         'createStripeCheckoutSession',
       );
       final result = await callable.call<Map<String, dynamic>>({
-        'billingEmail': email,
+        'disclaimerAccepted': true,
+        if (signedInEmail != null && signedInEmail.isNotEmpty)
+          'billingEmail': signedInEmail,
       });
       final sessionUrl = result.data['sessionUrl'] as String?;
       if (sessionUrl == null || sessionUrl.isEmpty) {
@@ -91,9 +93,21 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(height: 1.5),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
+                    CheckboxListTile(
+                      controlAffinity: ListTileControlAffinity.leading,
+                      value: _disclaimerAccepted,
+                      onChanged: (value) =>
+                          setState(() => _disclaimerAccepted = value ?? false),
+                      title: const Text(
+                        'I understand access is linked to my purchase email.',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     FilledButton(
-                      onPressed: _isStartingCheckout ? null : _startCheckout,
+                      onPressed: (_isStartingCheckout || !_disclaimerAccepted)
+                          ? null
+                          : _startCheckout,
                       child: Text(_isStartingCheckout ? 'Opening checkout...' : 'Next'),
                     ),
                   ],

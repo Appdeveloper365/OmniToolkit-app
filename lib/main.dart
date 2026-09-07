@@ -9,6 +9,7 @@ import 'core/navigation/main_navigation.dart';
 import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'screens/billing_notice_screen.dart';
+import 'screens/entitlement_check_screen.dart';
 import 'screens/share_target_screen.dart';
 
 Future<void> main() async {
@@ -53,6 +54,12 @@ class OmniToolkitApp extends ConsumerWidget {
           return MaterialPageRoute(
             settings: settings,
             builder: (_) => const BillingNoticeScreen(),
+          );
+        }
+        if (uri.path == '/membership-status') {
+          return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => const EntitlementCheckScreen(),
           );
         }
         if (uri.path == '/share') {
