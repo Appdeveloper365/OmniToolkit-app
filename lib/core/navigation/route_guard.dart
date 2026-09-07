@@ -11,63 +11,67 @@ import '../auth/auth_provider.dart';
 import '../config/build_config.dart';
 import 'main_navigation.dart';
 
-Route<dynamic> generateProtectedRoutes(RouteSettings settings, WidgetRef ref) {
-  final authState = ref.watch(appAuthProvider);
+Route<dynamic> generateProtectedRoutes(RouteSettings settings) {
   final uri = Uri.parse(settings.name ?? '/');
-  final path = uri.path;
+  return MaterialPageRoute(
+    settings: settings,
+    builder: (_) => _ProtectedRouteView(path: uri.path),
+  );
+}
 
-  if (authState.isLoading) {
-    return MaterialPageRoute(
-      builder: (_) => const Scaffold(
+class _ProtectedRouteView extends ConsumerWidget {
+  const _ProtectedRouteView({required this.path});
+
+  final String path;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(appAuthProvider);
+
+    if (authState.isLoading) {
+      return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
-      ),
-    );
-  }
-
-  if (BuildConfig.isStoreBuild &&
-      (path == '/pricing' ||
-          path == '/payment-success' ||
-          path == '/payment-cancelled')) {
-    return MaterialPageRoute(builder: (_) => const PricingScreen());
-  }
-
-  // Unauthenticated -> Redirect to Login
-  if (!authState.isAuthenticated) {
-    if (path == '/pricing' ||
-        path == '/payment-success' ||
-        path == '/payment-cancelled') {
-      // Allow public checkout return views
-    } else {
-      return MaterialPageRoute(builder: (_) => const LoginScreen());
+      );
     }
-  }
 
-  // Authenticated user check entitlement
-  final user = authState.userModel;
+    if (BuildConfig.isStoreBuild &&
+        (path == '/pricing' ||
+            path == '/payment-success' ||
+            path == '/payment-cancelled')) {
+      return const PricingScreen();
+    }
 
-  if (user != null && !user.isEntitled) {
-    // Trial expired & Unpaid -> Force Pricing Page
-    if (path != '/account' &&
+    if (!authState.isAuthenticated) {
+      if (path != '/pricing' &&
+          path != '/payment-success' &&
+          path != '/payment-cancelled') {
+        return const LoginScreen();
+      }
+    }
+
+    final user = authState.userModel;
+    if (user != null &&
+        !user.isEntitled &&
+        path != '/account' &&
         path != '/payment-success' &&
         path != '/payment-cancelled') {
-      return MaterialPageRoute(builder: (_) => const PricingScreen());
+      return const PricingScreen();
     }
-  }
 
-  // Route Mapping
-  switch (path) {
-    case '/login':
-      return MaterialPageRoute(builder: (_) => const LoginScreen());
-    case '/pricing':
-      return MaterialPageRoute(builder: (_) => const PricingScreen());
-    case '/account':
-      return MaterialPageRoute(builder: (_) => const AccountScreen());
-    case '/payment-success':
-      return MaterialPageRoute(builder: (_) => const PaymentSuccessScreen());
-    case '/payment-cancelled':
-      return MaterialPageRoute(builder: (_) => const PaymentCancelledScreen());
-    case '/':
-    default:
-      return MaterialPageRoute(builder: (_) => const MainNavigation());
+    switch (path) {
+      case '/login':
+        return const LoginScreen();
+      case '/pricing':
+        return const PricingScreen();
+      case '/account':
+        return const AccountScreen();
+      case '/payment-success':
+        return const PaymentSuccessScreen();
+      case '/payment-cancelled':
+        return const PaymentCancelledScreen();
+      case '/':
+      default:
+        return const MainNavigation();
+    }
   }
 }

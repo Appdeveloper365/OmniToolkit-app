@@ -75,7 +75,7 @@ class OmniToolkitApp extends ConsumerWidget {
         }
 
         // Delegate all other routes to Protected Route Guard
-        return generateProtectedRoutes(settings, ref);
+        return generateProtectedRoutes(settings);
       },
     );
   }
