@@ -17,9 +17,15 @@ service cloud.firestore {
                       "paymentStatus",
                       "hasLifetimeAccess",
                       "premium_active",
+                      "uid",
+                      "email",
+                      "createdAt",
+                      "trialStartDate",
+                      "trialExpiresAt",
                       "purchaseDate",
                       "stripeCustomerId",
-                      "stripeSessionId"
+                      "stripeSessionId",
+                      "purchaseEmail"
                     ]);
 
       allow delete: if false;

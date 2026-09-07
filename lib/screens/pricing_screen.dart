@@ -13,6 +13,10 @@ class PricingScreen extends ConsumerStatefulWidget {
 }
 
 class _PricingScreenState extends ConsumerState<PricingScreen> {
+  static const _billingEmailNotice =
+      'Important: Please use the same email address for your account and your purchase. '
+      'Access is linked to the billing email used during checkout. Email changes are not '
+      'currently supported after purchase.';
   bool _disclaimerChecked = false;
   bool _isStartingCheckout = false;
 
@@ -184,6 +188,12 @@ class _PricingScreenState extends ConsumerState<PricingScreen> {
                               fontSize: 13),
                         ),
                       ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      _billingEmailNotice,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 12, height: 1.4),
+                    ),
                     const SizedBox(height: 20),
                     const Divider(),
                     const SizedBox(height: 16),

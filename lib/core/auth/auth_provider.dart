@@ -85,14 +85,14 @@ class AppAuthNotifier extends Notifier<AuthState> {
           ..addScope('profile');
         
         debugPrint('[Auth] SIGNIN: Calling signInWithProvider');
-        await _auth.signInWithProvider(provider);
+        await _auth.signInWithProvider(provider).timeout(const Duration(seconds: 30));
         debugPrint('[Auth] SIGNIN: signInWithProvider completed successfully');
         return;
       }
 
       debugPrint('[Auth] SIGNIN: Using native platform flow ($defaultTargetPlatform)');
       debugPrint('[Auth] SIGNIN: Starting GoogleSignIn().signIn()');
-      final googleUser = await GoogleSignIn(scopes: ['email', 'profile']).signIn();
+      final googleUser = await GoogleSignIn(scopes: ['email', 'profile']).signIn().timeout(const Duration(seconds: 30));
       
       if (googleUser == null) {
         debugPrint('[Auth] SIGNIN: User cancelled Google sign-in');

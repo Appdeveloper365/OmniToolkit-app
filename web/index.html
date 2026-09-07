@@ -42,11 +42,15 @@
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
   <script src="flutter_bootstrap.js" async></script>
-  
-  <!-- Service Worker Registration -->
+
+  <!-- Register the PWA worker once. Flutter's generated worker is not used
+       because this project owns update and offline behavior explicitly. -->
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js').then((reg) => {
+      navigator.serviceWorker.register('./service-worker.js', {
+        scope: './',
+        updateViaCache: 'none',
+      }).then((reg) => {
         console.log('[Service Worker] Registered successfully:', reg);
       }).catch((err) => {
         console.log('[Service Worker] Registration failed:', err);

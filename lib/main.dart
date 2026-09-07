@@ -1,11 +1,6 @@
 /// FILE: lib/main.dart
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:just_audio_media_kit/just_audio_media_kit.dart';
-import 'package:media_kit/media_kit.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 
 import 'core/data/asset_importer.dart';
@@ -49,16 +44,6 @@ Future<void> _initializeApplication() async {
     debugPrint('[AssetImporter] Failed to import assets: $e');
   }
 
-  // Initialize media_kit backend for Windows/Linux audio playback
-  if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
-    try {
-      MediaKit.ensureInitialized();
-      JustAudioMediaKit.ensureInitialized();
-      debugPrint('[Audio] Media_kit initialized for ${Platform.isWindows ? 'Windows' : 'Linux'}');
-    } catch (e) {
-      debugPrint('[Audio] Media_kit initialization failed: $e');
-    }
-  }
 }
 
 class AppStartupGate extends StatefulWidget {

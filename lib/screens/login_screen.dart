@@ -43,17 +43,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       // Call the sign-in method
-      ref.read(appAuthProvider.notifier).signInWithGoogle();
+      await ref.read(appAuthProvider.notifier).signInWithGoogle();
 
-      // Set a timeout to reset the flag if sign-in hangs
-      // This allows the user to try again after 30 seconds
-      await Future.delayed(const Duration(seconds: 30));
-      
-      if (mounted && _signInInProgress) {
-        debugPrint('[LoginScreen] Sign-in timeout after 30 seconds');
-        // Note: We don't reset _signInInProgress here, the button will be disabled
-        // if isLoading is true. Once the user manually checks the state, they can try again.
-      }
+
     } catch (e) {
       debugPrint('[LoginScreen] Error during sign-in: $e');
       _signInInProgress = false;

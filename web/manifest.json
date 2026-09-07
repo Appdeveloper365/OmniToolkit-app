@@ -1,9 +1,9 @@
 {
   "name": "OmniToolkit",
   "short_name": "OmniToolkit",
-  "start_url": "./",
-  "scope": "./",
-  "id": "CN=414C09E0-1118-4894-9A2F-45A40232B6A6",
+  "id": "/OmniToolkit-app/",
+  "start_url": "/OmniToolkit-app/",
+  "scope": "/OmniToolkit-app/",
   "description": "OmniToolkit - Daily productivity suite for calendar with clock and notes, calculator, world radio, lookup, and password generator.",
   "lang": "en",
   "dir": "ltr",

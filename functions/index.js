@@ -36,7 +36,10 @@ exports.createStripeCheckoutSession = functions.https.onCall(async (_data, conte
   }
 
   const uid = context.auth.uid;
-  const email = context.auth.token.email || "";
+  const email = (context.auth.token.email || "").trim().toLowerCase();
+  if (!email) {
+    throw new functions.https.HttpsError("failed-precondition", "A verified account email is required before checkout.");
+  }
   const userRef = db.collection("users").doc(uid);
   const userSnapshot = await userRef.get();
   const user = userSnapshot.data();
@@ -58,7 +61,8 @@ exports.createStripeCheckoutSession = functions.https.onCall(async (_data, conte
     payment_method_types: ["card"],
     customer_email: email,
     client_reference_id: uid,
-    metadata: { uid },
+    metadata: { uid, accountEmail: email },
+    customer_creation: "always",
     line_items: [{ price: requiredEnv("STRIPE_PRICE_ID"), quantity: 1 }],
     success_url: `${appBaseUrl}/#/payment-success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${appBaseUrl}/#/payment-cancelled`,
@@ -94,6 +98,15 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
     return;
   }
 
+  const account = await admin.auth().getUser(uid);
+  const accountEmail = (account.email || "").trim().toLowerCase();
+  const billingEmail = (session.customer_details?.email || session.customer_email || "").trim().toLowerCase();
+  if (!accountEmail || !billingEmail || accountEmail !== billingEmail) {
+    console.error("[stripeWebhook.emailMismatch]", session.id, uid);
+    res.status(400).send("Billing email must match the authenticated account email.");
+    return;
+  }
+
   if (session.mode !== "payment" || session.payment_status !== "paid") {
     console.error("[stripeWebhook.invalidSession]", session.id, session.mode, session.payment_status);
     res.status(400).send("Checkout session is not a paid one-time payment.");
@@ -112,6 +125,7 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
     transaction.set(eventRef, {
       type: event.type,
       stripeSessionId: session.id,
+      purchaseEmail: billingEmail,
       uid,
       processedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -122,6 +136,7 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
       purchaseDate: admin.firestore.FieldValue.serverTimestamp(),
       stripeCustomerId: session.customer || null,
       stripeSessionId: session.id,
+      purchaseEmail: billingEmail,
     }, { merge: true });
   });
 
