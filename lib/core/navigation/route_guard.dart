@@ -65,6 +65,7 @@ class _ProtectedRouteView extends ConsumerWidget {
 
     if (user != null &&
         !user.isEntitled &&
+        path != '/pricing' &&
         path != '/account' &&
         path != '/payment-success' &&
         path != '/payment-cancelled') {
