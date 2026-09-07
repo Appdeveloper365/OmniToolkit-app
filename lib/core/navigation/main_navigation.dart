@@ -8,7 +8,6 @@ import '../../modules/password/password_screen.dart';
 import '../../modules/radio/screens/radio_screen.dart';
 import '../settings/settings_screen.dart';
 import '../theme/app_logo.dart';
-import '../widgets/trial_banner.dart';
 
 /// Root scaffold hosting navigation for all modules and settings.
 class MainNavigation extends StatefulWidget {
@@ -47,7 +46,6 @@ class _MainNavigationState extends State<MainNavigation> {
       return Scaffold(
         body: Column(
           children: [
-            const TrialBanner(),
             Expanded(
               child: Row(
                 children: [
@@ -95,7 +93,6 @@ class _MainNavigationState extends State<MainNavigation> {
     return Scaffold(
       body: Column(
         children: [
-          const TrialBanner(),
           Expanded(child: _screens[_index]),
         ],
       ),
