@@ -18,29 +18,56 @@ import 'screens/share_target_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize timezone data
   try {
     tz_data.initializeTimeZones();
-    await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
-    await AssetImporter.importFirstLaunch();
+  } catch (e) {
+    debugPrint('[App] Timezone initialization warning: $e');
+  }
 
-    // Initialize media_kit backend for Windows/Linux audio playback
-    if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+  // Initialize Firebase with error handling
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    debugPrint('[Firebase] Successfully initialized');
+  } catch (error, stackTrace) {
+    debugPrint('[Firebase] Initialization failed: $error\n$stackTrace');
+  }
+
+  // Initialize app assets
+  try {
+    await AssetImporter.importFirstLaunch();
+  } catch (e) {
+    debugPrint('[AssetImporter] Failed to import assets: $e');
+  }
+
+  // Initialize media_kit backend for Windows/Linux audio playback
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+    try {
       MediaKit.ensureInitialized();
       JustAudioMediaKit.ensureInitialized();
+      debugPrint('[Audio] Media_kit initialized for ${Platform.isWindows ? 'Windows' : 'Linux'}');
+    } catch (e) {
+      debugPrint('[Audio] Media_kit initialization failed: $e');
     }
+  }
 
-    // Initialize just_audio background playback for Android/iOS
-    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+  // Initialize just_audio background playback for Android/iOS
+  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+    try {
       await JustAudioBackground.init(
         androidNotificationChannelId: 'com.omnitoolkit.channel.audio',
         androidNotificationChannelName: 'OmniToolkit Radio',
         androidNotificationOngoing: true,
       );
+      debugPrint('[Audio] JustAudioBackground initialized for ${Platform.isAndroid ? 'Android' : 'iOS'}');
+    } catch (e) {
+      debugPrint('[Audio] JustAudioBackground initialization failed: $e');
     }
-  } catch (error, stackTrace) {
-    debugPrint('Startup initialization failed: $error\n$stackTrace');
   }
+
   runApp(const ProviderScope(child: OmniToolkitApp()));
 }
 

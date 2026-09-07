@@ -134,7 +134,7 @@ class StreamResolverService {
         final extracted = _extractUrlFromPlaylist(bodyText);
         if (extracted != null && extracted.isNotEmpty && extracted != url) {
           debugPrint('[RadioResolver] Extracted playlist target: $extracted');
-          return _resolvePlaylistsAndRedirects(extracted, depth: depth + 1);
+          return await _resolvePlaylistsAndRedirects(extracted, depth: depth + 1);
         }
       }
 
@@ -176,3 +176,4 @@ class StreamResolverService {
     return 'MP3';
   }
 }
+
