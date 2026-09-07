@@ -37,6 +37,10 @@ exports.createStripeCheckoutSession = functions.https.onCall(async (_data, conte
 
   const uid = context.auth.uid;
   const email = (context.auth.token.email || "").trim().toLowerCase();
+  const requestedBillingEmail = (_data?.billingEmail || "").trim().toLowerCase();
+  if (requestedBillingEmail && requestedBillingEmail !== email) {
+    throw new functions.https.HttpsError("invalid-argument", "Billing email must match the authenticated account email.");
+  }
   if (!email) {
     throw new functions.https.HttpsError("failed-precondition", "A verified account email is required before checkout.");
   }

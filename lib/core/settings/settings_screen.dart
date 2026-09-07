@@ -39,7 +39,7 @@ class SettingsScreen extends ConsumerWidget {
                     title: const Text('Account & Billing', style: TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: const Text('View trial status, license details, and logout'),
                     trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => Navigator.pushNamed(context, '/account'),
+                    onTap: () => Navigator.pushNamed(context, '/billing-notice'),
                   ),
                 ),
                 const SizedBox(height: 24),
