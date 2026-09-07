@@ -97,4 +97,6 @@ jobs:
             exit 0
           fi
           git commit -m "deploy: ${GITHUB_SHA}"
-          git push --force-with-lease=gh-pages "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:gh-pages
+          REMOTE_GH_PAGES_SHA=$(git rev-parse refs/remotes/origin/gh-pages)
+          git push --force-with-lease=refs/heads/gh-pages:${REMOTE_GH_PAGES_SHA} "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:gh-pages
+
