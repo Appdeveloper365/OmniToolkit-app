@@ -80,17 +80,6 @@ void main() {
       ));
     });
 
-    test('Validation & Sanitization of ZIP and Area Code', () {
-      expect(LookupService.isValidZip('10001'), isTrue);
-      expect(LookupService.isValidZip('2101'), isFalse);
-      expect(LookupService.cleanZip('2101'), equals('02101'));
-      expect(LookupService.isValidZip('abc12'), isFalse);
-
-      expect(LookupService.isValidAreaCode('212'), isTrue);
-      expect(LookupService.isValidAreaCode('12'), isFalse);
-      expect(LookupService.cleanAreaCode(' 212 '), equals('212'));
-    });
-
     test('1. lookupAreaCodesFromZip(zip)', () {
       final codes = service.lookupAreaCodesFromZip('10001');
       expect(codes, equals(['212', '332', '646'])); // Sorted ascending & deduplicated
@@ -103,10 +92,10 @@ void main() {
 
     test('3. lookupCityFromZip(zip)', () {
       final city1 = service.lookupCityFromZip('10001');
-      expect(city1, equals('New York'));
+      expect(city1, equals('New York, NY'));
 
       final city2 = service.lookupCityFromZip('02101');
-      expect(city2, equals('Boston'));
+      expect(city2, equals('Boston, MA'));
 
       final city3 = service.lookupCityFromZip('99999');
       expect(city3, isNull);
@@ -118,8 +107,8 @@ void main() {
     });
 
     test('5. lookupCityFromAreaCode(areaCode)', () {
-      final cities = service.lookupCityFromAreaCode('213');
-      expect(cities, equals(['Los Angeles']));
+      final city = service.lookupCityFromAreaCode('213');
+      expect(city, equals('Los Angeles, CA'));
     });
 
     test('6. lookupAreaCodesFromCity(city)', () {

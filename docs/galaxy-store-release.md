@@ -1,4 +1,4 @@
-# OmniToolkit Galaxy Store Release Setup
+# OomniToolkit Galaxy Store Release Setup
 
 ## Android package
 
@@ -110,21 +110,6 @@ https://appdeveloper365.github.io/OmniToolkit-app/downloads/productivity-radio.a
 https://appdeveloper365.github.io/OmniToolkit-app/downloads/productivity-radio.aab
 ```
 
-## Web Service-Worker Configuration for Downloads
-
-**IMPORTANT:** The `/OmniToolkit-app/downloads/` directory must bypass the SPA service-worker fallback.
-
-The service-worker must NOT route APK/AAB download requests to `index.html`. If this bypass is not configured correctly:
-- APK/AAB URLs will return `index.html` instead of the binary file
-- Downloads will fail with corruption errors
-- Browser will try to run the app instead of downloading the file
-
-**Configuration Required:**
-- Ensure `web/service-worker.js` excludes `/downloads/` from the offline-first fallback strategy
-- Verify that requests to `/downloads/*` routes are never rewritten to `index.html`
-- Test downloads directly: `curl -I https://appdeveloper365.github.io/OmniToolkit-app/downloads/productivity-radio.apk`
-- Verify response is `application/vnd.android.package`, not `text/html`
-
 ## Store-safe monetization behavior
 
 The store build must show only this access message before entitlement:
@@ -140,3 +125,4 @@ paymentStatus
 hasLifetimeAccess
 premium_active
 ```
+

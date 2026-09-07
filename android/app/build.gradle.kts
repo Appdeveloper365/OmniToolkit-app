@@ -1,11 +1,33 @@
+import java.util.Properties
+import java.util.Base64
+
 plugins {
     id("com.android.application")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("key.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
+}
+
+val decodedKeystorePath = System.getenv("ANDROID_KEYSTORE_BASE64")?.takeIf { it.isNotBlank() }?.let { encoded ->
+    val output = layout.buildDirectory.file("generated/keystore/omnitoolkit-release.jks").get().asFile
+    output.parentFile.mkdirs()
+    output.writeBytes(Base64.getDecoder().decode(encoded))
+    output.absolutePath
+}
+
+fun signingValue(name: String): String? = System.getenv(name)?.takeIf { it.isNotBlank() } ?: localProperties.getProperty(name)
+val releaseSigningConfigured = !decodedKeystorePath.isNullOrBlank() || !signingValue("ANDROID_KEYSTORE_PATH").isNullOrBlank()
+
 android {
-    namespace = "com.example.omnitoolkit"
+    namespace = "com.omnitoolkit.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -15,25 +37,33 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.omnitoolkit"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        applicationId = "com.omnitoolkit.app"
+        minSdk = maxOf(flutter.minSdkVersion, 23)
         targetSdk = flutter.targetSdkVersion
-        // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
-        // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
-        // You can force using the value of versionCode by specifying the `-P force-version-code-ignoring-abi=true`
-        // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            val storeFilePath = decodedKeystorePath ?: signingValue("ANDROID_KEYSTORE_PATH")
+            if (!storeFilePath.isNullOrBlank()) {
+                storeFile = file(storeFilePath)
+                storePassword = signingValue("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = signingValue("ANDROID_KEY_ALIAS")
+                keyPassword = signingValue("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            if (!releaseSigningConfigured) {
+                throw GradleException("Release signing is required. Configure android/key.properties locally or ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD in CI.")
+            }
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
@@ -47,3 +77,4 @@ kotlin {
 flutter {
     source = "../.."
 }
+

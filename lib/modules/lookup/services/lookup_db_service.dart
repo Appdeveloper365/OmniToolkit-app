@@ -4,95 +4,190 @@ import '../../../core/db/app_database.dart';
 import '../data/zip_seed_data.dart';
 import '../models/lookup_models.dart';
 import '../models/zip_entry.dart';
+import 'lookup_service.dart';
 
 /// Offline ZIP / city / state / county / area-code / region / timezone /
-/// lat-lng lookup backed by SQLite.
+/// lat-lng lookup backed by SQLite with in-memory service fallback for Web.
 class LookupDbService {
   static const _table = 'lookup';
+  final LookupService _inMemoryService = LookupService();
 
   Future<void> ensureSeeded() async {
-    final db = await AppDatabase.instance.database;
-    final rows = await db.query(_table, columns: ['COUNT(*) as c']);
-    final count = (rows.first['c'] as int?) ?? 0;
-    if (count < 1000) {
-      try {
-        await AssetImporter.importLookupData(db);
-      } catch (_) {
-        // Fallback for widget testing environments without rootBundle
-        if (count == 0) {
-          final batch = db.batch();
-          for (final entry in zipSeedData) {
-            batch.insert(_table, entry.toMap());
+    try {
+      await _inMemoryService.ensureInitialized();
+    } catch (_) {}
+
+    try {
+      final db = await AppDatabase.instance.database;
+      final rows = await db.query(_table, columns: ['COUNT(*) as c']);
+      final count = (rows.first['c'] as int?) ?? 0;
+      if (count < 1000) {
+        try {
+          await AssetImporter.importLookupData(db);
+        } catch (_) {
+          if (count == 0) {
+            final batch = db.batch();
+            for (final entry in zipSeedData) {
+              batch.insert(_table, entry.toMap());
+            }
+            await batch.commit(noResult: true);
           }
-          await batch.commit(noResult: true);
         }
       }
-    }
+    } catch (_) {}
   }
 
-  /// ZIP → city/state/area code(s).
+  String _sanitizeZip(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.contains('-')) {
+      final base = trimmed.split('-').first.trim();
+      final digits = base.replaceAll(RegExp(r'[^\d]'), '');
+      return digits.length <= 5 ? digits.padLeft(5, '0') : digits;
+    }
+    final cleanDigits = trimmed.replaceAll(RegExp(r'[^\d]'), '');
+    if (cleanDigits.isNotEmpty && cleanDigits.length <= 5) {
+      return cleanDigits.padLeft(5, '0');
+    }
+    return trimmed;
+  }
+
+  /// Normalizes city/county text for fuzzy matching (e.g. "Harris burg" -> "harrisburg")
+  String _normalizeFuzzy(String input) {
+    return input.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+  }
+
+  /// ZIP → city/state/county/area code(s). Returns ALL matches starting with query prefix.
   Future<List<ZipEntry>> searchByZip(String zip) async {
     final trimmed = zip.trim();
     if (trimmed.isEmpty) return [];
-    final db = await AppDatabase.instance.database;
 
-    // Handle sanitized/padded 5-digit zip if numeric (e.g. 2101 -> 02101)
-    String? padded;
-    final cleanInput = trimmed.split(' ').first.replaceAll(RegExp(r'[^\d]'), '');
-    if (cleanInput.isNotEmpty && cleanInput.length <= 5) {
-      padded = cleanInput.padLeft(5, '0');
+    final cleanZip = _sanitizeZip(trimmed);
+
+    try {
+      final db = await AppDatabase.instance.database;
+      final whereClause = StringBuffer('zip LIKE ? OR zip LIKE ?');
+      final args = <String>['$trimmed%', '$cleanZip%'];
+
+      if (RegExp(r'[a-zA-Z]').hasMatch(trimmed)) {
+        final cityPart = trimmed.split(',').first.trim();
+        whereClause.write(' OR city LIKE ?');
+        args.add('%$cityPart%');
+      }
+
+      final rows = await db.query(
+        _table,
+        where: whereClause.toString(),
+        whereArgs: args,
+        limit: 100,
+      );
+      final results = rows.map(ZipEntry.fromMap).toList();
+      if (results.isNotEmpty) return results;
+    } catch (_) {}
+
+    // Ensure in-memory dataset is initialized if SQLite returns 0 rows on Web
+    if (!_inMemoryService.isInitialized) {
+      await _inMemoryService.ensureInitialized();
     }
 
-    final whereClause = StringBuffer('zip LIKE ?');
-    final args = <String>['$trimmed%'];
+    // Fallback 1: Query all in-memory LookupService entries matching prefix or clean zip
+    final memMatches = _inMemoryService.zipData.values.where((r) {
+      return r.zip == cleanZip ||
+          r.zip == trimmed ||
+          r.zip.startsWith(cleanZip) ||
+          r.zip.startsWith(trimmed);
+    }).toList();
 
-    if (padded != null && padded != trimmed) {
-      whereClause.write(' OR zip LIKE ?');
-      args.add('$padded%');
+    if (memMatches.isNotEmpty) {
+      return memMatches.map((memRecord) {
+        final areaCodes = _inMemoryService.lookupAreaCodesFromZip(memRecord.zip);
+        return ZipEntry(
+          zip: memRecord.zip,
+          city: memRecord.city,
+          state: memRecord.state,
+          county: memRecord.county,
+          areaCodes: areaCodes,
+          region: [memRecord.state],
+          timezone: memRecord.timezone,
+          lat: memRecord.lat,
+          lng: memRecord.lng,
+        );
+      }).toList();
     }
 
-    // Fallback search by city if non-numeric string (e.g. user selected city from autocomplete)
-    if (RegExp(r'[a-zA-Z]').hasMatch(trimmed)) {
-      final cityPart = trimmed.split(',').first.trim();
-      whereClause.write(' OR city LIKE ?');
-      args.add('%$cityPart%');
-    }
-
-    final rows = await db.query(
-      _table,
-      where: whereClause.toString(),
-      whereArgs: args,
-      limit: 100,
-    );
-    return rows.map(ZipEntry.fromMap).toList();
+    // Fallback 2: Search in-memory zipSeedData
+    return zipSeedData
+        .where((e) =>
+            e.zip == cleanZip ||
+            e.zip.startsWith(cleanZip) ||
+            e.zip.startsWith(trimmed))
+        .toList();
   }
 
-  /// City/county → ZIP list (also returns state/area code/region per row).
+  /// City/county → ZIP list with fuzzy matching (e.g. "Harrisburg", "harrisburg", "Harris burg").
   Future<List<ZipEntry>> searchByCity(String city) async {
     final trimmed = city.trim();
     if (trimmed.isEmpty) return [];
-    final db = await AppDatabase.instance.database;
 
-    List<Map<String, dynamic>> rows;
-    if (trimmed.contains(',')) {
-      final parts = trimmed.split(',');
-      final cityPart = parts[0].trim();
-      final statePart = parts[1].trim();
-      rows = await db.query(
-        _table,
-        where: '(city LIKE ? OR county LIKE ?) AND state LIKE ?',
-        whereArgs: ['%$cityPart%', '%$cityPart%', '%$statePart%'],
-        limit: 100,
-      );
-    } else {
-      rows = await db.query(
-        _table,
-        where: 'city LIKE ? OR county LIKE ? OR state LIKE ?',
-        whereArgs: ['%$trimmed%', '%$trimmed%', '%$trimmed%'],
-        limit: 100,
-      );
+    final fuzzyQuery = _normalizeFuzzy(trimmed);
+
+    try {
+      final db = await AppDatabase.instance.database;
+      List<Map<String, dynamic>> rows;
+      if (trimmed.contains(',')) {
+        final parts = trimmed.split(',');
+        final cityPart = parts[0].trim();
+        final statePart = parts[1].trim();
+        rows = await db.query(
+          _table,
+          where: '(city LIKE ? OR county LIKE ?) AND state LIKE ?',
+          whereArgs: ['%$cityPart%', '%$cityPart%', '%$statePart%'],
+          limit: 100,
+        );
+      } else {
+        rows = await db.query(
+          _table,
+          where: 'city LIKE ? OR county LIKE ? OR state LIKE ?',
+          whereArgs: ['%$trimmed%', '%$trimmed%', '%$trimmed%'],
+          limit: 100,
+        );
+      }
+      var results = rows.map(ZipEntry.fromMap).toList();
+      if (results.isNotEmpty) return results;
+    } catch (_) {}
+
+    if (!_inMemoryService.isInitialized) {
+      await _inMemoryService.ensureInitialized();
     }
-    return rows.map(ZipEntry.fromMap).toList();
+
+    // In-memory fuzzy match across LookupService zipData
+    final memList = <ZipEntry>[];
+    _inMemoryService.zipData.forEach((z, rec) {
+      final cityNorm = _normalizeFuzzy(rec.city);
+      final countyNorm = rec.county != null ? _normalizeFuzzy(rec.county!) : '';
+      if (cityNorm.contains(fuzzyQuery) || countyNorm.contains(fuzzyQuery) || rec.state.toLowerCase() == trimmed.toLowerCase()) {
+        memList.add(ZipEntry(
+          zip: rec.zip,
+          city: rec.city,
+          state: rec.state,
+          county: rec.county,
+          areaCodes: _inMemoryService.lookupAreaCodesFromZip(rec.zip),
+          region: [rec.state],
+          timezone: rec.timezone,
+          lat: rec.lat,
+          lng: rec.lng,
+        ));
+      }
+    });
+
+    if (memList.isNotEmpty) return memList;
+
+    // Fallback seed fuzzy search
+    return zipSeedData
+        .where((e) =>
+            _normalizeFuzzy(e.city).contains(fuzzyQuery) ||
+            (e.county != null && _normalizeFuzzy(e.county!).contains(fuzzyQuery)) ||
+            e.state.toLowerCase() == trimmed.toLowerCase())
+        .toList();
   }
 
   /// Area code → city/state/ZIP/region.
@@ -100,97 +195,149 @@ class LookupDbService {
     final trimmed = areaCode.trim().split(' ').first.replaceAll(RegExp(r'[^\d]'), '');
     final rawTrimmed = areaCode.trim();
     if (trimmed.isEmpty && rawTrimmed.isEmpty) return [];
-    final db = await AppDatabase.instance.database;
 
     final queryStr = trimmed.isNotEmpty ? trimmed : rawTrimmed;
-    final rows = await db.query(
-      _table,
-      where: 'areaCode LIKE ? OR zip LIKE ? OR city LIKE ?',
-      whereArgs: ['%$queryStr%', '$queryStr%', '%$queryStr%'],
-      limit: 100,
-    );
-    return rows.map(ZipEntry.fromMap).toList();
+
+    try {
+      final db = await AppDatabase.instance.database;
+      final rows = await db.query(
+        _table,
+        where: 'areaCode LIKE ? OR zip LIKE ? OR city LIKE ?',
+        whereArgs: ['%$queryStr%', '$queryStr%', '%$queryStr%'],
+        limit: 100,
+      );
+      final results = rows.map(ZipEntry.fromMap).toList();
+      if (results.isNotEmpty) return results;
+    } catch (_) {}
+
+    if (!_inMemoryService.isInitialized) {
+      await _inMemoryService.ensureInitialized();
+    }
+
+    final memCity = _inMemoryService.lookupCityFromAreaCode(queryStr);
+    if (memCity != null) {
+      final parts = memCity.split(',');
+      final cName = parts[0].trim();
+      final sName = parts.length > 1 ? parts[1].trim() : '';
+      return [
+        ZipEntry(
+          zip: queryStr,
+          city: cName,
+          state: sName,
+          areaCodes: [queryStr],
+          region: [sName],
+        )
+      ];
+    }
+
+    return zipSeedData
+        .where((e) => e.areaCode.contains(queryStr) || e.zip.startsWith(queryStr))
+        .toList();
   }
 
   /// Autocomplete suggestions tailored by LookupMode.
   Future<List<String>> suggest(String query, {LookupMode? mode, int limit = 10}) async {
     final trimmed = query.trim();
     if (trimmed.isEmpty) return const [];
-    final db = await AppDatabase.instance.database;
 
     final suggestions = <String>{};
 
-    if (mode == LookupMode.byZip) {
-      final cleanInput = trimmed.replaceAll(RegExp(r'[^\d]'), '');
-      final padded = cleanInput.length <= 5 && cleanInput.isNotEmpty ? cleanInput.padLeft(5, '0') : null;
-      final args = ['$trimmed%'];
-      var where = 'zip LIKE ?';
-      if (padded != null && padded != trimmed) {
-        where += ' OR zip LIKE ?';
-        args.add('$padded%');
-      }
-      final rows = await db.query(
-        _table,
-        columns: ['zip', 'city', 'state'],
-        where: where,
-        whereArgs: args,
-        limit: limit * 2,
-      );
-      for (final r in rows) {
-        suggestions.add('${r['zip']} (${r['city']}, ${r['state']})');
-      }
-    } else if (mode == LookupMode.byCity) {
-      final cityPart = trimmed.split(',').first.trim();
-      final rows = await db.query(
-        _table,
-        columns: ['city', 'county', 'state'],
-        where: 'city LIKE ? OR county LIKE ? OR state LIKE ?',
-        whereArgs: ['%$cityPart%', '%$cityPart%', '%$cityPart%'],
-        limit: limit * 2,
-      );
-      for (final r in rows) {
-        suggestions.add('${r['city']}, ${r['state']}');
-        final county = r['county'] as String?;
-        if (county != null && county.isNotEmpty) {
-          suggestions.add('$county, ${r['state']}');
+    try {
+      final db = await AppDatabase.instance.database;
+      if (mode == LookupMode.byZip) {
+        final cleanZip = _sanitizeZip(trimmed);
+        final rows = await db.query(
+          _table,
+          columns: ['zip', 'city', 'state'],
+          where: 'zip LIKE ? OR zip LIKE ?',
+          whereArgs: ['$trimmed%', '$cleanZip%'],
+          limit: limit * 2,
+        );
+        for (final r in rows) {
+          suggestions.add('${r['zip']} (${r['city']}, ${r['state']})');
         }
-      }
-    } else if (mode == LookupMode.byAreaCode) {
-      final cleanInput = trimmed.replaceAll(RegExp(r'[^\d]'), '');
-      final queryStr = cleanInput.isNotEmpty ? cleanInput : trimmed;
-      final rows = await db.query(
-        _table,
-        columns: ['areaCode', 'city', 'state'],
-        where: 'areaCode LIKE ?',
-        whereArgs: ['%$queryStr%'],
-        limit: limit * 2,
-      );
-      for (final r in rows) {
-        final codes = (r['areaCode'] as String? ?? '').split(',');
-        for (final code in codes) {
-          if (code.contains(queryStr)) {
-            suggestions.add('$code (${r['city']}, ${r['state']})');
+      } else if (mode == LookupMode.byCity) {
+        final cityPart = trimmed.split(',').first.trim();
+        final rows = await db.query(
+          _table,
+          columns: ['city', 'county', 'state'],
+          where: 'city LIKE ? OR county LIKE ? OR state LIKE ?',
+          whereArgs: ['%$cityPart%', '%$cityPart%', '%$cityPart%'],
+          limit: limit * 2,
+        );
+        for (final r in rows) {
+          suggestions.add('${r['city']}, ${r['state']}');
+          final county = r['county'] as String?;
+          if (county != null && county.isNotEmpty) {
+            suggestions.add('$county, ${r['state']}');
+          }
+        }
+      } else if (mode == LookupMode.byAreaCode) {
+        final cleanInput = trimmed.replaceAll(RegExp(r'[^\d]'), '');
+        final queryStr = cleanInput.isNotEmpty ? cleanInput : trimmed;
+        final rows = await db.query(
+          _table,
+          columns: ['areaCode', 'city', 'state'],
+          where: 'areaCode LIKE ?',
+          whereArgs: ['%$queryStr%'],
+          limit: limit * 2,
+        );
+        for (final r in rows) {
+          final codes = (r['areaCode'] as String? ?? '').split(',');
+          for (final code in codes) {
+            if (code.contains(queryStr)) {
+              suggestions.add('$code (${r['city']}, ${r['state']})');
+            }
           }
         }
       }
-    } else {
-      final rows = await db.query(
-        _table,
-        columns: ['zip', 'city', 'state', 'areaCode'],
-        where: 'zip LIKE ? OR city LIKE ? OR areaCode LIKE ?',
-        whereArgs: ['$trimmed%', '%$trimmed%', '%$trimmed%'],
-        limit: limit * 2,
-      );
-      for (final row in rows) {
-        suggestions.add('${row['city']}, ${row['state']}');
-        suggestions.add(row['zip'] as String);
-        for (final code in (row['areaCode'] as String? ?? '').split(',')) {
-          if (code.isNotEmpty) suggestions.add(code);
+    } catch (_) {}
+
+    if (suggestions.isNotEmpty) {
+      return suggestions.take(limit).toList();
+    }
+
+    if (!_inMemoryService.isInitialized) {
+      await _inMemoryService.ensureInitialized();
+    }
+
+    // In-Memory Suggestion Fallbacks for Web
+    final cleanZip = _sanitizeZip(trimmed);
+    final fuzzyQuery = _normalizeFuzzy(trimmed);
+
+    if (mode == LookupMode.byZip) {
+      _inMemoryService.zipData.forEach((z, rec) {
+        if (z.startsWith(trimmed) || z.startsWith(cleanZip)) {
+          suggestions.add('$z (${rec.city}, ${rec.state})');
+        }
+      });
+      for (final entry in zipSeedData) {
+        if (entry.zip.startsWith(trimmed) || entry.zip.startsWith(cleanZip)) {
+          suggestions.add('${entry.zip} (${entry.city}, ${entry.state})');
         }
       }
+    } else if (mode == LookupMode.byCity) {
+      _inMemoryService.zipData.forEach((z, rec) {
+        if (_normalizeFuzzy(rec.city).contains(fuzzyQuery)) {
+          suggestions.add('${rec.city}, ${rec.state}');
+        }
+      });
+      for (final entry in zipSeedData) {
+        if (_normalizeFuzzy(entry.city).contains(fuzzyQuery)) {
+          suggestions.add('${entry.city}, ${entry.state}');
+        }
+      }
+    } else if (mode == LookupMode.byAreaCode) {
+      final queryStr = trimmed.replaceAll(RegExp(r'[^\d]'), '');
+      _inMemoryService.areaCodeData.forEach((code, list) {
+        if (code.contains(queryStr)) {
+          for (final a in list) {
+            suggestions.add('$code (${a.city}, ${a.state})');
+          }
+        }
+      });
     }
 
     return suggestions.take(limit).toList();
   }
 }
-

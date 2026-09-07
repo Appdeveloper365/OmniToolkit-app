@@ -1,10 +1,14 @@
 [
-  {"name": "Groove Salad (SomaFM)", "url": "https://ice1.somafm.com/groovesalad-128-mp3", "codec": "MP3"},
-  {"name": "Drone Zone (SomaFM)", "url": "https://ice1.somafm.com/dronezone-128-mp3", "codec": "MP3"},
-  {"name": "Lush (SomaFM)", "url": "https://ice1.somafm.com/lush-128-mp3", "codec": "MP3"},
-  {"name": "Indie Pop Rocks (SomaFM)", "url": "https://ice1.somafm.com/indiepop-128-mp3", "codec": "MP3"},
-  {"name": "Secret Agent (SomaFM)", "url": "https://ice1.somafm.com/secretagent-128-mp3", "codec": "MP3"},
-  {"name": "Deep Space One (SomaFM)", "url": "https://ice1.somafm.com/deepspaceone-128-mp3", "codec": "MP3"},
-  {"name": "Beat Blender (SomaFM)", "url": "https://ice1.somafm.com/beatblender-128-mp3", "codec": "MP3"},
-  {"name": "OmniToolkit Test Stream", "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", "codec": "MP3"}
+  {"name": "Groove Salad (SomaFM)", "url": "https://ice1.somafm.com/groovesalad-128-mp3", "codec": "Ambient", "country": "United States", "countrycode": "US"},
+  {"name": "Drone Zone (SomaFM)", "url": "https://ice1.somafm.com/dronezone-128-mp3", "codec": "Ambient", "country": "United States", "countrycode": "US"},
+  {"name": "Lush (SomaFM)", "url": "https://ice1.somafm.com/lush-128-mp3", "codec": "Pop", "country": "United States", "countrycode": "US"},
+  {"name": "Indie Pop Rocks (SomaFM)", "url": "https://ice1.somafm.com/indiepop-128-mp3", "codec": "Rock", "country": "United States", "countrycode": "US"},
+  {"name": "Secret Agent (SomaFM)", "url": "https://ice1.somafm.com/secretagent-128-mp3", "codec": "Lounge", "country": "United States", "countrycode": "US"},
+  {"name": "CBC Radio One Toronto", "url": "https://cbcliveradio-lh.akamaihd.net/i/CBCR1_TOR@382863/master.m3u8", "codec": "News", "country": "Canada", "countrycode": "CA"},
+  {"name": "BBC Radio 1", "url": "https://stream.live.vc.bbcmedia.co.uk/bbc_radio_one", "codec": "Pop", "country": "United Kingdom", "countrycode": "GB"},
+  {"name": "ABC News Radio Australia", "url": "https://live-radio01.mediahubaustralia.com/2NEWS/mp3/", "codec": "News", "country": "Australia", "countrycode": "AU"},
+  {"name": "Radio Mirchi India", "url": "https://icecast.media.ind.in/mirchi", "codec": "Bollywood", "country": "India", "countrycode": "IN"},
+  {"name": "Deutschlandfunk Germany", "url": "https://ondemand-mp3.dradio.de/dlf/dlf.m3u8", "codec": "News", "country": "Germany", "countrycode": "DE"},
+  {"name": "France Inter", "url": "https://stream.radiofrance.fr/franceinter/franceinter.m3u8", "codec": "Talk", "country": "France", "countrycode": "FR"},
+  {"name": "OmniToolkit Test Stream", "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", "codec": "Pop", "country": "United States", "countrycode": "US"}
 ]

@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.data.uid == userId
+                    && request.resource.data.paymentStatus == "unpaid"
+                    && request.resource.data.hasLifetimeAccess == false
+                    && request.resource.data.premium_active == false;
+
+      allow update: if request.auth != null
+                    && request.auth.uid == userId
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+                      "paymentStatus",
+                      "hasLifetimeAccess",
+                      "premium_active",
+                      "purchaseDate",
+                      "stripeCustomerId",
+                      "stripeSessionId"
+                    ]);
+
+      allow delete: if false;
+    }
+
+    match /stripeWebhookEvents/{eventId} {
+      allow read, write: if false;
+    }
+  }
+}

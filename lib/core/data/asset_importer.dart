@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -31,6 +32,7 @@ class AssetImporter {
 
     if (await _needsImport(db, prefs, 'radioImported', 'radio_streams')) {
       final data = await _loadList('assets/data/radio_streams.json');
+      await db.delete('radio_streams');
       final batch = db.batch();
       for (final entry in data) {
         final url = (entry['url'] ?? entry['url_resolved'] ?? '') as String;
@@ -39,6 +41,8 @@ class AssetImporter {
           'name': entry['name'],
           'url': url,
           'codec': entry['codec'] ?? 'MP3',
+          'country': entry['country'] ?? 'United States',
+          'countrycode': entry['countrycode'] ?? 'US',
         });
       }
       await batch.commit(noResult: true);
@@ -74,64 +78,85 @@ class AssetImporter {
           'lng': (entry['lng'] as num?)?.toDouble(),
         };
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AssetImporter] Error parsing lookup_data.json: $e');
+    }
 
     // 2. Load curated_us_zips.csv
     try {
-      final csvString = await rootBundle.loadString('assets/data/curated_us_zips.csv');
-      final lines = csvString.split('\n');
-      final startIdx = (lines.isNotEmpty && lines.first.startsWith('zip,')) ? 1 : 0;
-      for (var i = startIdx; i < lines.length; i++) {
-        final line = lines[i].trim();
-        if (line.isEmpty) continue;
-        final parts = _parseCsvLine(line);
-        if (parts.length >= 3) {
-          final rawZip = parts[0].replaceAll('"', '').trim();
-          if (rawZip.isEmpty) continue;
-          final cleanZ = rawZip.padLeft(5, '0');
-          final city = parts[1].replaceAll('"', '').trim();
-          final state = parts[2].replaceAll('"', '').trim();
-          final county = parts.length > 3 ? parts[3].replaceAll('"', '').trim() : null;
-          final timezone = parts.length > 4 ? parts[4].replaceAll('"', '').trim() : null;
-          final lat = parts.length > 5 ? double.tryParse(parts[5].replaceAll('"', '')) : null;
-          final lng = parts.length > 6 ? double.tryParse(parts[6].replaceAll('"', '')) : null;
+      String? csvString;
+      try {
+        csvString = await rootBundle.loadString('assets/data/curated_us_zips.csv');
+      } catch (_) {
+        try {
+          csvString = await rootBundle.loadString('curated_us_zips.csv');
+        } catch (_) {}
+      }
 
-          if (zipMap.containsKey(cleanZ)) {
-            final existing = zipMap[cleanZ]!;
-            if ((existing['county'] == null || (existing['county'] as String).isEmpty) &&
-                county != null &&
-                county.isNotEmpty) {
-              existing['county'] = county;
+      if (csvString != null && csvString.isNotEmpty) {
+        final lines = csvString.split('\n');
+        final startIdx = (lines.isNotEmpty && lines.first.startsWith('zip,')) ? 1 : 0;
+        for (var i = startIdx; i < lines.length; i++) {
+          final line = lines[i].trim();
+          if (line.isEmpty) continue;
+          final parts = _parseCsvLine(line);
+          if (parts.length >= 3) {
+            final rawZip = parts[0].replaceAll('"', '').trim();
+            if (rawZip.isEmpty) continue;
+            final cleanZ = rawZip.padLeft(5, '0');
+            final city = parts[1].replaceAll('"', '').trim();
+            final state = parts[2].replaceAll('"', '').trim();
+            final county = parts.length > 3 ? parts[3].replaceAll('"', '').trim() : null;
+            final timezone = parts.length > 4 ? parts[4].replaceAll('"', '').trim() : null;
+            final lat = parts.length > 5 ? double.tryParse(parts[5].replaceAll('"', '')) : null;
+            final lng = parts.length > 6 ? double.tryParse(parts[6].replaceAll('"', '')) : null;
+
+            if (zipMap.containsKey(cleanZ)) {
+              final existing = zipMap[cleanZ]!;
+              if ((existing['county'] == null || (existing['county'] as String).isEmpty) &&
+                  county != null &&
+                  county.isNotEmpty) {
+                existing['county'] = county;
+              }
+              if (existing['timezone'] == null && timezone != null && timezone.isNotEmpty) {
+                existing['timezone'] = timezone;
+              }
+              if (existing['lat'] == null) existing['lat'] = lat;
+              if (existing['lng'] == null) existing['lng'] = lng;
+            } else {
+              zipMap[cleanZ] = {
+                'zip': cleanZ,
+                'city': city,
+                'state': state,
+                'county': county?.isEmpty == true ? null : county,
+                'areaCode': null,
+                'region': null,
+                'timezone': timezone?.isEmpty == true ? null : timezone,
+                'lat': lat,
+                'lng': lng,
+              };
             }
-            if (existing['timezone'] == null && timezone != null && timezone.isNotEmpty) {
-              existing['timezone'] = timezone;
-            }
-            if (existing['lat'] == null) existing['lat'] = lat;
-            if (existing['lng'] == null) existing['lng'] = lng;
-          } else {
-            zipMap[cleanZ] = {
-              'zip': cleanZ,
-              'city': city,
-              'state': state,
-              'county': county?.isEmpty == true ? null : county,
-              'areaCode': null,
-              'region': null,
-              'timezone': timezone?.isEmpty == true ? null : timezone,
-              'lat': lat,
-              'lng': lng,
-            };
           }
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AssetImporter] Error parsing curated_us_zips.csv: $e');
+    }
 
     if (zipMap.isEmpty) return;
 
-    final batch = db.batch();
-    for (final record in zipMap.values) {
-      batch.insert('lookup', record);
+    // Batch insert into SQLite / IndexedDB in chunks of 500 to prevent Web IndexedDB transaction timeout
+    final records = zipMap.values.toList();
+    const chunkSize = 500;
+    for (var i = 0; i < records.length; i += chunkSize) {
+      final end = (i + chunkSize < records.length) ? i + chunkSize : records.length;
+      final chunk = records.sublist(i, end);
+      final batch = db.batch();
+      for (final record in chunk) {
+        batch.insert('lookup', record);
+      }
+      await batch.commit(noResult: true);
     }
-    await batch.commit(noResult: true);
   }
 
   static List<String> _parseCsvLine(String line) {
@@ -153,8 +178,6 @@ class AssetImporter {
     return result;
   }
 
-  /// Imports when either the flag was never set or the table is empty
-  /// (e.g. after a schema migration wiped the table's rows).
   static Future<bool> _needsImport(
     Database db,
     SharedPreferences prefs,
@@ -167,7 +190,16 @@ class AssetImporter {
   }
 
   static Future<List<Map<String, dynamic>>> _loadList(String asset) async {
-    final raw = await rootBundle.loadString(asset);
+    String? raw;
+    try {
+      raw = await rootBundle.loadString(asset);
+    } catch (_) {
+      final altPath = asset.replaceFirst('assets/', '');
+      try {
+        raw = await rootBundle.loadString(altPath);
+      } catch (_) {}
+    }
+    if (raw == null) throw FormatException('Could not load asset: $asset');
     final decoded = jsonDecode(raw);
     if (decoded is! List) {
       throw const FormatException('Dataset must contain a JSON array');
@@ -175,8 +207,6 @@ class AssetImporter {
     return decoded.cast<Map<String, dynamic>>();
   }
 
-  /// Flattens a JSON array field (e.g. `area_code`, `region`) into the
-  /// comma-joined TEXT column format used by the `lookup` table.
   static String? _joinField(dynamic value) {
     if (value == null) return null;
     if (value is List) return value.map((e) => e.toString()).join(',');
