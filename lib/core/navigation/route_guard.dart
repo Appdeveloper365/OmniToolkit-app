@@ -59,10 +59,6 @@ class _ProtectedRouteView extends ConsumerWidget {
       return const PricingScreen();
     }
 
-    if (authState.isAuthenticated && path == '/login') {
-      return const MainNavigation();
-    }
-
     switch (path) {
       case '/login':
         return const LoginScreen();
