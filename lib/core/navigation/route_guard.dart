@@ -15,18 +15,19 @@ Route<dynamic> generateProtectedRoutes(RouteSettings settings) {
   final uri = Uri.parse(settings.name ?? '/');
   return MaterialPageRoute(
     settings: settings,
-    builder: (_) => _ProtectedRouteView(path: uri.path),
+    builder: (_) => _ProtectedRouteView(uri: uri),
   );
 }
 
 class _ProtectedRouteView extends ConsumerWidget {
-  const _ProtectedRouteView({required this.path});
+  const _ProtectedRouteView({required this.uri});
 
-  final String path;
+  final Uri uri;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(appAuthProvider);
+    final path = uri.path;
 
     if (authState.isLoading) {
       return const Scaffold(
