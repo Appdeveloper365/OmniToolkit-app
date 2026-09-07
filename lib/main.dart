@@ -22,147 +22,111 @@ Future<void> main() async {
 }
 
 Future<void> initializeApplication() async {
-  tz_data.initializeTimeZones();
-  await DefaultFirebaseOptions.initializeFirebaseApp();
-  await AssetImporter.importFirstLaunch();
+  try {
+    tz_data.initializeTimeZones();
+    debugPrint('[App] Timezone initialized');
+  } catch (e) {
+    debugPrint('[App] Timezone initialization warning: $e');
+  }
 
+  try {
+    await DefaultFirebaseOptions.initializeFirebaseApp();
+    debugPrint('[Firebase] Successfully initialized');
+  } catch (error, stackTrace) {
+    debugPrint('[Firebase] Initialization failed: $error\n$stackTrace');
+    debugPrint('[Firebase] Error description: ${DefaultFirebaseOptions.describeInitializationFailure(error)}');
+  }
+
+  try {
+    await AssetImporter.importFirstLaunch();
+    debugPrint('[App] Assets imported successfully');
+  } catch (e) {
+    debugPrint('[AssetImporter] Failed to import assets: $e');
+  }
+
+  // Initialize media_kit backend for Windows/Linux audio playback
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
-    MediaKit.ensureInitialized();
-    JustAudioMediaKit.ensureInitialized();
+    try {
+      MediaKit.ensureInitialized();
+      JustAudioMediaKit.ensureInitialized();
+      debugPrint('[Audio] Media_kit initialized for ${Platform.isWindows ? 'Windows' : 'Linux'}');
+    } catch (e) {
+      debugPrint('[Audio] Media_kit initialization failed: $e');
+    }
   }
 
+  // Initialize just_audio background playback for Android/iOS
   if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-    await JustAudioBackground.init(
-      androidNotificationChannelId: 'com.omnitoolkit.channel.audio',
-      androidNotificationChannelName: 'OmniToolkit Radio',
-      androidNotificationOngoing: true,
-    );
+    try {
+      await JustAudioBackground.init(
+        androidNotificationChannelId: 'com.omnitoolkit.channel.audio',
+        androidNotificationChannelName: 'OmniToolkit Radio',
+        androidNotificationOngoing: true,
+      );
+      debugPrint('[Audio] JustAudioBackground initialized for ${Platform.isAndroid ? 'Android' : 'iOS'}');
+    } catch (e) {
+      debugPrint('[Audio] JustAudioBackground initialization failed: $e');
+    }
   }
 }
 
-String describeStartupFailure(Object error) {
-  if (error is FirebaseException) {
-    return DefaultFirebaseOptions.describeInitializationFailure(error);
-  }
-  return 'App startup failed while preparing offline data. Please retry.';
-}
-
-class AppStartupGate extends StatefulWidget {
-  const AppStartupGate({
-    super.key,
-    this.initializeApp = initializeApplication,
-    this.child = const OmniToolkitApp(),
-  });
-
-  final Future<void> Function() initializeApp;
-  final Widget child;
+class AppStartupGate extends ConsumerWidget {
+  const AppStartupGate({super.key});
 
   @override
-  State<AppStartupGate> createState() => _AppStartupGateState();
-}
-
-class _AppStartupGateState extends State<AppStartupGate> {
-  late Future<void> _startupFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _startupFuture = widget.initializeApp();
-  }
-
-  void _retry() {
-    setState(() {
-      _startupFuture = widget.initializeApp();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<void>(
-      future: _startupFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const _StartupShell(
-            child: StartupLoadingScreen(),
-          );
-        }
-
-        if (snapshot.hasError) {
-          debugPrint(
-            'Startup initialization failed: ${snapshot.error}\n${snapshot.stackTrace}',
-          );
-          return _StartupShell(
-            child: StartupErrorScreen(
-              message: describeStartupFailure(snapshot.error!),
-              onRetry: _retry,
-            ),
-          );
-        }
-
-        return widget.child;
-      },
-    );
-  }
-}
-
-class _StartupShell extends StatelessWidget {
-  const _StartupShell({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'OmniToolkit',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.system,
-      home: child,
-    );
-  }
-}
-
-class StartupLoadingScreen extends StatelessWidget {
-  const StartupLoadingScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 460),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: CircularProgressIndicator(),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Preparing OmniToolkit',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Loading Firebase and offline data for first use.',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final initFuture = ref.watch(appStartupProvider);
+    return initFuture.when(
+      data: (_) => const OmniToolkitApp(),
+      loading: () => MaterialApp(
+        title: 'OmniToolkit',
+        home: Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: CircularProgressIndicator(),
                 ),
+                const SizedBox(height: 16),
+                Text(
+                  'Initializing OmniToolkit...',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      error: (error, stackTrace) => MaterialApp(
+        title: 'OmniToolkit',
+        home: Scaffold(
+          appBar: AppBar(title: const Text('Initialization Error')),
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Colors.red[700],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Failed to initialize app',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    error.toString(),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
               ),
             ),
           ),
@@ -171,6 +135,10 @@ class StartupLoadingScreen extends StatelessWidget {
     );
   }
 }
+
+final appStartupProvider = FutureProvider<void>((ref) async {
+  await initializeApplication();
+});
 
 class OmniToolkitApp extends ConsumerWidget {
   const OmniToolkitApp({super.key});
@@ -203,72 +171,8 @@ class OmniToolkitApp extends ConsumerWidget {
         }
 
         // Delegate all other routes to Protected Route Guard
-        return generateProtectedRoutes(settings);
+        return generateProtectedRoutes(settings, ref);
       },
-    );
-  }
-}
-
-class StartupErrorScreen extends StatelessWidget {
-  const StartupErrorScreen({
-    super.key,
-    required this.message,
-    this.onRetry,
-  });
-
-  final String message;
-  final VoidCallback? onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 460),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.error_outline_rounded,
-                        size: 52,
-                        color: theme.colorScheme.error,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Startup configuration problem',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        message,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                      if (onRetry != null) ...[
-                        const SizedBox(height: 20),
-                        FilledButton.icon(
-                          onPressed: onRetry,
-                          icon: const Icon(Icons.refresh_rounded),
-                          label: const Text('Retry'),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

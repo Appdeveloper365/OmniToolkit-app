@@ -1,0 +1,95 @@
+00:00 +0: loading C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_session_test.dart
+00:00 +0: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_session_test.dart: session builds an expression, evaluates it, and records history
+00:00 +1: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_session_test.dart: session builds an expression, evaluates it, and records history
+00:00 +2: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_session_test.dart: session builds an expression, evaluates it, and records history
+00:00 +3: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_session_test.dart: continuing after a result keeps history (chained calculation)
+00:00 +4: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_session_test.dart: starting a new calculation with a digit after a result clears history
+00:00 +5: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_session_test.dart: AC clears expression, result, and history
+00:00 +6: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_session_test.dart: memory add/recall/clear round trip
+00:02 +7: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:04 +8: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:04 +9: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:04 +10: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:04 +11: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:04 +11: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calendar_notes_test.dart: CalendarDbService insertNote persists a note linked to its date
+*** sqflite warning ***
+
+You are changing sqflite default factory.
+Be aware of the potential side effects. Any library using sqflite
+will have this factory as the default for all operations.
+
+*** sqflite warning ***
+
+00:04 +12: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:04 +13: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:04 +14: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:05 +15: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:05 +16: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:05 +17: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:05 +18: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:05 +19: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:06 +19: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/lookup_db_service_test.dart: LookupDbService Tests searchByZip finds 5-digit and padded 4-digit zip
+*** sqflite warning ***
+
+You are changing sqflite default factory.
+Be aware of the potential side effects. Any library using sqflite
+will have this factory as the default for all operations.
+
+*** sqflite warning ***
+
+00:07 +20: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:07 +21: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:07 +22: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:07 +23: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:07 +24: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:07 +25: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:07 +26: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:07 +27: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:07 +28: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:07 +29: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:10 +29: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/radio_stream_resolver_test.dart: StreamResolverService tests handles empty stream URL gracefully
+[RadioResolver] Validating stream URL: 
+00:10 +30: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:10 +30: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/radio_stream_resolver_test.dart: StreamResolverService tests validates direct MP3 stream URL
+[RadioResolver] Validating stream URL: https://ice1.somafm.com/groovesalad-128-mp3
+00:10 +31: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:11 +31: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/radio_stream_resolver_test.dart: StreamResolverService tests validates direct MP3 stream URL
+[RadioResolver] Validated stream URL: https://ice1.somafm.com/groovesalad-128-mp3 (Format: MP3)
+00:11 +32: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:11 +32: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/radio_stream_resolver_test.dart: StreamResolverService tests detects unsupported audio extensions
+[RadioResolver] Validating stream URL: https://example.com/audio.wma
+[RadioResolver] Unsupported audio format detected for: https://example.com/audio.wma
+00:11 +33: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:11 +34: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:11 +35: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:13 +36: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:13 +37: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:13 +38: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:13 +39: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:13 +40: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/calculator_widget_test.dart: Calculator keypad tap updates input and result
+00:13 +41: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/share_target_test.dart: ShareTargetScreen displays title, text, and url query params
+00:14 +42: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/share_target_test.dart: ShareTargetScreen displays title, text, and url query params
+00:16 +43: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/share_target_test.dart: ShareTargetScreen handles missing parameters with null safety
+00:22 +44: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/widget_test.dart: OmniToolkit app boots and shows navigation
+00:23 +44: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/zip_17111_lookup_test.dart: ZIP & Area Code Local Data-Driven Required Test Cases 17111 -> Harrisburg, PA
+*** sqflite warning ***
+
+You are changing sqflite default factory.
+Be aware of the potential side effects. Any library using sqflite
+will have this factory as the default for all operations.
+
+*** sqflite warning ***
+
+00:24 +45: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/widget_test.dart: OmniToolkit app boots and shows navigation
+00:24 +46: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/widget_test.dart: OmniToolkit app boots and shows navigation
+00:24 +47: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/widget_test.dart: OmniToolkit app boots and shows navigation
+00:24 +48: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/widget_test.dart: OmniToolkit app boots and shows navigation
+00:24 +49: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/widget_test.dart: OmniToolkit app boots and shows navigation
+00:24 +50: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/widget_test.dart: OmniToolkit app boots and shows navigation
+00:24 +51: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/widget_test.dart: OmniToolkit app boots and shows navigation
+00:24 +52: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/widget_test.dart: OmniToolkit app boots and shows navigation
+00:25 +52: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/zip_17111_lookup_test.dart: ZIP & Area Code Local Data-Driven Required Test Cases Fuzzy matching: "harrisburg" and "Harris burg" -> Harrisburg
+[LookupService] Successfully loaded 33121 ZIP records from CSV
+00:26 +53: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/widget_test.dart: OmniToolkit app boots and shows navigation
+00:26 +54: C:/Users/bala/omnitoolkit.worktrees/unique-3d-logo-design-radio-fix/test/widget_test.dart: OmniToolkit app boots and shows navigation
+00:29 +55: All tests passed!
