@@ -55,9 +55,34 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
         );
       }
     } on FirebaseFunctionsException catch (error) {
-      if (mounted) _showError(error.message ?? 'Checkout could not be started.');
+      if (mounted) {
+        _showError(_friendlyMessage(error));
+      }
+    } catch (error) {
+      if (mounted) {
+        _showError(
+          'Checkout could not be started. Please try again in a moment. '
+          '($error)',
+        );
+      }
     } finally {
       if (mounted) setState(() => _isStartingCheckout = false);
+    }
+  }
+
+  String _friendlyMessage(FirebaseFunctionsException error) {
+    switch (error.code) {
+      case 'not-found':
+        return 'Checkout is not available yet. Please try again later or '
+            'contact support.';
+      case 'failed-precondition':
+        return error.message ?? 'Please accept the disclaimer before continuing.';
+      case 'unauthenticated':
+        return error.message ?? 'Please sign in and try again.';
+      case 'invalid-argument':
+        return error.message ?? 'The billing email does not match your account.';
+      default:
+        return error.message ?? 'Checkout could not be started. Please try again.';
     }
   }
 
