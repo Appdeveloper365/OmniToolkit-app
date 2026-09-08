@@ -3,3 +3,5 @@ firebase-debug.log
 firebase-debug.*.log
 .env
 .env.*
+
+# trigger deploy-functions workflow verification
