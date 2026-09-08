@@ -98,3 +98,23 @@ no more manual `firebase deploy` needed.
   error message ("Checkout is not available yet...") instead of silently
   doing nothing, once deployed this message path will only appear for
   genuine transient failures.
+## Current Deployment Status (2026-09-08)
+
+A fresh deployment attempt was made with:
+
+```powershell
+npx firebase-tools deploy --only functions --project omnitoolkit-b7de8
+```
+
+Result: `Failed to authenticate, have you run firebase login?`
+
+Live endpoint verification currently returns HTTP 404 for:
+
+- `https://us-central1-omnitoolkit-b7de8.cloudfunctions.net/createStripeCheckoutSession`
+- `https://us-central1-omnitoolkit-b7de8.cloudfunctions.net/stripeWebhook`
+- `https://us-central1-omnitoolkit-b7de8.cloudfunctions.net/checkEntitlementByEmail`
+- `https://us-central1-omnitoolkit-b7de8.cloudfunctions.net/checkEntitlementForSignedInUser`
+- No `customerPortal` or `entitlementSync` functions exist in the current source; the equivalent current functions are the two entitlement callables above.
+
+Therefore Stripe Checkout cannot be created yet, and the flow cannot reach Stripe until the functions are deployed and the three Secret Manager values exist:
+`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `STRIPE_PRICE_ID`.
