@@ -84,6 +84,35 @@ plan (required for outbound network calls to Stripe from Cloud Functions).
   calls `createStripeCheckoutSession` with `disclaimerAccepted: true` and
   reads `result.data['sessionUrl']`, which the v2 function still returns.
 
+## Automated Deployment (New)
+
+Added `.github/workflows/deploy-functions.yml`: triggers on pushes to
+`pwa-production` that touch `functions/**`, `firestore.rules`,
+`firebase.json`, or `.firebaserc` (also runnable manually via
+"workflow_dispatch"). It installs function dependencies and, only if a
+repo secret named `FIREBASE_TOKEN` is present, runs
+`firebase deploy --only firestore:rules` and
+`firebase deploy --only functions` non-interactively. If the secret is
+missing it logs a warning and skips deployment (it never fails the run).
+
+To let this workflow deploy automatically, run once, from a machine with
+access to the real project:
+
+```powershell
+firebase login:ci
+# copy the printed token, then:
+gh secret set FIREBASE_TOKEN --repo Appdeveloper365/OmniToolkit-app
+# (paste the token when prompted)
+```
+
+Also still required — set the Stripe secrets in Secret Manager (used at
+Cloud Functions runtime, not by this CI workflow):
+
+```powershell
+firebase functions:secrets:set STRIPE_SECRET_KEY --project omnitoolkit-b7de8
+firebase functions:secrets:set STRIPE_WEBHOOK_SECRET --project omnitoolkit-b7de8
+firebase functions:secrets:set STRIPE_PRICE_ID --project omnitoolkit-b7de8
+```
 ## Not Changed
 
 - `BTIM_OmniToolkit.msix` / Windows worktree — untouched, per instructions.

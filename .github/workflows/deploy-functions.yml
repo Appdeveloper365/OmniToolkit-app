@@ -1,0 +1,53 @@
+name: Deploy Firebase Functions & Firestore Rules
+
+on:
+  push:
+    branches:
+      - pwa-production
+    paths:
+      - "functions/**"
+      - "firestore.rules"
+      - "firebase.json"
+      - ".firebaserc"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-functions:
+    runs-on: ubuntu-latest
+    # Only runs when a Firebase CI token has been added as a repo secret.
+    # This keeps deployment fully automated once real Stripe/Firebase
+    # credentials exist, without ever requiring them to be committed.
+    if: ${{ github.repository == 'Appdeveloper365/OmniToolkit-app' }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Function Dependencies
+        working-directory: functions
+        run: npm install
+
+      - name: Check for Firebase Deploy Token
+        id: check-token
+        run: |
+          if [ -z "${{ secrets.FIREBASE_TOKEN }}" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::FIREBASE_TOKEN secret is not set; skipping functions deploy. Run 'firebase login:ci' locally and add the token as a repo secret named FIREBASE_TOKEN to enable automatic deploys."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy Firestore Rules
+        if: steps.check-token.outputs.skip == 'false'
+        run: npx firebase-tools deploy --only firestore:rules --token "${{ secrets.FIREBASE_TOKEN }}" --project omnitoolkit-b7de8
+
+      - name: Deploy Cloud Functions
+        if: steps.check-token.outputs.skip == 'false'
+        run: npx firebase-tools deploy --only functions --token "${{ secrets.FIREBASE_TOKEN }}" --project omnitoolkit-b7de8
