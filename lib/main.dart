@@ -18,7 +18,8 @@ Future<void> main() async {
   try {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.web);
   } catch (error, stackTrace) {
-    debugPrint('[Firebase] Initialization failed; dashboard remains available: $error\n$stackTrace');
+    debugPrint(
+        '[Firebase] Initialization failed; dashboard remains available: $error\n$stackTrace');
   }
   try {
     await AssetImporter.importFirstLaunch();
@@ -56,7 +57,8 @@ class OmniToolkitApp extends ConsumerWidget {
             builder: (_) => const BillingNoticeScreen(),
           );
         }
-        if (uri.path == '/membership-status') {
+        if (uri.path == '/membership-status' ||
+            uri.path == '/payment-success') {
           return MaterialPageRoute(
             settings: settings,
             builder: (_) => const EntitlementCheckScreen(),

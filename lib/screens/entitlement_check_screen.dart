@@ -2,10 +2,9 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-/// Shown after sign-in to reconcile the authenticated account email with any
-/// Lifetime Membership purchased under that same email (including purchases
-/// made anonymously before sign-in). If the emails do not match, the visitor
-/// is shown clear next steps rather than being silently denied access.
+/// Reconciles Lifetime Membership purchases by email. Signed-in users are
+/// checked against their account email; anonymous visitors can enter the email
+/// they used at Stripe Checkout.
 class EntitlementCheckScreen extends StatefulWidget {
   const EntitlementCheckScreen({super.key});
 
@@ -14,10 +13,12 @@ class EntitlementCheckScreen extends StatefulWidget {
 }
 
 class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
+  final _purchaseEmailController = TextEditingController();
   bool _isChecking = true;
   bool _hasLifetimeAccess = false;
   bool _matched = false;
   String? _error;
+  String? _lastCheckedEmail;
 
   @override
   void initState() {
@@ -25,27 +26,56 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
     _checkEntitlement();
   }
 
-  Future<void> _checkEntitlement() async {
+  @override
+  void dispose() {
+    _purchaseEmailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _checkEntitlement({bool requireEmail = false}) async {
     setState(() {
       _isChecking = true;
       _error = null;
     });
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
+      final accountEmail = user?.email?.trim().toLowerCase() ?? '';
+
+      if (accountEmail.isNotEmpty) {
+        final callable = FirebaseFunctions.instance.httpsCallable(
+          'checkEntitlementForSignedInUser',
+        );
+        final result = await callable.call<Map<String, dynamic>>();
+        setState(() {
+          _lastCheckedEmail = accountEmail;
+          _hasLifetimeAccess =
+              result.data['hasLifetimeAccess'] as bool? ?? false;
+          _matched = result.data['matched'] as bool? ?? false;
+          _isChecking = false;
+        });
+        return;
+      }
+
+      final purchaseEmail = _purchaseEmailController.text.trim().toLowerCase();
+      if (purchaseEmail.isEmpty) {
         setState(() {
           _isChecking = false;
           _matched = false;
           _hasLifetimeAccess = false;
+          _error =
+              requireEmail ? 'Enter the email used during checkout.' : null;
         });
         return;
       }
 
       final callable = FirebaseFunctions.instance.httpsCallable(
-        'checkEntitlementForSignedInUser',
+        'checkEntitlementByEmail',
       );
-      final result = await callable.call<Map<String, dynamic>>();
+      final result = await callable.call<Map<String, dynamic>>({
+        'email': purchaseEmail,
+      });
       setState(() {
+        _lastCheckedEmail = purchaseEmail;
         _hasLifetimeAccess = result.data['hasLifetimeAccess'] as bool? ?? false;
         _matched = result.data['matched'] as bool? ?? false;
         _isChecking = false;
@@ -58,9 +88,15 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
     }
   }
 
+  void _checkEnteredPurchaseEmail() {
+    _checkEntitlement(requireEmail: true);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final email = FirebaseAuth.instance.currentUser?.email ?? '';
+    final userEmail =
+        FirebaseAuth.instance.currentUser?.email?.trim().toLowerCase() ?? '';
+    final email = userEmail.isNotEmpty ? userEmail : (_lastCheckedEmail ?? '');
 
     return Scaffold(
       appBar: AppBar(title: const Text('Membership Status')),
@@ -84,6 +120,24 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          if (userEmail.isEmpty) ...[
+                            const Text(
+                              'Enter the email address used during Stripe checkout to restore your Lifetime Membership.',
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: _purchaseEmailController,
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.done,
+                              decoration: const InputDecoration(
+                                labelText: 'Purchase email',
+                                border: OutlineInputBorder(),
+                              ),
+                              onSubmitted: (_) => _checkEnteredPurchaseEmail(),
+                            ),
+                            const SizedBox(height: 20),
+                          ],
                           if (_error != null) ...[
                             Text(_error!, textAlign: TextAlign.center),
                           ] else if (_hasLifetimeAccess) ...[
@@ -106,17 +160,21 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                             const Icon(Icons.mail_lock_outlined, size: 56),
                             const SizedBox(height: 16),
                             Text(
-                              'We could not find a purchase for $email. '
+                              'We could not find a purchase for ${email.isEmpty ? 'that email' : email}. '
                               'Access is linked to the billing email used at checkout. '
-                              'Please sign in with the exact email address used during purchase.',
+                              'Please use the exact email address used during purchase.',
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           ],
                           const SizedBox(height: 20),
                           OutlinedButton(
-                            onPressed: _checkEntitlement,
-                            child: const Text('Check again'),
+                            onPressed: userEmail.isEmpty
+                                ? _checkEnteredPurchaseEmail
+                                : _checkEntitlement,
+                            child: Text(userEmail.isEmpty
+                                ? 'Check purchase email'
+                                : 'Check again'),
                           ),
                         ],
                       ),

@@ -19,6 +19,28 @@ function normalizeEmail(value) {
   return (value || "").trim().toLowerCase();
 }
 
+async function resolveCheckoutEmail(stripe, session) {
+  const directEmail = normalizeEmail(
+    session.customer_details?.email || session.customer_email
+  );
+  if (directEmail) return directEmail;
+
+  if (session.customer && typeof session.customer === "object") {
+    const expandedCustomerEmail = normalizeEmail(session.customer.email);
+    if (expandedCustomerEmail) return expandedCustomerEmail;
+  }
+
+  if (typeof session.customer === "string" && session.customer) {
+    const customer = await stripe.customers.retrieve(session.customer);
+    if (!customer.deleted) {
+      const customerEmail = normalizeEmail(customer.email);
+      if (customerEmail) return customerEmail;
+    }
+  }
+
+  return "";
+}
+
 /**
  * CALLABLE FUNCTION: Creates a Stripe Checkout Session for OmniToolkit
  * Lifetime Membership.
@@ -128,9 +150,7 @@ exports.stripeWebhook = onRequest(
     }
 
     const session = event.data.object;
-    const billingEmail = normalizeEmail(
-      session.customer_details?.email || session.customer_email
-    );
+    const billingEmail = await resolveCheckoutEmail(stripe, session);
 
     if (!billingEmail) {
       console.error("[stripeWebhook.missingEmail]", session.id);

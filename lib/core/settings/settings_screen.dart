@@ -19,53 +19,74 @@ class SettingsScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               children: [
                 Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
                   child: Column(
                     children: [
                       SwitchListTile(
                         title: const Text('Use 24-hour time'),
-                        subtitle: const Text('Display time in 24-hour format across modules'),
+                        subtitle: const Text(
+                            'Display time in 24-hour format across modules'),
                         value: settings.use24HourFormat,
-                        onChanged: (v) => ref.read(settingsProvider.notifier).updateSettings(use24HourFormat: v),
+                        onChanged: (v) => ref
+                            .read(settingsProvider.notifier)
+                            .updateSettings(use24HourFormat: v),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
                 Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
                   child: ListTile(
-                    leading: const Icon(Icons.manage_accounts_rounded, color: Colors.blue),
-                    title: const Text('Account & Billing', style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: const Text('View trial status, license details, and logout'),
+                    leading: const Icon(Icons.manage_accounts_rounded,
+                        color: Colors.blue),
+                    title: const Text('Account & Billing',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: const Text(
+                        'View trial status, license details, and logout'),
                     trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => Navigator.pushNamed(context, '/billing-notice'),
+                    onTap: () =>
+                        Navigator.pushNamed(context, '/billing-notice'),
                   ),
                 ),
                 const SizedBox(height: 16),
                 Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
                   child: ListTile(
-                    leading: const Icon(Icons.workspace_premium_rounded, color: Colors.amber),
-                    title: const Text('Membership Status', style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: const Text('Check Lifetime Membership for the signed-in email'),
+                    leading: const Icon(Icons.workspace_premium_rounded,
+                        color: Colors.amber),
+                    title: const Text('Membership Status',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: const Text(
+                        'Check Lifetime Membership by purchase email'),
                     trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => Navigator.pushNamed(context, '/membership-status'),
+                    onTap: () =>
+                        Navigator.pushNamed(context, '/membership-status'),
                   ),
                 ),
                 const SizedBox(height: 24),
                 Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('About OmniToolkit', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                        Text('About OmniToolkit',
+                            style: theme.textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
-                        const Text('OmniToolkit is a modern daily productivity suite featuring Calendar with Clock & Notes, 3D Calculator & Unit Converter, World Radio Explorer, US Lookup, and Password Generator.'),
+                        const Text(
+                            'OmniToolkit is a modern daily productivity suite featuring Calendar with Clock & Notes, 3D Calculator & Unit Converter, World Radio Explorer, US Lookup, and Password Generator.'),
                         const SizedBox(height: 12),
-                        const Text('Version: 1.0.0+1', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                        const Text('Version: 1.0.0+1',
+                            style: TextStyle(
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
