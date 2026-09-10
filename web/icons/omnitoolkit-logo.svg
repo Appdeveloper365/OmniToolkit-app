@@ -1,0 +1,148 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4f8ef7"/>
+      <stop offset="55%" stop-color="#3a5fd9"/>
+      <stop offset="100%" stop-color="#2a2f8f"/>
+    </linearGradient>
+    <!-- 3D extrusion side -->
+    <linearGradient id="side" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1c2470"/>
+      <stop offset="100%" stop-color="#10143f"/>
+    </linearGradient>
+    <!-- Clock face -->
+    <radialGradient id="clockFace" cx="0.35" cy="0.3" r="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#e8edf7"/>
+      <stop offset="100%" stop-color="#c3cde3"/>
+    </radialGradient>
+    <!-- Clock rim -->
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#aebadb"/>
+      <stop offset="100%" stop-color="#5f74a8"/>
+    </linearGradient>
+    <!-- Calendar -->
+    <linearGradient id="calHead" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff7a59"/>
+      <stop offset="100%" stop-color="#e04a2f"/>
+    </linearGradient>
+    <!-- Radio -->
+    <linearGradient id="radio" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd76e"/>
+      <stop offset="100%" stop-color="#f5a623"/>
+    </linearGradient>
+    <!-- Glass shine -->
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Soft shadow -->
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+    <filter id="innerShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- ===== 3D APP ICON BASE ===== -->
+  <!-- Extruded bottom layer (depth) -->
+  <rect x="56" y="72" width="400" height="400" rx="92" fill="url(#side)"/>
+  <!-- Main face -->
+  <rect x="56" y="56" width="400" height="400" rx="92" fill="url(#bg)" filter="url(#shadow)"/>
+  <!-- Bevel highlights -->
+  <rect x="62" y="62" width="388" height="388" rx="87" fill="none"
+        stroke="#ffffff" stroke-opacity="0.35" stroke-width="3"/>
+  <!-- Top glass shine -->
+  <path d="M 62 148 Q 62 62 148 62 L 364 62 Q 450 62 450 148 L 450 190 Q 256 150 62 190 Z"
+        fill="url(#shine)"/>
+
+  <!-- ===== CALENDAR (top) ===== -->
+  <g filter="url(#innerShadow)">
+    <rect x="196" y="92" width="120" height="96" rx="14" fill="#ffffff"/>
+    <path d="M 196 106 Q 196 92 210 92 L 302 92 Q 316 92 316 106 L 316 126 L 196 126 Z"
+          fill="url(#calHead)"/>
+    <!-- binder rings -->
+    <rect x="222" y="82" width="10" height="24" rx="5" fill="#8b1e10"/>
+    <rect x="280" y="82" width="10" height="24" rx="5" fill="#8b1e10"/>
+    <!-- date grid -->
+    <g fill="#9aa7c4">
+      <rect x="212" y="140" width="14" height="12" rx="3"/>
+      <rect x="236" y="140" width="14" height="12" rx="3"/>
+      <rect x="260" y="140" width="14" height="12" rx="3"/>
+      <rect x="284" y="140" width="14" height="12" rx="3"/>
+      <rect x="212" y="160" width="14" height="12" rx="3"/>
+      <rect x="260" y="160" width="14" height="12" rx="3"/>
+      <rect x="284" y="160" width="14" height="12" rx="3"/>
+    </g>
+    <!-- highlighted today -->
+    <rect x="236" y="160" width="14" height="12" rx="3" fill="#3a5fd9"/>
+  </g>
+
+  <!-- ===== DUAL CLOCKS (center) ===== -->
+  <!-- Clock 1 (left, larger) -->
+  <g filter="url(#innerShadow)">
+    <circle cx="196" cy="290" r="86" fill="url(#rim)"/>
+    <circle cx="196" cy="290" r="74" fill="url(#clockFace)"/>
+    <g stroke="#3a5fd9" stroke-width="5" stroke-linecap="round">
+      <line x1="196" y1="224" x2="196" y2="236"/>
+      <line x1="196" y1="344" x2="196" y2="356"/>
+      <line x1="130" y1="290" x2="142" y2="290"/>
+      <line x1="250" y1="290" x2="262" y2="290"/>
+    </g>
+    <!-- hands: 10:10 -->
+    <line x1="196" y1="290" x2="164" y2="266" stroke="#222b45" stroke-width="8" stroke-linecap="round"/>
+    <line x1="196" y1="290" x2="228" y2="262" stroke="#222b45" stroke-width="6" stroke-linecap="round"/>
+    <line x1="196" y1="290" x2="196" y2="246" stroke="#e04a2f" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="196" cy="290" r="7" fill="#222b45"/>
+    <circle cx="188" cy="278" r="26" fill="#ffffff" opacity="0.25"/>
+  </g>
+
+  <!-- Clock 2 (right, overlapping) -->
+  <g filter="url(#innerShadow)">
+    <circle cx="316" cy="310" r="70" fill="url(#rim)"/>
+    <circle cx="316" cy="310" r="60" fill="url(#clockFace)"/>
+    <g stroke="#3a5fd9" stroke-width="4" stroke-linecap="round">
+      <line x1="316" y1="258" x2="316" y2="268"/>
+      <line x1="316" y1="352" x2="316" y2="362"/>
+      <line x1="264" y1="310" x2="274" y2="310"/>
+      <line x1="358" y1="310" x2="368" y2="310"/>
+    </g>
+    <!-- hands: 2:50 -->
+    <line x1="316" y1="310" x2="344" y2="326" stroke="#222b45" stroke-width="7" stroke-linecap="round"/>
+    <line x1="316" y1="310" x2="288" y2="284" stroke="#222b45" stroke-width="5" stroke-linecap="round"/>
+    <line x1="316" y1="310" x2="316" y2="272" stroke="#e04a2f" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="316" cy="310" r="6" fill="#222b45"/>
+    <circle cx="308" cy="298" r="20" fill="#ffffff" opacity="0.25"/>
+  </g>
+
+  <!-- ===== INTERNET RADIO (bottom) ===== -->
+  <g filter="url(#innerShadow)">
+    <!-- radio body -->
+    <rect x="150" y="398" width="212" height="44" rx="12" fill="url(#radio)"/>
+    <rect x="150" y="398" width="212" height="18" rx="9" fill="#ffffff" opacity="0.25"/>
+    <!-- speaker grille -->
+    <g fill="#8a5a00">
+      <circle cx="172" cy="420" r="4"/><circle cx="188" cy="420" r="4"/>
+      <circle cx="204" cy="420" r="4"/><circle cx="172" cy="432" r="4"/>
+      <circle cx="188" cy="432" r="4"/><circle cx="204" cy="432" r="4"/>
+    </g>
+    <!-- dial / screen -->
+    <rect x="228" y="410" width="80" height="22" rx="6" fill="#1c2470"/>
+    <rect x="234" y="416" width="46" height="10" rx="4" fill="#59f2c2"/>
+    <!-- knob -->
+    <circle cx="336" cy="420" r="13" fill="#fff3d6"/>
+    <circle cx="336" cy="420" r="13" fill="none" stroke="#8a5a00" stroke-width="2"/>
+    <line x1="336" y1="420" x2="336" y2="410" stroke="#8a5a00" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Radio waves (internet signal) -->
+  <g stroke="#59f2c2" stroke-width="6" fill="none" stroke-linecap="round">
+    <path d="M 388 380 A 26 26 0 0 1 388 414" opacity="0.9"/>
+    <path d="M 402 368 A 44 44 0 0 1 402 426" opacity="0.6"/>
+    <path d="M 416 356 A 62 62 0 0 1 416 438" opacity="0.35"/>
+  </g>
+  <circle cx="378" cy="397" r="7" fill="#59f2c2"/>
+</svg>
