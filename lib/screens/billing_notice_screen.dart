@@ -11,10 +11,13 @@ import 'package:url_launcher/url_launcher.dart';
 class BillingNoticeScreen extends StatefulWidget {
   const BillingNoticeScreen({super.key});
 
-  static const billingEmailNotice =
-      'Important: Please use the same email address for your account and your purchase. '
-      'Access is linked to the billing email used during checkout. Email changes are not '
-      'currently supported after purchase.';
+  static const purchaseNoticeItems = [
+    'Lifetime Access is linked to the email address used during checkout.',
+    'Please use an email address that you intend to keep.',
+    'Email changes after purchase are not currently supported.',
+    'Access cannot be transferred to another account.',
+    'All sales are final and non-refundable.',
+  ];
 
   @override
   State<BillingNoticeScreen> createState() => _BillingNoticeScreenState();
@@ -76,18 +79,22 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
         return 'Checkout is not available yet. Please try again later or '
             'contact support.';
       case 'failed-precondition':
-        return error.message ?? 'Please accept the disclaimer before continuing.';
+        return error.message ??
+            'Please accept the disclaimer before continuing.';
       case 'unauthenticated':
         return error.message ?? 'Please sign in and try again.';
       case 'invalid-argument':
-        return error.message ?? 'The billing email does not match your account.';
+        return error.message ??
+            'The billing email does not match your account.';
       default:
-        return error.message ?? 'Checkout could not be started. Please try again.';
+        return error.message ??
+            'Checkout could not be started. Please try again.';
     }
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -108,15 +115,16 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
                     const Icon(Icons.receipt_long_rounded, size: 56),
                     const SizedBox(height: 20),
                     Text(
-                      'Before checkout',
+                      'Before You Purchase',
                       style: Theme.of(context).textTheme.headlineSmall,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      BillingNoticeScreen.billingEmailNotice,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(height: 1.5),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: BillingNoticeScreen.purchaseNoticeItems
+                          .map((item) => _NoticeBullet(item))
+                          .toList(),
                     ),
                     const SizedBox(height: 20),
                     CheckboxListTile(
@@ -133,7 +141,8 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
                       onPressed: (_isStartingCheckout || !_disclaimerAccepted)
                           ? null
                           : _startCheckout,
-                      child: Text(_isStartingCheckout ? 'Opening checkout...' : 'Next'),
+                      child: Text(
+                          _isStartingCheckout ? 'Opening checkout...' : 'Next'),
                     ),
                   ],
                 ),
@@ -141,6 +150,26 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _NoticeBullet extends StatelessWidget {
+  const _NoticeBullet(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('•  '),
+          Expanded(child: Text(text)),
+        ],
       ),
     );
   }
