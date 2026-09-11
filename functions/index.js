@@ -209,6 +209,9 @@ exports.stripeWebhook = onRequest(
         return;
       }
 
+      const existingEntitlement = await transaction.get(entitlementRef);
+      const existingData = existingEntitlement.exists ? existingEntitlement.data() : {};
+
       transaction.set(eventRef, {
         type: event.type,
         stripeSessionId: session.id,
@@ -219,11 +222,12 @@ exports.stripeWebhook = onRequest(
       transaction.set(
         entitlementRef,
         entitlementPayload(billingEmail, {
+          trialStartDate: existingData.trialStartDate ?? null,
+          trialEndDate: existingData.trialEndDate ?? null,
           hasLifetimeAccess: true,
           purchaseDate: admin.firestore.FieldValue.serverTimestamp(),
           lastSeenDate: admin.firestore.FieldValue.serverTimestamp(),
-        }),
-        { merge: true }
+        })
       );
 
       if (uid) {
