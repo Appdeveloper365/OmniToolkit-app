@@ -20,6 +20,7 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
   String? _error;
   bool _loading = true;
   bool _verificationSent = false;
+  bool _callbackDetected = false;
   bool _showApp = false;
 
   @override
@@ -43,6 +44,7 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
         _confirmEmailController.text = pending;
       }
       if (await _service.isVerificationLink()) {
+        if (mounted) setState(() => _callbackDetected = true);
         await _completeVerification();
         return;
       }
@@ -65,7 +67,7 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
   }
 
   Future<void> _completeVerification() async {
-    final error = MembershipService.validateEmail(_emailController.text);
+    final error = _emailFormError;
     if (error != null) {
       if (mounted) {
         setState(() {
@@ -219,7 +221,8 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
                     const SizedBox(height: 20),
                     TextField(
                       controller: _emailController,
-                      enabled: !_loading && !_verificationSent,
+                      enabled: !_loading &&
+                          (!_verificationSent || _callbackDetected),
                       enableSuggestions: false,
                       autocorrect: false,
                       keyboardType: TextInputType.emailAddress,

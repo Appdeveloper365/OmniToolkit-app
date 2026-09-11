@@ -15,6 +15,7 @@ class EmailLinkDiagnostics {
   String signInWithEmailLinkResult = 'not started';
   String currentUserAfterSignIn = 'not checked';
   String userEmailVerified = 'not checked';
+  String userRefreshResult = 'not started';
   String trialCreationResult = 'not started';
   String firstFailure = 'none recorded';
 
@@ -27,6 +28,7 @@ class EmailLinkDiagnostics {
         'signInWithEmailLink result': signInWithEmailLinkResult,
         'currentUser after sign-in': currentUserAfterSignIn,
         'user.emailVerified': userEmailVerified,
+        'User refresh result': userRefreshResult,
         'Trial creation result': trialCreationResult,
         'First failure': firstFailure,
       };
@@ -194,7 +196,15 @@ class MembershipService {
       _log('user.emailVerified=${diagnostics.userEmailVerified}');
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_pendingEmailKey);
-      await user?.reload();
+      try {
+        await user?.reload();
+        diagnostics.userRefreshResult = 'success';
+        _log('user refresh result=success');
+      } catch (error) {
+        diagnostics.userRefreshResult = 'failed (${error.runtimeType})';
+        _fail('user refresh', error);
+        rethrow;
+      }
       final refreshedUser = FirebaseAuth.instance.currentUser;
       diagnostics.currentUserAfterSignIn = refreshedUser?.email ?? 'null';
       diagnostics.userEmailVerified =
