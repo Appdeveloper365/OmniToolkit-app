@@ -150,6 +150,16 @@ class CalendarScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
 
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  'Notes are stored locally on your device and are not backed up to the cloud. Deleting the app may permanently remove your notes.',
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
             // Notes Section
             notesAsync.when(
               data: (notes) {

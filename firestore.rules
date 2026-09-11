@@ -43,9 +43,8 @@ service cloud.firestore {
     // Only Cloud Functions (Admin SDK) may write; clients may only read
     // their own authenticated account's entitlement record.
     match /entitlements/{email} {
-      allow read: if request.auth != null
-                  && request.auth.token.email is string
-                  && request.auth.token.email.lower() == email;
+      // Callable functions perform trial and membership lookups.
+      allow read: if false;
       allow write: if false;
     }
 

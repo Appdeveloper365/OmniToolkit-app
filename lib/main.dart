@@ -11,6 +11,7 @@ import 'firebase_options.dart';
 import 'screens/billing_notice_screen.dart';
 import 'screens/entitlement_check_screen.dart';
 import 'screens/share_target_screen.dart';
+import 'core/membership/membership_gate_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,7 +49,7 @@ class OmniToolkitApp extends ConsumerWidget {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: ThemeMode.system,
-      home: const MainNavigation(),
+      home: const MembershipGateScreen(),
       onGenerateRoute: (settings) {
         final uri = Uri.parse(settings.name ?? '/');
         if (uri.path == '/billing-notice' || uri.path == '/account') {

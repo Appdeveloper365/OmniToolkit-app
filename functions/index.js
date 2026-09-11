@@ -19,6 +19,36 @@ function normalizeEmail(value) {
   return (value || "").trim().toLowerCase();
 }
 
+function entitlementPayload(email, values = {}) {
+  return {
+    email,
+    trialStartDate: values.trialStartDate ?? null,
+    trialEndDate: values.trialEndDate ?? null,
+    hasLifetimeAccess: values.hasLifetimeAccess === true,
+    purchaseDate: values.purchaseDate ?? null,
+    lastSeenDate: values.lastSeenDate ?? admin.firestore.FieldValue.serverTimestamp(),
+  };
+}
+
+function timestampToIso(value) {
+  return value?.toDate ? value.toDate().toISOString() : null;
+}
+
+function entitlementResponse(email, data) {
+  const trialEndDate = data?.trialEndDate;
+  const trialActive = !data?.hasLifetimeAccess &&
+    trialEndDate?.toDate && trialEndDate.toDate().getTime() > Date.now();
+  return {
+    email,
+    hasLifetimeAccess: data?.hasLifetimeAccess === true,
+    trialActive,
+    trialStartDate: timestampToIso(data?.trialStartDate),
+    trialEndDate: timestampToIso(trialEndDate),
+    purchaseDate: timestampToIso(data?.purchaseDate),
+  };
+}
+
+
 async function resolveCheckoutEmail(stripe, session) {
   const directEmail = normalizeEmail(
     session.customer_details?.email || session.customer_email
@@ -188,17 +218,11 @@ exports.stripeWebhook = onRequest(
 
       transaction.set(
         entitlementRef,
-        {
-          email: billingEmail,
-          paymentStatus: "paid",
+        entitlementPayload(billingEmail, {
           hasLifetimeAccess: true,
-          premium_active: true,
           purchaseDate: admin.firestore.FieldValue.serverTimestamp(),
-          stripeCustomerId: session.customer || null,
-          stripeSessionId: session.id,
-          purchaseEmail: billingEmail,
-          linkedUid: uid,
-        },
+          lastSeenDate: admin.firestore.FieldValue.serverTimestamp(),
+        }),
         { merge: true }
       );
 
@@ -235,6 +259,51 @@ exports.stripeWebhook = onRequest(
 );
 
 /**
+ * CALLABLE FUNCTION: Starts or restores the single seven-day trial for an
+ * email address. The transaction makes trial creation idempotent across
+ * reinstalls and devices.
+ */
+exports.startOrRestoreTrial = onCall(async (request) => {
+  const email = normalizeEmail(request.data?.email);
+  if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+    throw new HttpsError("invalid-argument", "A valid email address is required.");
+  }
+
+  const entitlementRef = db.collection("entitlements").doc(email);
+  let entitlement;
+  await db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(entitlementRef);
+    const current = snapshot.exists ? snapshot.data() : {};
+    if (!snapshot.exists) {
+      const now = admin.firestore.Timestamp.now();
+      const trialEnd = admin.firestore.Timestamp.fromMillis(
+        now.toMillis() + 7 * 24 * 60 * 60 * 1000
+      );
+      transaction.set(entitlementRef, entitlementPayload(email, {
+        trialStartDate: now,
+        trialEndDate: trialEnd,
+        hasLifetimeAccess: false,
+        lastSeenDate: now,
+      }));
+      entitlement = entitlementPayload(email, {
+        trialStartDate: now,
+        trialEndDate: trialEnd,
+        hasLifetimeAccess: false,
+        lastSeenDate: now,
+      });
+      return;
+    }
+
+    transaction.update(entitlementRef, {
+      lastSeenDate: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    entitlement = { ...current };
+  });
+
+  return entitlementResponse(email, entitlement);
+});
+
+/**
  * CALLABLE FUNCTION: Public restore lookup. Lets any visitor (signed in or
  * not) check Lifetime Membership status by supplying the email used at
  * checkout. No other account data is exposed.
@@ -247,21 +316,20 @@ exports.checkEntitlementByEmail = onCall(async (request) => {
 
   const entitlementSnapshot = await db.collection("entitlements").doc(email).get();
   if (!entitlementSnapshot.exists) {
-    return { hasLifetimeAccess: false, matched: false, reason: "no-purchase-found" };
+    return { email, hasLifetimeAccess: false, matched: false, reason: "no-purchase-found" };
   }
 
   const entitlement = entitlementSnapshot.data();
   return {
-    hasLifetimeAccess: entitlement?.hasLifetimeAccess === true,
+    ...entitlementResponse(email, entitlement),
     matched: true,
-    purchaseEmail: entitlement?.purchaseEmail || email,
   };
 });
 
 /**
  * CALLABLE FUNCTION: Compares the signed-in account email against any
  * Lifetime Membership purchased anonymously (or under a different session)
- * with a matching email, and self-heals the linkedUid on a match.
+ * with a matching email.
  */
 exports.checkEntitlementForSignedInUser = onCall(async (request) => {
   if (!request.auth) {
@@ -270,25 +338,18 @@ exports.checkEntitlementForSignedInUser = onCall(async (request) => {
 
   const accountEmail = normalizeEmail(request.auth.token?.email);
   if (!accountEmail) {
-    return { hasLifetimeAccess: false, matched: false, reason: "no-account-email" };
+    return { email: accountEmail, hasLifetimeAccess: false, matched: false, reason: "no-account-email" };
   }
 
   const entitlementRef = db.collection("entitlements").doc(accountEmail);
   const entitlementSnapshot = await entitlementRef.get();
   if (!entitlementSnapshot.exists) {
-    return { hasLifetimeAccess: false, matched: false, reason: "no-purchase-found" };
+    return { email: accountEmail, hasLifetimeAccess: false, matched: false, reason: "no-purchase-found" };
   }
 
   const entitlement = entitlementSnapshot.data();
-  const hasLifetimeAccess = entitlement?.hasLifetimeAccess === true;
-
-  if (hasLifetimeAccess && entitlement.linkedUid !== request.auth.uid) {
-    await entitlementRef.set({ linkedUid: request.auth.uid }, { merge: true });
-  }
-
   return {
-    hasLifetimeAccess,
+    ...entitlementResponse(accountEmail, entitlement),
     matched: true,
-    purchaseEmail: entitlement?.purchaseEmail || accountEmail,
   };
 });
