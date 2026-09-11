@@ -3,19 +3,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// Billing Notice: shown before Stripe Checkout. Anonymous visitors may
-/// purchase Lifetime Membership without signing in. If the visitor happens
-/// to be signed in, their account email is sent as a checkout hint so it is
-/// linked immediately; otherwise Stripe Checkout collects the purchaser's
-/// email directly and the purchase is later matched by email at sign-in.
+/// Billing Notice: shown before Stripe Checkout. Checkout is available only
+/// after the visitor acknowledges the purchase terms.
 class BillingNoticeScreen extends StatefulWidget {
   const BillingNoticeScreen({super.key});
 
   static const purchaseNoticeItems = [
-    'Lifetime Access is linked to the email address used during checkout.',
+    'Lifetime Access is linked to the verified email address used during checkout.',
     'Please use an email address that you intend to keep.',
-    'Email changes after purchase are not currently supported.',
+    'Email changes are not currently supported.',
     'Access cannot be transferred to another account.',
+    'Notes are stored locally on your device and are not backed up to the cloud.',
+    'Deleting the app or clearing app data may permanently remove local notes.',
     'All sales are final and non-refundable.',
   ];
 
@@ -114,12 +113,39 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
                   children: [
                     const Icon(Icons.receipt_long_rounded, size: 56),
                     const SizedBox(height: 20),
-                    Text(
-                      'Before You Purchase',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
+                     Text(
+                       'Special Launch Pricing',
+                       style: Theme.of(context).textTheme.headlineSmall,
+                       textAlign: TextAlign.center,
+                     ),
+                     const SizedBox(height: 12),
+                     const Text(
+                       'OmniToolkit Lifetime Access',
+                       textAlign: TextAlign.center,
+                       style: TextStyle(fontWeight: FontWeight.bold),
+                     ),
+                     const SizedBox(height: 4),
+                     const Text(
+                       r'$9.99 USD (Launch Price)',
+                       textAlign: TextAlign.center,
+                     ),
+                     const SizedBox(height: 4),
+                     const Text(
+                       'Available for the first 500 customers.',
+                       textAlign: TextAlign.center,
+                     ),
+                     const SizedBox(height: 4),
+                     const Text(
+                       'Pricing may increase after the first 500 purchases.',
+                       textAlign: TextAlign.center,
+                     ),
+                     const SizedBox(height: 24),
+                     Text(
+                       'Before You Purchase',
+                       style: Theme.of(context).textTheme.titleLarge,
+                       textAlign: TextAlign.center,
+                     ),
+                     const SizedBox(height: 16),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: BillingNoticeScreen.purchaseNoticeItems
@@ -133,7 +159,7 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
                       onChanged: (value) =>
                           setState(() => _disclaimerAccepted = value ?? false),
                       title: const Text(
-                        'I understand access is linked to my purchase email.',
+                        'I acknowledge and agree to the information above.',
                       ),
                     ),
                     const SizedBox(height: 8),
