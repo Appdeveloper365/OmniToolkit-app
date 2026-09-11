@@ -95,24 +95,35 @@ class MembershipService {
     await prefs.setString(_pendingEmailKey, normalized);
   }
 
+  String get currentEmailLink => Uri.base.toString();
+
   Future<bool> isVerificationLink() async {
-    return kIsWeb &&
-        FirebaseAuth.instance.isSignInWithEmailLink(Uri.base.toString());
+    if (!kIsWeb || Firebase.apps.isEmpty) return false;
+    return FirebaseAuth.instance.isSignInWithEmailLink(currentEmailLink);
   }
 
   Future<UserCredential> completeVerification(String email) async {
     final normalized = email.trim().toLowerCase();
+    if (normalized.isEmpty) {
+      throw FirebaseAuthException(
+        code: 'missing-email',
+        message: 'Enter the email address that received the verification link.',
+      );
+    }
     final credential = await FirebaseAuth.instance.signInWithEmailLink(
       email: normalized,
-      emailLink: Uri.base.toString(),
+      emailLink: currentEmailLink,
     );
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_pendingEmailKey);
+    await credential.user?.reload();
     return credential;
   }
 
   static String authErrorMessage(FirebaseAuthException error) {
     switch (error.code) {
+      case 'missing-email':
+        return 'Enter the email address that received the verification link.';
       case 'invalid-email':
         return 'Enter a valid email address.';
       case 'invalid-action-code':

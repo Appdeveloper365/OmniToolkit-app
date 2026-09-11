@@ -14,6 +14,7 @@ class MembershipGateScreen extends StatefulWidget {
 
 class _MembershipGateScreenState extends State<MembershipGateScreen> {
   final _emailController = TextEditingController();
+  final _confirmEmailController = TextEditingController();
   final _service = MembershipService();
   MembershipState? _state;
   String? _error;
@@ -30,6 +31,7 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
   @override
   void dispose() {
     _emailController.dispose();
+    _confirmEmailController.dispose();
     super.dispose();
   }
 
@@ -38,6 +40,7 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
       final pending = await _service.pendingEmail();
       if (pending != null) {
         _emailController.text = pending;
+        _confirmEmailController.text = pending;
       }
       if (await _service.isVerificationLink()) {
         await _completeVerification();
@@ -126,8 +129,23 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
     }
   }
 
-  Future<void> _sendVerification() async {
+  bool get _emailsMatch =>
+      _emailController.text.isNotEmpty &&
+      _confirmEmailController.text.isNotEmpty &&
+      _emailController.text == _confirmEmailController.text;
+
+  String? get _emailFormError {
     final error = MembershipService.validateEmail(_emailController.text);
+    if (error != null) return error;
+    if (_confirmEmailController.text.isEmpty) {
+      return 'Confirm your email address.';
+    }
+    if (!_emailsMatch) return 'Email addresses must match exactly.';
+    return null;
+  }
+
+  Future<void> _sendVerification() async {
+    final error = _emailFormError;
     if (error != null) {
       setState(() => _error = error);
       return;
@@ -195,13 +213,15 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
                               : 'Checking your verified membership...')
                           : _verificationSent
                               ? 'Check your email and open the verification link. Then return here to continue.'
-                              : 'Verify your email ownership before starting your one-time 7-day trial.',
+                              : 'Start your free 7-day trial.\n\nVerify your email to:\n• protect your trial\n• restore Lifetime Membership after reinstall\n• prevent trial abuse.',
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
                     TextField(
                       controller: _emailController,
-                      enabled: !_loading,
+                      enabled: !_loading && !_verificationSent,
+                      enableSuggestions: false,
+                      autocorrect: false,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _verificationSent
@@ -212,6 +232,28 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
                           border: OutlineInputBorder()),
                     ),
                     const SizedBox(height: 12),
+                    TextField(
+                      controller: _confirmEmailController,
+                      enabled: !_loading && !_verificationSent,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.done,
+                      enableSuggestions: false,
+                      autocorrect: false,
+                      enableInteractiveSelection: false,
+                      autofillHints: const <String>[],
+                      onChanged: (_) => setState(() {}),
+                      onSubmitted: (_) => _sendVerification(),
+                      decoration: const InputDecoration(
+                        labelText: 'Confirm Email Address',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (_verificationSent)
+                      const Text(
+                        'If you do not see the email within a few minutes, please check your Spam or Junk folder.',
+                        textAlign: TextAlign.center,
+                      ),
                     if (_error != null)
                       Text(_error!,
                           style: TextStyle(
@@ -223,11 +265,12 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
                     ],
                     const SizedBox(height: 16),
                     FilledButton(
-                      onPressed: _loading
-                          ? null
-                          : (_verificationSent
-                              ? _completeVerification
-                              : _sendVerification),
+                      onPressed:
+                          _loading || (!_verificationSent && !_emailsMatch)
+                              ? null
+                              : (_verificationSent
+                                  ? _completeVerification
+                                  : _sendVerification),
                       child: Text(_loading
                           ? 'Checking...'
                           : (_verificationSent
