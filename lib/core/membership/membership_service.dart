@@ -266,6 +266,19 @@ class MembershipService {
     return user != null && user.emailVerified ? user : null;
   }
 
+  Future<User?> refreshVerifiedUser() async {
+    if (Firebase.apps.isEmpty) return null;
+    var user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+    await user.reload();
+    user = FirebaseAuth.instance.currentUser;
+    if (user?.emailVerified == true) {
+      await user!.getIdToken(true);
+      return user;
+    }
+    return null;
+  }
+
   Future<MembershipState> startOrRestore() async {
     final user = verifiedUser;
     if (user == null || user.email == null) {

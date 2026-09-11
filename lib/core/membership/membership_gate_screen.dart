@@ -12,7 +12,8 @@ class MembershipGateScreen extends StatefulWidget {
   State<MembershipGateScreen> createState() => _MembershipGateScreenState();
 }
 
-class _MembershipGateScreenState extends State<MembershipGateScreen> {
+class _MembershipGateScreenState extends State<MembershipGateScreen>
+    with WidgetsBindingObserver {
   final _emailController = TextEditingController();
   final _confirmEmailController = TextEditingController();
   final _service = MembershipService();
@@ -26,11 +27,33 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initialize();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && !_loading) {
+      _refreshOnResume();
+    }
+  }
+
+  Future<void> _refreshOnResume() async {
+    try {
+      final user = await _service.refreshVerifiedUser();
+      if (user != null && mounted) {
+        _emailController.text = user.email ?? _emailController.text;
+        await _refreshEntitlement();
+      }
+    } on FirebaseAuthException {
+      // Keep the gate visible so the next resume can retry.
+    } on FirebaseException {
+      // Keep the gate visible so the next resume can retry.
+    }
+  }
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _emailController.dispose();
     _confirmEmailController.dispose();
     super.dispose();
