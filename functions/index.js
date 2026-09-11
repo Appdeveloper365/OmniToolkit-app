@@ -22,6 +22,7 @@ function normalizeEmail(value) {
 function entitlementPayload(email, values = {}) {
   return {
     email,
+    emailVerified: values.emailVerified === true,
     trialStartDate: values.trialStartDate ?? null,
     trialEndDate: values.trialEndDate ?? null,
     hasLifetimeAccess: values.hasLifetimeAccess === true,
@@ -45,6 +46,7 @@ function entitlementResponse(email, data) {
     trialStartDate: timestampToIso(data?.trialStartDate),
     trialEndDate: timestampToIso(trialEndDate),
     purchaseDate: timestampToIso(data?.purchaseDate),
+    emailVerified: data?.emailVerified === true,
   };
 }
 
@@ -85,6 +87,10 @@ async function resolveCheckoutEmail(stripe, session) {
 exports.createStripeCheckoutSession = onCall(
   { secrets: [stripeSecretKey, stripePriceId] },
   async (request) => {
+    if (!request.auth || request.auth.token?.email_verified !== true) {
+      throw new HttpsError("unauthenticated", "Verified email sign-in is required before checkout.");
+    }
+
     if (request.data?.disclaimerAccepted !== true) {
       throw new HttpsError(
         "failed-precondition",
@@ -94,7 +100,6 @@ exports.createStripeCheckoutSession = onCall(
 
     const stripe = Stripe(stripeSecretKey.value());
 
-    const uid = request.auth?.uid || null;
     const authenticatedEmail = normalizeEmail(request.auth?.token?.email);
     const requestedEmail = normalizeEmail(request.data?.billingEmail);
 
@@ -107,33 +112,12 @@ exports.createStripeCheckoutSession = onCall(
     const emailHint = authenticatedEmail || requestedEmail || undefined;
 
     try {
-      // Reuse an existing Stripe Customer for signed-in users so repeat
-      // purchases / receipts are consolidated under one customer record.
-      let customerId;
-      if (uid) {
-        const userDoc = await db.collection("users").doc(uid).get();
-        customerId = userDoc.data()?.stripeCustomerId;
-        if (!customerId) {
-          const customer = await stripe.customers.create({
-            email: emailHint,
-            metadata: { firebaseUID: uid },
-          });
-          customerId = customer.id;
-          await db.collection("users").doc(uid).set(
-            { stripeCustomerId: customerId },
-            { merge: true }
-          );
-        }
-      }
-
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         mode: "payment",
-        customer: customerId,
-        customer_email: customerId ? undefined : emailHint,
-        customer_creation: customerId ? undefined : "always",
-        client_reference_id: uid || undefined,
-        metadata: uid ? { firebaseUID: uid } : {},
+        customer_email: emailHint,
+        customer_creation: "always",
+        metadata: { purchaseEmail: authenticatedEmail },
         line_items: [{ price: stripePriceId.value(), quantity: 1 }],
         success_url: `${APP_BASE_URL}/#/payment-success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${APP_BASE_URL}/#/payment-cancelled`,
@@ -150,10 +134,8 @@ exports.createStripeCheckoutSession = onCall(
 /**
  * HTTP FUNCTION: Handles Stripe webhooks and fulfills Lifetime Membership.
  *
- * Entitlement is written to entitlements/{purchaseEmail} regardless of
- * whether the purchaser was signed in, so purchases are never blocked by
- * authentication. If a Firebase uid is available it is mirrored into
- * users/{uid} as well (best effort, for already-authenticated purchasers).
+ * Entitlement is written to entitlements/{purchaseEmail}. Checkout is
+ * restricted to a verified Firebase email account.
  */
 exports.stripeWebhook = onRequest(
   { secrets: [stripeSecretKey, stripeWebhookSecret] },
@@ -199,7 +181,6 @@ exports.stripeWebhook = onRequest(
       return;
     }
 
-    const uid = session.client_reference_id || session.metadata?.firebaseUID || null;
     const eventRef = db.collection("stripeWebhookEvents").doc(event.id);
     const entitlementRef = db.collection("entitlements").doc(billingEmail);
 
@@ -222,6 +203,7 @@ exports.stripeWebhook = onRequest(
       transaction.set(
         entitlementRef,
         entitlementPayload(billingEmail, {
+          emailVerified: true,
           trialStartDate: existingData.trialStartDate ?? null,
           trialEndDate: existingData.trialEndDate ?? null,
           hasLifetimeAccess: true,
@@ -230,31 +212,6 @@ exports.stripeWebhook = onRequest(
         })
       );
 
-      if (uid) {
-        transaction.set(
-          db.collection("users").doc(uid),
-          {
-            paymentStatus: "paid",
-            hasLifetimeAccess: true,
-            premium_active: true,
-            purchaseDate: admin.firestore.FieldValue.serverTimestamp(),
-            stripeCustomerId: session.customer || null,
-            stripeSessionId: session.id,
-            purchaseEmail: billingEmail,
-          },
-          { merge: true }
-        );
-
-        transaction.set(
-          db.collection("users").doc(uid).collection("payments").doc(session.id),
-          {
-            amount: (session.amount_total || 0) / 100,
-            currency: session.currency,
-            status: "succeeded",
-            created: admin.firestore.FieldValue.serverTimestamp(),
-          }
-        );
-      }
     });
 
     console.log(`[stripeWebhook.fulfilled] email=${billingEmail} session=${session.id}`);
@@ -268,7 +225,11 @@ exports.stripeWebhook = onRequest(
  * reinstalls and devices.
  */
 exports.startOrRestoreTrial = onCall(async (request) => {
-  const email = normalizeEmail(request.data?.email);
+  if (!request.auth || request.auth.token?.email_verified !== true) {
+    throw new HttpsError("unauthenticated", "Verify email ownership before starting a trial.");
+  }
+
+  const email = normalizeEmail(request.auth.token.email);
   if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
     throw new HttpsError("invalid-argument", "A valid email address is required.");
   }
@@ -286,12 +247,14 @@ exports.startOrRestoreTrial = onCall(async (request) => {
       transaction.set(entitlementRef, entitlementPayload(email, {
         trialStartDate: now,
         trialEndDate: trialEnd,
+        emailVerified: true,
         hasLifetimeAccess: false,
         lastSeenDate: now,
       }));
       entitlement = entitlementPayload(email, {
         trialStartDate: now,
         trialEndDate: trialEnd,
+        emailVerified: true,
         hasLifetimeAccess: false,
         lastSeenDate: now,
       });
@@ -299,9 +262,10 @@ exports.startOrRestoreTrial = onCall(async (request) => {
     }
 
     transaction.update(entitlementRef, {
+      emailVerified: true,
       lastSeenDate: admin.firestore.FieldValue.serverTimestamp(),
     });
-    entitlement = { ...current };
+    entitlement = { ...current, emailVerified: true };
   });
 
   return entitlementResponse(email, entitlement);
@@ -313,9 +277,13 @@ exports.startOrRestoreTrial = onCall(async (request) => {
  * checkout. No other account data is exposed.
  */
 exports.checkEntitlementByEmail = onCall(async (request) => {
-  const email = normalizeEmail(request.data?.email);
+  if (!request.auth || request.auth.token?.email_verified !== true) {
+    throw new HttpsError("unauthenticated", "Verified email sign-in is required to restore membership.");
+  }
+
+  const email = normalizeEmail(request.auth.token.email);
   if (!email) {
-    throw new HttpsError("invalid-argument", "A purchase email is required.");
+    throw new HttpsError("invalid-argument", "A verified account email is required.");
   }
 
   const entitlementSnapshot = await db.collection("entitlements").doc(email).get();
@@ -336,8 +304,8 @@ exports.checkEntitlementByEmail = onCall(async (request) => {
  * with a matching email.
  */
 exports.checkEntitlementForSignedInUser = onCall(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError("unauthenticated", "User must be signed in to check entitlement.");
+  if (!request.auth || request.auth.token?.email_verified !== true) {
+    throw new HttpsError("unauthenticated", "Verified email sign-in is required to restore membership.");
   }
 
   const accountEmail = normalizeEmail(request.auth.token?.email);
