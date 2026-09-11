@@ -200,6 +200,9 @@ class MembershipService {
         await user?.reload();
         diagnostics.userRefreshResult = 'success';
         _log('user refresh result=success');
+        final refreshedUser = FirebaseAuth.instance.currentUser;
+        await refreshedUser?.getIdToken(true);
+        _log('ID token refresh result=success');
       } catch (error) {
         diagnostics.userRefreshResult = 'failed (${error.runtimeType})';
         _fail('user refresh', error);
