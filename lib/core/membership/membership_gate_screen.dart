@@ -258,6 +258,8 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
                       Text(_error!,
                           style: TextStyle(
                               color: Theme.of(context).colorScheme.error)),
+                    const SizedBox(height: 12),
+                    _DiagnosticsPanel(values: _service.diagnostics.values),
                     if (state?.hasLifetimeAccess == true) ...[
                       const SizedBox(height: 12),
                       const Text('Lifetime Membership Activated',
@@ -294,6 +296,34 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _DiagnosticsPanel extends StatelessWidget {
+  const _DiagnosticsPanel({required this.values});
+
+  final Map<String, String> values;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        title: const Text('Temporary email-link diagnostics'),
+        subtitle: Text(
+            "First failure: ${values['First failure'] ?? 'none recorded'}"),
+        children: values.entries
+            .map((entry) => Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text("${entry.key}:\n${entry.value}"),
+                  ),
+                ))
+            .toList(),
       ),
     );
   }

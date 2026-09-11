@@ -6,6 +6,32 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'browser_location.dart';
 
+class EmailLinkDiagnostics {
+  String currentUrl = '';
+  String windowLocationHref = '';
+  String actionCode = 'not checked';
+  String isSignInWithEmailLink = 'not checked';
+  String emailUsed = 'not checked';
+  String signInWithEmailLinkResult = 'not started';
+  String currentUserAfterSignIn = 'not checked';
+  String userEmailVerified = 'not checked';
+  String trialCreationResult = 'not started';
+  String firstFailure = 'none recorded';
+
+  Map<String, String> get values => {
+        'Current URL': currentUrl,
+        'window.location.href': windowLocationHref,
+        'Firebase actionCode': actionCode,
+        'isSignInWithEmailLink': isSignInWithEmailLink,
+        'Email used for sign-in': emailUsed,
+        'signInWithEmailLink result': signInWithEmailLinkResult,
+        'currentUser after sign-in': currentUserAfterSignIn,
+        'user.emailVerified': userEmailVerified,
+        'Trial creation result': trialCreationResult,
+        'First failure': firstFailure,
+      };
+}
+
 class MembershipState {
   const MembershipState({
     required this.email,
@@ -69,6 +95,25 @@ class MembershipService {
   static const continueUrl =
       'https://appdeveloper365.github.io/OmniToolkit-app/';
 
+  final diagnostics = EmailLinkDiagnostics();
+
+  void _log(String message) => debugPrint('[EmailLinkDiagnostics] $message');
+
+  void _fail(String stage, Object error) {
+    if (diagnostics.firstFailure == 'none recorded') {
+      diagnostics.firstFailure = '$stage: ${error.runtimeType}';
+    }
+    _log('$stage failed (${error.runtimeType})');
+  }
+
+  String _maskedActionCode(Uri uri) {
+    final code =
+        uri.queryParameters['oobCode'] ?? uri.queryParameters['actionCode'];
+    if (code == null || code.isEmpty) return 'missing';
+    if (code.length <= 8) return 'present (masked)';
+    return '${code.substring(0, 4)}...${code.substring(code.length - 4)} (masked)';
+  }
+
   Future<MembershipState?> cached() async {
     final prefs = await SharedPreferences.getInstance();
     try {
@@ -100,26 +145,68 @@ class MembershipService {
   String get currentEmailLink => browserLocationHref;
 
   Future<bool> isVerificationLink() async {
-    if (!kIsWeb || Firebase.apps.isEmpty) return false;
-    return FirebaseAuth.instance.isSignInWithEmailLink(currentEmailLink);
+    diagnostics.currentUrl = Uri.base.toString();
+    diagnostics.windowLocationHref = currentEmailLink;
+    final uri = Uri.tryParse(currentEmailLink);
+    diagnostics.actionCode =
+        uri == null ? 'invalid URL' : _maskedActionCode(uri);
+    _log('currentUrl=${diagnostics.currentUrl}');
+    _log('window.location.href=${diagnostics.windowLocationHref}');
+    _log('Firebase actionCode=${diagnostics.actionCode}');
+    if (!kIsWeb || Firebase.apps.isEmpty) {
+      diagnostics.isSignInWithEmailLink = 'false (web/Firebase unavailable)';
+      return false;
+    }
+    try {
+      final result =
+          FirebaseAuth.instance.isSignInWithEmailLink(currentEmailLink);
+      diagnostics.isSignInWithEmailLink = result.toString();
+      _log('isSignInWithEmailLink=$result');
+      return result;
+    } catch (error) {
+      diagnostics.isSignInWithEmailLink = 'error';
+      _fail('isSignInWithEmailLink', error);
+      rethrow;
+    }
   }
 
   Future<UserCredential> completeVerification(String email) async {
     final normalized = email.trim().toLowerCase();
+    diagnostics.emailUsed = normalized.isEmpty ? 'missing' : normalized;
+    _log('email used for sign-in=${diagnostics.emailUsed}');
     if (normalized.isEmpty) {
       throw FirebaseAuthException(
         code: 'missing-email',
         message: 'Enter the email address that received the verification link.',
       );
     }
-    final credential = await FirebaseAuth.instance.signInWithEmailLink(
-      email: normalized,
-      emailLink: currentEmailLink,
-    );
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_pendingEmailKey);
-    await credential.user?.reload();
-    return credential;
+    try {
+      final credential = await FirebaseAuth.instance.signInWithEmailLink(
+        email: normalized,
+        emailLink: currentEmailLink,
+      );
+      diagnostics.signInWithEmailLinkResult = 'success';
+      _log('signInWithEmailLink result=success');
+      final user = credential.user;
+      diagnostics.currentUserAfterSignIn = user?.email ?? 'null';
+      diagnostics.userEmailVerified = user?.emailVerified.toString() ?? 'null';
+      _log('currentUser after sign-in=${diagnostics.currentUserAfterSignIn}');
+      _log('user.emailVerified=${diagnostics.userEmailVerified}');
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_pendingEmailKey);
+      await user?.reload();
+      final refreshedUser = FirebaseAuth.instance.currentUser;
+      diagnostics.currentUserAfterSignIn = refreshedUser?.email ?? 'null';
+      diagnostics.userEmailVerified =
+          refreshedUser?.emailVerified.toString() ?? 'null';
+      _log('currentUser after refresh=${diagnostics.currentUserAfterSignIn}');
+      _log('user.emailVerified after refresh=${diagnostics.userEmailVerified}');
+      return credential;
+    } catch (error) {
+      diagnostics.signInWithEmailLinkResult = 'failed (${error.runtimeType})';
+      _fail('signInWithEmailLink', error);
+      rethrow;
+    }
   }
 
   static String authErrorMessage(FirebaseAuthException error) {
@@ -172,12 +259,21 @@ class MembershipService {
       throw StateError(
           'Verify your email before starting or restoring access.');
     }
-    final result = await FirebaseFunctions.instance
-        .httpsCallable('startOrRestoreTrial')
-        .call<Map<String, dynamic>>();
-    final state = MembershipState.fromData(result.data);
-    await _save(state);
-    return state;
+    try {
+      final result = await FirebaseFunctions.instance
+          .httpsCallable('startOrRestoreTrial')
+          .call<Map<String, dynamic>>();
+      final state = MembershipState.fromData(result.data);
+      diagnostics.trialCreationResult =
+          'success (trialActive=${state.trialActive}, lifetime=${state.hasLifetimeAccess})';
+      _log('trial creation result=${diagnostics.trialCreationResult}');
+      await _save(state);
+      return state;
+    } catch (error) {
+      diagnostics.trialCreationResult = 'failed (${error.runtimeType})';
+      _fail('trial creation', error);
+      rethrow;
+    }
   }
 
   Future<void> _save(MembershipState state) async {
