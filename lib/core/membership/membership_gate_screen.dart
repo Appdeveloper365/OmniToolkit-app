@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import '../../core/navigation/main_navigation.dart';
 import '../membership/membership_service.dart';
 
+import 'browser_focus.dart';
+
 class MembershipGateScreen extends StatefulWidget {
   const MembershipGateScreen({super.key});
 
@@ -23,11 +25,15 @@ class _MembershipGateScreenState extends State<MembershipGateScreen>
   bool _verificationSent = false;
   bool _callbackDetected = false;
   bool _showApp = false;
+  void Function()? _cancelBrowserFocus;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _cancelBrowserFocus = onBrowserFocus(() {
+      if (!_loading) _refreshOnResume();
+    });
     _initialize();
   }
 
@@ -54,6 +60,7 @@ class _MembershipGateScreenState extends State<MembershipGateScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _cancelBrowserFocus?.call();
     _emailController.dispose();
     _confirmEmailController.dispose();
     super.dispose();
