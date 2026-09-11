@@ -45,7 +45,8 @@ class MembershipState {
     if (email == null || email.isEmpty) {
       throw StateError('No cached membership email.');
     }
-    final end = DateTime.tryParse(prefs.getString('membership.trialEndDate') ?? '');
+    final end =
+        DateTime.tryParse(prefs.getString('membership.trialEndDate') ?? '');
     final lifetime = prefs.getBool('membership.hasLifetimeAccess') ?? false;
     return MembershipState(
       email: email,
@@ -53,14 +54,18 @@ class MembershipState {
       hasLifetimeAccess: lifetime,
       trialActive: end != null && end.isAfter(DateTime.now()),
       trialEndDate: end,
-      trialStartDate: DateTime.tryParse(prefs.getString('membership.trialStartDate') ?? ''),
-      purchaseDate: DateTime.tryParse(prefs.getString('membership.purchaseDate') ?? ''),
+      trialStartDate:
+          DateTime.tryParse(prefs.getString('membership.trialStartDate') ?? ''),
+      purchaseDate:
+          DateTime.tryParse(prefs.getString('membership.purchaseDate') ?? ''),
     );
   }
 }
 
 class MembershipService {
   static const _pendingEmailKey = 'membership.pendingEmail';
+  static const continueUrl =
+      'https://appdeveloper365.github.io/OmniToolkit-app/';
 
   Future<MembershipState?> cached() async {
     final prefs = await SharedPreferences.getInstance();
@@ -79,7 +84,7 @@ class MembershipService {
   Future<void> sendVerificationLink(String email) async {
     final normalized = email.trim().toLowerCase();
     final settings = ActionCodeSettings(
-      url: Uri.base.replace(query: '', fragment: '').toString(),
+      url: continueUrl,
       handleCodeInApp: true,
     );
     await FirebaseAuth.instance.sendSignInLinkToEmail(
@@ -91,7 +96,8 @@ class MembershipService {
   }
 
   Future<bool> isVerificationLink() async {
-    return kIsWeb && FirebaseAuth.instance.isSignInWithEmailLink(Uri.base.toString());
+    return kIsWeb &&
+        FirebaseAuth.instance.isSignInWithEmailLink(Uri.base.toString());
   }
 
   Future<UserCredential> completeVerification(String email) async {
@@ -105,6 +111,42 @@ class MembershipService {
     return credential;
   }
 
+  static String authErrorMessage(FirebaseAuthException error) {
+    switch (error.code) {
+      case 'invalid-email':
+        return 'Enter a valid email address.';
+      case 'invalid-action-code':
+      case 'expired-action-code':
+        return 'That verification link is invalid or expired. Request a new link.';
+      case 'email-already-in-use':
+        return 'This email is already associated with an account. Request a new link.';
+      case 'operation-not-allowed':
+        return 'Email verification is temporarily unavailable. Please try again later.';
+      case 'too-many-requests':
+        return 'Too many verification attempts. Please wait and try again.';
+      case 'network-request-failed':
+        return 'A network connection is required. Check your connection and try again.';
+      default:
+        return 'Email verification could not be completed. Please request a new link.';
+    }
+  }
+
+  static String functionsErrorMessage(FirebaseFunctionsException error) {
+    switch (error.code) {
+      case 'unauthenticated':
+        return 'Verify your email before continuing.';
+      case 'permission-denied':
+        return 'This account is not permitted to continue yet.';
+      case 'unavailable':
+      case 'deadline-exceeded':
+        return 'The membership service is temporarily unavailable. Please try again.';
+      case 'failed-precondition':
+        return 'Please complete the required acknowledgement before continuing.';
+      default:
+        return 'We could not verify your membership right now. Please try again.';
+    }
+  }
+
   User? get verifiedUser {
     if (Firebase.apps.isEmpty) return null;
     final user = FirebaseAuth.instance.currentUser;
@@ -114,7 +156,8 @@ class MembershipService {
   Future<MembershipState> startOrRestore() async {
     final user = verifiedUser;
     if (user == null || user.email == null) {
-      throw StateError('Verify your email before starting or restoring access.');
+      throw StateError(
+          'Verify your email before starting or restoring access.');
     }
     final result = await FirebaseFunctions.instance
         .httpsCallable('startOrRestoreTrial')
@@ -128,13 +171,15 @@ class MembershipService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('membership.email', state.email);
     await prefs.setBool('membership.emailVerified', state.emailVerified);
-    await prefs.setBool('membership.hasLifetimeAccess', state.hasLifetimeAccess);
+    await prefs.setBool(
+        'membership.hasLifetimeAccess', state.hasLifetimeAccess);
     await _setDate(prefs, 'membership.trialStartDate', state.trialStartDate);
     await _setDate(prefs, 'membership.trialEndDate', state.trialEndDate);
     await _setDate(prefs, 'membership.purchaseDate', state.purchaseDate);
   }
 
-  Future<void> _setDate(SharedPreferences prefs, String key, DateTime? value) async {
+  Future<void> _setDate(
+      SharedPreferences prefs, String key, DateTime? value) async {
     if (value == null) {
       await prefs.remove(key);
     } else {

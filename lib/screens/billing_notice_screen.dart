@@ -63,8 +63,7 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
     } catch (error) {
       if (mounted) {
         _showError(
-          'Checkout could not be started. Please try again in a moment. '
-          '($error)',
+          'Checkout could not be started. Please try again in a moment.',
         );
       }
     } finally {
@@ -78,16 +77,13 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
         return 'Checkout is not available yet. Please try again later or '
             'contact support.';
       case 'failed-precondition':
-        return error.message ??
-            'Please accept the disclaimer before continuing.';
+        return 'Please acknowledge the purchase information before continuing.';
       case 'unauthenticated':
-        return error.message ?? 'Please sign in and try again.';
+        return 'Verify your email before continuing.';
       case 'invalid-argument':
-        return error.message ??
-            'The billing email does not match your account.';
+        return 'The billing email must match your verified account email.';
       default:
-        return error.message ??
-            'Checkout could not be started. Please try again.';
+        return 'Checkout could not be started. Please try again.';
     }
   }
 
@@ -113,39 +109,39 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
                   children: [
                     const Icon(Icons.receipt_long_rounded, size: 56),
                     const SizedBox(height: 20),
-                     Text(
-                       'Special Launch Pricing',
-                       style: Theme.of(context).textTheme.headlineSmall,
-                       textAlign: TextAlign.center,
-                     ),
-                     const SizedBox(height: 12),
-                     const Text(
-                       'OmniToolkit Lifetime Access',
-                       textAlign: TextAlign.center,
-                       style: TextStyle(fontWeight: FontWeight.bold),
-                     ),
-                     const SizedBox(height: 4),
-                     const Text(
-                       r'$9.99 USD (Launch Price)',
-                       textAlign: TextAlign.center,
-                     ),
-                     const SizedBox(height: 4),
-                     const Text(
-                       'Available for the first 500 customers.',
-                       textAlign: TextAlign.center,
-                     ),
-                     const SizedBox(height: 4),
-                     const Text(
-                       'Pricing may increase after the first 500 purchases.',
-                       textAlign: TextAlign.center,
-                     ),
-                     const SizedBox(height: 24),
-                     Text(
-                       'Before You Purchase',
-                       style: Theme.of(context).textTheme.titleLarge,
-                       textAlign: TextAlign.center,
-                     ),
-                     const SizedBox(height: 16),
+                    Text(
+                      'Special Launch Pricing',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'OmniToolkit Lifetime Access',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      r'$9.99 USD (Launch Price)',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Available for the first 500 customers.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Pricing may increase after the first 500 purchases.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Before You Purchase',
+                      style: Theme.of(context).textTheme.titleLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: BillingNoticeScreen.purchaseNoticeItems

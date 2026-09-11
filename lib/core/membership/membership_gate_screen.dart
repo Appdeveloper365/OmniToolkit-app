@@ -54,7 +54,8 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
       if (mounted) {
         setState(() {
           _loading = false;
-          _error = 'Email verification could not be completed. Please request a new link. ($error)';
+          _error =
+              'Email verification could not be completed. Please request a new link.';
         });
       }
     }
@@ -63,17 +64,37 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
   Future<void> _completeVerification() async {
     final error = MembershipService.validateEmail(_emailController.text);
     if (error != null) {
-      if (mounted) setState(() { _loading = false; _error = 'Enter the same email address that received the verification link.'; });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error =
+              'Enter the same email address that received the verification link.';
+        });
+      }
       return;
     }
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       await _service.completeVerification(_emailController.text);
       await _refreshEntitlement();
     } on FirebaseAuthException catch (error) {
-      if (mounted) setState(() { _loading = false; _error = error.message ?? 'That verification link is invalid or expired.'; });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = MembershipService.authErrorMessage(error);
+        });
+      }
     } catch (error) {
-      if (mounted) setState(() { _loading = false; _error = 'Email verification failed. Please request a new link. ($error)'; });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error =
+              'Email verification could not be completed. Please request a new link.';
+        });
+      }
     }
   }
 
@@ -88,23 +109,56 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
         _error = null;
       });
     } on FirebaseFunctionsException catch (error) {
-      if (mounted) setState(() { _loading = false; _error = error.message ?? 'We could not verify your membership right now.'; });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = MembershipService.functionsErrorMessage(error);
+        });
+      }
     } catch (error) {
-      if (mounted) setState(() { _loading = false; _error = 'We could not verify your membership right now. Please try again. ($error)'; });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error =
+              'We could not verify your membership right now. Please try again.';
+        });
+      }
     }
   }
 
   Future<void> _sendVerification() async {
     final error = MembershipService.validateEmail(_emailController.text);
-    if (error != null) { setState(() => _error = error); return; }
-    setState(() { _loading = true; _error = null; });
+    if (error != null) {
+      setState(() => _error = error);
+      return;
+    }
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       await _service.sendVerificationLink(_emailController.text);
-      if (mounted) setState(() { _loading = false; _verificationSent = true; });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _verificationSent = true;
+        });
+      }
     } on FirebaseAuthException catch (error) {
-      if (mounted) setState(() { _loading = false; _error = error.message ?? 'The verification email could not be sent.'; });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = MembershipService.authErrorMessage(error);
+        });
+      }
     } catch (error) {
-      if (mounted) setState(() { _loading = false; _error = 'The verification email could not be sent. ($error)'; });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error =
+              'The verification email could not be sent. Please try again.';
+        });
+      }
     }
   }
 
@@ -130,11 +184,15 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
                   children: [
                     const Icon(Icons.mark_email_read_rounded, size: 64),
                     const SizedBox(height: 16),
-                    Text('Welcome to OmniToolkit', style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center),
+                    Text('Welcome to OmniToolkit',
+                        style: Theme.of(context).textTheme.headlineSmall,
+                        textAlign: TextAlign.center),
                     const SizedBox(height: 12),
                     Text(
                       verified
-                          ? (expired ? 'Your 7-day trial has ended. Purchase Lifetime Membership to continue.' : 'Checking your verified membership...')
+                          ? (expired
+                              ? 'Your 7-day trial has ended. Purchase Lifetime Membership to continue.'
+                              : 'Checking your verified membership...')
                           : _verificationSent
                               ? 'Check your email and open the verification link. Then return here to continue.'
                               : 'Verify your email ownership before starting your one-time 7-day trial.',
@@ -146,26 +204,47 @@ class _MembershipGateScreenState extends State<MembershipGateScreen> {
                       enabled: !_loading,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.done,
-                      onSubmitted: (_) => _verificationSent ? _completeVerification() : _sendVerification(),
-                      decoration: const InputDecoration(labelText: 'Email address', border: OutlineInputBorder()),
+                      onSubmitted: (_) => _verificationSent
+                          ? _completeVerification()
+                          : _sendVerification(),
+                      decoration: const InputDecoration(
+                          labelText: 'Email address',
+                          border: OutlineInputBorder()),
                     ),
                     const SizedBox(height: 12),
-                    if (_error != null) Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                    if (_error != null)
+                      Text(_error!,
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error)),
                     if (state?.hasLifetimeAccess == true) ...[
                       const SizedBox(height: 12),
-                      const Text('Lifetime Membership Activated', textAlign: TextAlign.center),
+                      const Text('Lifetime Membership Activated',
+                          textAlign: TextAlign.center),
                     ],
                     const SizedBox(height: 16),
                     FilledButton(
-                      onPressed: _loading ? null : (_verificationSent ? _completeVerification : _sendVerification),
-                      child: Text(_loading ? 'Checking...' : (_verificationSent ? 'I Verified My Email' : 'Send Verification Link')),
+                      onPressed: _loading
+                          ? null
+                          : (_verificationSent
+                              ? _completeVerification
+                              : _sendVerification),
+                      child: Text(_loading
+                          ? 'Checking...'
+                          : (_verificationSent
+                              ? 'I Verified My Email'
+                              : 'Send Verification Link')),
                     ),
                     if (expired) ...[
                       const SizedBox(height: 8),
-                      OutlinedButton(onPressed: _openPurchase, child: const Text('Purchase Lifetime Membership')),
+                      OutlinedButton(
+                          onPressed: _openPurchase,
+                          child: const Text('Purchase Lifetime Membership')),
                     ],
                     const SizedBox(height: 16),
-                    const Text('Notes are stored locally on your device and are not backed up to the cloud. Deleting the app or clearing app data may permanently remove your notes.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
+                    const Text(
+                        'Notes are stored locally on your device and are not backed up to the cloud. Deleting the app or clearing app data may permanently remove your notes.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12)),
                   ],
                 ),
               ),

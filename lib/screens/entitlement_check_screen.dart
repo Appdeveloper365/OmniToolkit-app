@@ -80,9 +80,10 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
         _matched = result.data['matched'] as bool? ?? false;
         _isChecking = false;
       });
-    } on FirebaseFunctionsException catch (error) {
+    } on FirebaseFunctionsException catch (_) {
       setState(() {
-        _error = error.message ?? 'Could not check membership status.';
+        _error =
+            'We could not check membership status right now. Please try again.';
         _isChecking = false;
       });
     }
