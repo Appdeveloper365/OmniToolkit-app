@@ -4,6 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'browser_location.dart';
+
 class MembershipState {
   const MembershipState({
     required this.email,
@@ -95,7 +97,7 @@ class MembershipService {
     await prefs.setString(_pendingEmailKey, normalized);
   }
 
-  String get currentEmailLink => Uri.base.toString();
+  String get currentEmailLink => browserLocationHref;
 
   Future<bool> isVerificationLink() async {
     if (!kIsWeb || Firebase.apps.isEmpty) return false;
