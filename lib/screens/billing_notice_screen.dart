@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../core/membership/membership_service.dart';
 import '../core/purchase/entitlement_watcher.dart';
+import '../core/purchase/radio_launch_controller.dart';
 
 /// Billing Notice: shown before Stripe Checkout. Checkout is available only
 /// after the visitor acknowledges the purchase terms.
@@ -43,6 +45,22 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
         if (signedInEmail != null && signedInEmail.isNotEmpty)
           'billingEmail': signedInEmail,
       });
+      if (result.data['alreadyOwned'] == true) {
+        if (signedInEmail != null && signedInEmail.isNotEmpty) {
+          await MembershipService().lookupEntitlementByEmail(signedInEmail);
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+              'Lifetime Membership Already Active. World Radio Explorer is unlocked.',
+            ),
+          ));
+          RadioLaunchController.requestOpen();
+          Navigator.of(context).pop();
+        }
+        return;
+      }
+
       final sessionUrl = result.data['sessionUrl'] as String?;
       if (sessionUrl == null || sessionUrl.isEmpty) {
         throw FirebaseFunctionsException(

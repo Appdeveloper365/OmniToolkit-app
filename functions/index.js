@@ -50,7 +50,6 @@ function entitlementResponse(email, data) {
   };
 }
 
-
 async function resolveCheckoutEmail(stripe, session) {
   const directEmail = normalizeEmail(
     session.customer_details?.email || session.customer_email
@@ -73,16 +72,70 @@ async function resolveCheckoutEmail(stripe, session) {
   return "";
 }
 
+// Shared: is there a completed, paid Stripe session for this email?
+// Uses the Stripe SEARCH API (O(1)). Falls back to list() if search errors.
+async function stripeHasPaidSession(email, stripe) {
+  if (!stripe || !email) return false;
+  try {
+    const found = await stripe.checkout.sessions.search({
+      query: `status:'complete' AND (customer_details.email:'${email}' OR customer_email:'${email}')`,
+      limit: 5,
+    });
+    if (found.data && found.data.some((s) => s.payment_status === "paid" && s.status === "complete")) {
+      return true;
+    }
+  } catch (searchError) {
+    console.warn("[stripeHasPaidSession] search failed, falling back to list:", searchError.message);
+    try {
+      const sessions = await stripe.checkout.sessions.list({ limit: 100 });
+      return sessions.data.some((s) => {
+        const directEmail = normalizeEmail(
+          s.customer_email || (s.customer_details && s.customer_details.email)
+        );
+        return directEmail === email && s.payment_status === "paid" && s.status === "complete";
+      });
+    } catch (listError) {
+      console.error("[stripeHasPaidSession] list fallback failed:", listError.message);
+      return false;
+    }
+  }
+  return false;
+}
+
+// Shared: Firestore-first, Stripe-fallback (self-healing) entitlement check.
+async function isEntitled(email, stripe) {
+  if (!email) return false;
+  const entitlementRef = db.collection("entitlements").doc(email);
+  const snapshot = await entitlementRef.get();
+  if (snapshot.exists && snapshot.data().hasLifetimeAccess === true) {
+    return true;
+  }
+  if (stripe && (await stripeHasPaidSession(email, stripe))) {
+    // Self-heal Firestore for next time
+    const existingData = snapshot.exists ? snapshot.data() : {};
+    await entitlementRef.set(
+      entitlementPayload(email, {
+        emailVerified: true,
+        trialStartDate: existingData.trialStartDate ?? null,
+        trialEndDate: existingData.trialEndDate ?? null,
+        hasLifetimeAccess: true,
+        purchaseDate: admin.firestore.FieldValue.serverTimestamp(),
+        lastSeenDate: admin.firestore.FieldValue.serverTimestamp(),
+      }),
+      { merge: true }
+    );
+    return true;
+  }
+  return false;
+}
+
 /**
  * CALLABLE FUNCTION: Creates a Stripe Checkout Session for OmniToolkit
  * Lifetime Membership.
  *
- * Firebase Auth is OPTIONAL. Anonymous visitors may purchase without
- * signing in; Stripe Checkout collects the purchaser's email directly in
- * that case. If the caller is signed in, their account email is used as a
- * checkout hint and linked immediately. Entitlement is always keyed by the
- * purchase email so an anonymous purchase can later be claimed by a
- * matching authenticated sign-in (see checkEntitlementForSignedInUser).
+ * DUPLICATE PURCHASE PROTECTION (Server Layer):
+ * Checks Firestore + Stripe Search API. If already entitled, returns
+ * { alreadyOwned: true } without creating a new Stripe checkout session.
  */
 exports.createStripeCheckoutSession = onCall(
   { secrets: [stripeSecretKey, stripePriceId] },
@@ -110,6 +163,11 @@ exports.createStripeCheckoutSession = onCall(
       );
     }
     const emailHint = authenticatedEmail || requestedEmail || undefined;
+
+    // DUPLICATE PURCHASE PROTECTION: check if user already owns Lifetime Access
+    if (emailHint && (await isEntitled(emailHint, stripe))) {
+      return { alreadyOwned: true };
+    }
 
     try {
       const session = await stripe.checkout.sessions.create({
@@ -211,7 +269,6 @@ exports.stripeWebhook = onRequest(
           lastSeenDate: admin.firestore.FieldValue.serverTimestamp(),
         })
       );
-
     });
 
     console.log(`[stripeWebhook.fulfilled] email=${billingEmail} session=${session.id}`);
@@ -223,100 +280,145 @@ exports.stripeWebhook = onRequest(
  * CALLABLE FUNCTION: Restores existing entitlement status (Lifetime Access
  * or none) for a verified email address.
  *
- * OmniToolkit is free to use; only the World Radio Explorer module requires
- * a one-time Lifetime Access purchase. This function no longer starts a
- * 7-day trial -- it simply records that the email has been verified and
- * returns the caller's current entitlement, creating a bare (no-trial)
- * entitlement record on first verification. Kept under its original name
- * for backward compatibility with already-deployed clients.
+ * Checks Firestore + Stripe Search API (self-healing) and returns the caller's
+ * current entitlement.
  */
-exports.startOrRestoreTrial = onCall(async (request) => {
-  if (!request.auth || request.auth.token?.email_verified !== true) {
-    throw new HttpsError("unauthenticated", "Verify email ownership before continuing.");
-  }
-
-  const email = normalizeEmail(request.auth.token.email);
-  if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-    throw new HttpsError("invalid-argument", "A valid email address is required.");
-  }
-
-  const entitlementRef = db.collection("entitlements").doc(email);
-  let entitlement;
-  await db.runTransaction(async (transaction) => {
-    const snapshot = await transaction.get(entitlementRef);
-    const now = admin.firestore.Timestamp.now();
-    if (!snapshot.exists) {
-      const payload = entitlementPayload(email, {
-        emailVerified: true,
-        hasLifetimeAccess: false,
-        lastSeenDate: now,
-      });
-      transaction.set(entitlementRef, payload);
-      entitlement = payload;
-      return;
+exports.startOrRestoreTrial = onCall(
+  { secrets: [stripeSecretKey] },
+  async (request) => {
+    if (!request.auth || request.auth.token?.email_verified !== true) {
+      throw new HttpsError("unauthenticated", "Verify email ownership before continuing.");
     }
 
-    transaction.update(entitlementRef, {
-      emailVerified: true,
-      lastSeenDate: admin.firestore.FieldValue.serverTimestamp(),
-    });
-    entitlement = { ...snapshot.data(), emailVerified: true };
-  });
+    const email = normalizeEmail(request.auth.token.email);
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      throw new HttpsError("invalid-argument", "A valid email address is required.");
+    }
 
-  return entitlementResponse(email, entitlement);
-});
+    let stripe = null;
+    try {
+      if (stripeSecretKey.value()) {
+        stripe = Stripe(stripeSecretKey.value());
+      }
+    } catch (_) {}
+
+    await isEntitled(email, stripe);
+
+    const entitlementRef = db.collection("entitlements").doc(email);
+    let entitlement;
+    await db.runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(entitlementRef);
+      const now = admin.firestore.Timestamp.now();
+      if (!snapshot.exists) {
+        const payload = entitlementPayload(email, {
+          emailVerified: true,
+          hasLifetimeAccess: false,
+          lastSeenDate: now,
+        });
+        transaction.set(entitlementRef, payload);
+        entitlement = payload;
+        return;
+      }
+
+      transaction.update(entitlementRef, {
+        emailVerified: true,
+        lastSeenDate: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      entitlement = { ...snapshot.data(), emailVerified: true };
+    });
+
+    return entitlementResponse(email, entitlement);
+  }
+);
 
 /**
  * CALLABLE FUNCTION: Public restore lookup. Lets ANY visitor (signed in or
  * not, verified or not) check Lifetime Membership status by supplying the
  * email used at checkout. Intentionally requires no Firebase Authentication
- * -- "Verify Purchase" must work immediately, before any email-link
- * verification, so users are never forced into a verification loop just to
- * find out whether they already own Lifetime Access. Only a boolean-ish
- * entitlement summary is exposed; no other account data.
+ * -- "Verify Purchase" must work immediately.
+ *
+ * Uses Firestore + Stripe Search API for self-healing entitlement lookups.
  */
-exports.checkEntitlementByEmail = onCall(async (request) => {
-  const email = normalizeEmail(request.data?.email);
-  if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-    throw new HttpsError("invalid-argument", "A valid email address is required.");
-  }
+exports.checkEntitlementByEmail = onCall(
+  { secrets: [stripeSecretKey] },
+  async (request) => {
+    const email = normalizeEmail(request.data?.email);
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      throw new HttpsError("invalid-argument", "A valid email address is required.");
+    }
 
-  const entitlementSnapshot = await db.collection("entitlements").doc(email).get();
-  if (!entitlementSnapshot.exists) {
-    return { email, hasLifetimeAccess: false, matched: false, reason: "no-purchase-found" };
-  }
+    let stripe = null;
+    try {
+      if (stripeSecretKey.value()) {
+        stripe = Stripe(stripeSecretKey.value());
+      }
+    } catch (_) {}
 
-  const entitlement = entitlementSnapshot.data();
-  return {
-    ...entitlementResponse(email, entitlement),
-    matched: true,
-  };
-});
+    const owned = await isEntitled(email, stripe);
+    if (owned) {
+      const entitlementSnapshot = await db.collection("entitlements").doc(email).get();
+      const entitlement = entitlementSnapshot.exists
+        ? entitlementSnapshot.data()
+        : { hasLifetimeAccess: true, emailVerified: true };
+      return {
+        ...entitlementResponse(email, entitlement),
+        hasLifetimeAccess: true,
+        matched: true,
+      };
+    }
+
+    const entitlementSnapshot = await db.collection("entitlements").doc(email).get();
+    if (!entitlementSnapshot.exists) {
+      return { email, hasLifetimeAccess: false, matched: false, reason: "no-purchase-found" };
+    }
+
+    const entitlement = entitlementSnapshot.data();
+    return {
+      ...entitlementResponse(email, entitlement),
+      matched: true,
+    };
+  }
+);
+
+// Backwards-compatible alias for checkEntitlementByEmail
+exports.restoreLookup = exports.checkEntitlementByEmail;
 
 /**
  * CALLABLE FUNCTION: Compares the signed-in account email against any
  * Lifetime Membership purchased anonymously (or under a different session)
  * with a matching email.
  */
-exports.checkEntitlementForSignedInUser = onCall(async (request) => {
-  if (!request.auth || request.auth.token?.email_verified !== true) {
-    throw new HttpsError("unauthenticated", "Verified email sign-in is required to restore membership.");
-  }
+exports.checkEntitlementForSignedInUser = onCall(
+  { secrets: [stripeSecretKey] },
+  async (request) => {
+    if (!request.auth || request.auth.token?.email_verified !== true) {
+      throw new HttpsError("unauthenticated", "Verified email sign-in is required to restore membership.");
+    }
 
-  const accountEmail = normalizeEmail(request.auth.token?.email);
-  if (!accountEmail) {
-    return { email: accountEmail, hasLifetimeAccess: false, matched: false, reason: "no-account-email" };
-  }
+    const accountEmail = normalizeEmail(request.auth.token?.email);
+    if (!accountEmail) {
+      return { email: accountEmail, hasLifetimeAccess: false, matched: false, reason: "no-account-email" };
+    }
 
-  const entitlementRef = db.collection("entitlements").doc(accountEmail);
-  const entitlementSnapshot = await entitlementRef.get();
-  if (!entitlementSnapshot.exists) {
-    return { email: accountEmail, hasLifetimeAccess: false, matched: false, reason: "no-purchase-found" };
-  }
+    let stripe = null;
+    try {
+      if (stripeSecretKey.value()) {
+        stripe = Stripe(stripeSecretKey.value());
+      }
+    } catch (_) {}
 
-  const entitlement = entitlementSnapshot.data();
-  return {
-    ...entitlementResponse(accountEmail, entitlement),
-    matched: true,
-  };
-});
+    await isEntitled(accountEmail, stripe);
+
+    const entitlementRef = db.collection("entitlements").doc(accountEmail);
+    const entitlementSnapshot = await entitlementRef.get();
+    if (!entitlementSnapshot.exists) {
+      return { email: accountEmail, hasLifetimeAccess: false, matched: false, reason: "no-purchase-found" };
+    }
+
+    const entitlement = entitlementSnapshot.data();
+    return {
+      ...entitlementResponse(accountEmail, entitlement),
+      matched: true,
+    };
+  }
+);

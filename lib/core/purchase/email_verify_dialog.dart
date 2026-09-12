@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../membership/membership_service.dart';
 import 'pending_purchase_action.dart';
+import 'radio_launch_controller.dart';
 
 /// Prompts for (and confirms) an email address, sends a Firebase email-link
 /// verification message, and records which purchase action (Unlock or
@@ -102,6 +103,25 @@ class EmailVerifyDialog {
     if (email == null || email.isEmpty) return;
 
     try {
+      // DUPLICATE PURCHASE PROTECTION (Client Layer 1):
+      // Check if this email already owns Lifetime Access before sending an email link.
+      try {
+        final state = await MembershipService().lookupEntitlementByEmail(email);
+        if (state.hasLifetimeAccess) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(
+                'Lifetime Membership Activated. World Radio Explorer is unlocked.',
+              ),
+            ));
+            RadioLaunchController.requestOpen();
+          }
+          return;
+        }
+      } catch (_) {
+        // Continue to send verification link if lookup had a temporary network failure.
+      }
+
       await PendingPurchaseActionStore.set(action);
       await MembershipService().sendVerificationLink(email);
       if (context.mounted) {
