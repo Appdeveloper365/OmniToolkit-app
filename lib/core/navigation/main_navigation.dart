@@ -6,6 +6,8 @@ import '../../modules/calendar/screens/calendar_screen.dart';
 import '../../modules/lookup/screens/lookup_screen.dart';
 import '../../modules/password/password_screen.dart';
 import '../../modules/radio/screens/radio_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../membership/membership_service.dart';
 import '../purchase/entitlement_watcher.dart';
 import '../purchase/pending_purchase_action.dart';
@@ -59,56 +61,135 @@ class _MainNavigationState extends State<MainNavigation> {
     setState(() => _index = _radioIndex);
   }
 
-  /// Silently completes a Firebase email-link sign-in if the app was
-  /// re-opened via the verification link, then resumes whichever purchase
-  /// action (Unlock or Restore) triggered the email. This never blocks the
-  /// UI; OmniToolkit itself has no startup gate.
+  /// Handles Firebase email-link sign-in callback when OmniToolkit is opened
+  /// from a verification link.
+  ///
+  /// REQUIRED BEHAVIOR:
+  /// 1. Read email from callback.
+  /// 2. Check Firestore entitlement immediately.
+  ///
+  /// CASE A: hasLifetimeAccess = true
+  /// -> Activate Membership
+  /// -> Unlock Radio Directory
+  ///
+  /// CASE B: hasLifetimeAccess = false
+  /// -> Show "No Lifetime Membership found" dialog with [Continue With Payment]
+  ///
+  /// Never shows the Verify Email dialog again or creates verification loops.
   Future<void> _completePendingVerification() async {
     final service = MembershipService();
+    bool isLink = false;
     try {
-      if (!await service.isVerificationLink()) return;
-      final pendingEmail = await service.pendingEmail();
-      if (pendingEmail == null) return;
-      await service.completeVerification(pendingEmail);
+      isLink = await service.isVerificationLink();
     } catch (_) {
-      // Nothing to resume; the user can retry Unlock/Restore manually.
-      return;
+      isLink = false;
     }
+    if (!isLink) return;
+
+    // 1. Read email from callback (link URL, localStorage, or auth session)
+    String? email = service.extractEmailFromLink();
+    email ??= await service.pendingEmail();
+    email ??= FirebaseAuth.instance.currentUser?.email;
+
+    if (email != null && email.isNotEmpty) {
+      try {
+        await service.completeVerification(email);
+      } catch (e) {
+        debugPrint('[_completePendingVerification] completeVerification: $e');
+      }
+    }
+
+    await PendingPurchaseActionStore.consume();
     if (!mounted) return;
-    final action = await PendingPurchaseActionStore.consume();
-    if (action == null || !mounted) return;
-    switch (action) {
-      case PendingPurchaseAction.unlock:
-        // Recognize an existing purchase before ever showing a payment
-        // prompt -- the verification link is also used for Restore-style
-        // re-checks, so an already-entitled email must unlock immediately.
-        try {
-          final state = await service.startOrRestore();
-          if (state.hasLifetimeAccess) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text(
-                  'Lifetime Membership Activated. World Radio Explorer is unlocked.',
-                ),
-              ));
-              _openRadioTab();
-            }
-            break;
+
+    // 2. Check Firestore entitlement immediately
+    bool hasLifetimeAccess = false;
+    final verifiedUser = service.verifiedUser;
+    final checkEmail = verifiedUser?.email ?? email;
+
+    if (verifiedUser != null) {
+      try {
+        final state = await service.startOrRestore();
+        hasLifetimeAccess = state.hasLifetimeAccess;
+      } catch (_) {
+        if (checkEmail != null && checkEmail.isNotEmpty) {
+          try {
+            final state = await service.lookupEntitlementByEmail(checkEmail);
+            hasLifetimeAccess = state.hasLifetimeAccess;
+          } catch (_) {
+            hasLifetimeAccess = false;
           }
-        } catch (_) {
-          // Fall through to checkout; the user can still attempt payment.
         }
-        if (!mounted) break;
-        final verifiedEmail = service.verifiedUser?.email;
-        if (verifiedEmail != null) {
-          EntitlementWatcher.instance.watch(verifiedEmail);
-        }
-        Navigator.of(context).pushNamed('/billing-notice');
-        break;
-      case PendingPurchaseAction.restore:
-        await RestorePurchaseFlow.run(context);
-        break;
+      }
+    } else if (checkEmail != null && checkEmail.isNotEmpty) {
+      try {
+        final state = await service.lookupEntitlementByEmail(checkEmail);
+        hasLifetimeAccess = state.hasLifetimeAccess;
+      } catch (_) {
+        hasLifetimeAccess = false;
+      }
     }
+
+    if (!mounted) return;
+
+    if (hasLifetimeAccess) {
+      // CASE A: Activate Membership & Unlock Radio Directory
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+          'Lifetime Membership Activated. World Radio Explorer is unlocked.',
+        ),
+      ));
+      _openRadioTab();
+    } else {
+      // CASE B: Prompt to Continue With Payment (or opens Payment Portal)
+      if (checkEmail != null && checkEmail.isNotEmpty) {
+        EntitlementWatcher.instance.watch(checkEmail);
+      }
+      _showNoLifetimeMembershipFoundDialog();
+    }
+  }
+
+  void _showNoLifetimeMembershipFoundDialog() {
+    if (!mounted) return;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('No Lifetime Membership found'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('World Radio Explorer requires Lifetime Access.'),
+            SizedBox(height: 16),
+            Text(
+              'Special Launch Pricing',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 4),
+            Text('OmniToolkit Lifetime Access'),
+            Text(r'$9.99 USD (Launch Price)'),
+            SizedBox(height: 4),
+            Text(
+              'Available for the first 500 customers.',
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Not Now'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              Navigator.of(context).pushNamed('/billing-notice');
+            },
+            child: const Text('Continue With Payment'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _selectDestination(int index) {

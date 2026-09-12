@@ -99,7 +99,12 @@ class _PurchaseVerificationDialogBodyState
     Navigator.of(context).pop();
     final root = widget.rootContext;
     if (root.mounted) {
-      EmailVerifyDialog.requestVerification(root, PendingPurchaseAction.unlock);
+      final verifiedUser = MembershipService().verifiedUser;
+      if (verifiedUser != null) {
+        Navigator.of(root).pushNamed('/billing-notice');
+      } else {
+        EmailVerifyDialog.requestVerification(root, PendingPurchaseAction.unlock);
+      }
     }
   }
 

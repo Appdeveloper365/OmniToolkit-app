@@ -146,15 +146,37 @@ class MembershipService {
     return state;
   }
 
+  String? extractEmailFromLink() {
+    final link = currentEmailLink;
+    final uri = Uri.tryParse(link);
+    if (uri == null) return null;
+    final emailParam = uri.queryParameters['email'];
+    if (emailParam != null && emailParam.trim().isNotEmpty) {
+      return emailParam.trim().toLowerCase();
+    }
+    if (uri.fragment.isNotEmpty) {
+      final fragmentUri = Uri.tryParse('http://dummy/?${uri.fragment}');
+      final fEmail = fragmentUri?.queryParameters['email'];
+      if (fEmail != null && fEmail.trim().isNotEmpty) {
+        return fEmail.trim().toLowerCase();
+      }
+    }
+    return null;
+  }
+
   Future<String?> pendingEmail() async {
+    final fromLink = extractEmailFromLink();
+    if (fromLink != null && fromLink.isNotEmpty) return fromLink;
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_pendingEmailKey);
   }
 
   Future<void> sendVerificationLink(String email) async {
     final normalized = email.trim().toLowerCase();
+    final continueUrlWithEmail =
+        '$continueUrl?email=${Uri.encodeComponent(normalized)}';
     final settings = ActionCodeSettings(
-      url: continueUrl,
+      url: continueUrlWithEmail,
       handleCodeInApp: true,
     );
     await FirebaseAuth.instance.sendSignInLinkToEmail(
