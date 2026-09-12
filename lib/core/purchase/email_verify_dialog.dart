@@ -4,9 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../membership/membership_service.dart';
+import '../navigation/main_navigation.dart';
 import 'entitlement_watcher.dart';
 import 'pending_purchase_action.dart';
-import 'radio_launch_controller.dart';
 import 'staged_loader.dart';
 
 enum _EmailDialogState { input, checking, alreadyOwned, waiting }
@@ -56,6 +56,7 @@ class _EmailVerifyDialogBodyState extends State<_EmailVerifyDialogBody> {
   String? _error;
   String? _waitingNote;
   bool _isCheckingNow = false;
+  Timer? _autoRedirectTimer;
 
   @override
   void initState() {
@@ -68,6 +69,7 @@ class _EmailVerifyDialogBodyState extends State<_EmailVerifyDialogBody> {
 
   @override
   void dispose() {
+    _autoRedirectTimer?.cancel();
     _emailController.dispose();
     _confirmController.dispose();
     super.dispose();
@@ -96,6 +98,12 @@ class _EmailVerifyDialogBodyState extends State<_EmailVerifyDialogBody> {
       if (!mounted) return;
       if (state.hasLifetimeAccess) {
         setState(() => _state = _EmailDialogState.alreadyOwned);
+        _autoRedirectTimer?.cancel();
+        _autoRedirectTimer = Timer(const Duration(seconds: 1), () {
+          if (mounted) {
+            _openRadioDirectory();
+          }
+        });
         return;
       }
     } catch (_) {
@@ -113,7 +121,7 @@ class _EmailVerifyDialogBodyState extends State<_EmailVerifyDialogBody> {
         email,
         onUnlocked: () {
           if (mounted && Navigator.canPop(context)) {
-            Navigator.of(context).pop();
+            _openRadioDirectory();
           }
         },
       );
@@ -147,15 +155,7 @@ class _EmailVerifyDialogBodyState extends State<_EmailVerifyDialogBody> {
       );
       if (!mounted) return;
       if (unlocked) {
-        Navigator.of(context).pop();
-        final root = widget.rootContext;
-        if (root.mounted) {
-          ScaffoldMessenger.of(root).showSnackBar(const SnackBar(
-            content: Text(
-              'Lifetime Membership Activated. World Radio Explorer is unlocked.',
-            ),
-          ));
-        }
+        _openRadioDirectory();
       } else {
         setState(() {
           _isCheckingNow = false;
@@ -174,22 +174,30 @@ class _EmailVerifyDialogBodyState extends State<_EmailVerifyDialogBody> {
   }
 
   void _openRadioDirectory() {
-    Navigator.of(context).pop();
+    _autoRedirectTimer?.cancel();
+    if (Navigator.canPop(context)) {
+      Navigator.of(context).pop();
+    }
     final root = widget.rootContext;
     if (root.mounted) {
+      Navigator.of(root).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => const MainNavigation(initialIndex: 2),
+        ),
+        (route) => false,
+      );
       ScaffoldMessenger.of(root).showSnackBar(const SnackBar(
         content: Text(
           'Lifetime Membership Activated. World Radio Explorer is unlocked.',
         ),
       ));
-      RadioLaunchController.requestOpen();
     }
   }
 
   String _title() {
     switch (_state) {
       case _EmailDialogState.alreadyOwned:
-        return '✅ Lifetime Membership Already Active';
+        return '✅ Lifetime Membership Verified';
       case _EmailDialogState.checking:
         return 'Checking Membership...';
       case _EmailDialogState.waiting:
@@ -272,18 +280,28 @@ class _EmailVerifyDialogBodyState extends State<_EmailVerifyDialogBody> {
         return const Column(
           key: ValueKey('owned'),
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(Icons.verified, color: Colors.green, size: 48),
-            SizedBox(height: 12),
+            Icon(Icons.verified_rounded, color: Colors.green, size: 56),
+            SizedBox(height: 16),
             Text(
               'This email already owns Lifetime Access.',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
             ),
             SizedBox(height: 8),
             Text(
-              'World Radio Explorer is ready to use -- no purchase needed.',
+              'World Radio Explorer has been unlocked.',
+              textAlign: TextAlign.center,
             ),
+            SizedBox(height: 20),
+            Text(
+              'Opening World Radio Explorer...',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: Colors.grey),
+            ),
+            SizedBox(height: 12),
+            LinearProgressIndicator(),
           ],
         );
 
@@ -347,7 +365,11 @@ class _EmailVerifyDialogBodyState extends State<_EmailVerifyDialogBody> {
         return [
           FilledButton(
             onPressed: _openRadioDirectory,
-            child: const Text('Open World Radio Explorer'),
+            child: const Text('Open Radio Directory'),
+          ),
+          OutlinedButton(
+            onPressed: _openRadioDirectory,
+            child: const Text('Return To Radio Directory'),
           ),
         ];
 

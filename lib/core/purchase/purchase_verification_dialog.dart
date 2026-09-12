@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../membership/membership_service.dart';
+import '../navigation/main_navigation.dart';
 import 'email_verify_dialog.dart';
 import 'pending_purchase_action.dart';
-import 'radio_launch_controller.dart';
 import 'staged_loader.dart';
 
 enum _RestoreState { input, checking, verified, notFound, error }
@@ -45,11 +45,13 @@ class _PurchaseVerificationDialogBodyState
   _RestoreState _state = _RestoreState.input;
   String _checkedEmail = '';
   String _error = '';
+  Timer? _autoRedirectTimer;
 
   bool get _emailValid => _emailController.text.trim().contains('@');
 
   @override
   void dispose() {
+    _autoRedirectTimer?.cancel();
     _emailController.dispose();
     super.dispose();
   }
@@ -74,18 +76,10 @@ class _PurchaseVerificationDialogBodyState
       if (!mounted) return;
       if (state.hasLifetimeAccess) {
         setState(() => _state = _RestoreState.verified);
-        Timer(const Duration(seconds: 1), () {
+        _autoRedirectTimer?.cancel();
+        _autoRedirectTimer = Timer(const Duration(seconds: 1), () {
           if (!mounted) return;
-          Navigator.of(context).pop();
-          final root = widget.rootContext;
-          if (root.mounted) {
-            ScaffoldMessenger.of(root).showSnackBar(const SnackBar(
-              content: Text(
-                'Lifetime Membership Activated. World Radio Explorer is unlocked.',
-              ),
-            ));
-            RadioLaunchController.requestOpen();
-          }
+          _openRadioDirectory();
         });
       } else {
         setState(() => _state = _RestoreState.notFound);
@@ -96,6 +90,27 @@ class _PurchaseVerificationDialogBodyState
         _error = "Couldn't reach the server. Please try again.";
         _state = _RestoreState.error;
       });
+    }
+  }
+
+  void _openRadioDirectory() {
+    _autoRedirectTimer?.cancel();
+    if (Navigator.canPop(context)) {
+      Navigator.of(context).pop();
+    }
+    final root = widget.rootContext;
+    if (root.mounted) {
+      Navigator.of(root).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => const MainNavigation(initialIndex: 2),
+        ),
+        (route) => false,
+      );
+      ScaffoldMessenger.of(root).showSnackBar(const SnackBar(
+        content: Text(
+          'Lifetime Membership Activated. World Radio Explorer is unlocked.',
+        ),
+      ));
     }
   }
 
@@ -180,15 +195,27 @@ class _PurchaseVerificationDialogBodyState
         return const Column(
           key: ValueKey('verified'),
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(Icons.verified, color: Colors.green, size: 48),
-            SizedBox(height: 12),
+            Icon(Icons.verified_rounded, color: Colors.green, size: 56),
+            SizedBox(height: 16),
+            Text(
+              'This email already owns Lifetime Access.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'World Radio Explorer has been unlocked.',
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 20),
             Text(
               'Opening World Radio Explorer...',
               textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 13, color: Colors.grey),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 12),
             LinearProgressIndicator(),
           ],
         );
@@ -243,7 +270,16 @@ class _PurchaseVerificationDialogBodyState
         return const [];
 
       case _RestoreState.verified:
-        return const [];
+        return [
+          FilledButton(
+            onPressed: _openRadioDirectory,
+            child: const Text('Open Radio Directory'),
+          ),
+          OutlinedButton(
+            onPressed: _openRadioDirectory,
+            child: const Text('Return To Radio Directory'),
+          ),
+        ];
 
       case _RestoreState.notFound:
         return [

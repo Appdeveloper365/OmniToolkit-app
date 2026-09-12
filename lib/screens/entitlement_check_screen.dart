@@ -98,6 +98,15 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
     }
   }
 
+  void _openRadioDirectory() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const MainNavigation(initialIndex: 2),
+      ),
+      (route) => false,
+    );
+  }
+
   void _continueWithPayment() {
     final verifiedUser = MembershipService().verifiedUser;
     if (verifiedUser != null) {
@@ -141,7 +150,7 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          if (userEmail.isEmpty) ...[
+                          if (userEmail.isEmpty && !_hasLifetimeAccess) ...[
                             const Text(
                               'Enter the email address used during Stripe '
                               'checkout. We will check for an existing '
@@ -165,13 +174,26 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                           if (_error != null) ...[
                             Text(_error!, textAlign: TextAlign.center),
                           ] else if (_hasLifetimeAccess) ...[
-                            const Icon(Icons.check_circle_rounded,
-                                color: Colors.green, size: 56),
+                            const Icon(Icons.verified_rounded,
+                                color: Colors.green, size: 64),
                             const SizedBox(height: 16),
                             Text(
-                              'Lifetime Membership Found\nActive for $email.',
+                              '✅ Lifetime Membership Verified',
                               textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.titleMedium,
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              email.isNotEmpty
+                                  ? 'This email ($email) already owns Lifetime Access.'
+                                  : 'This email already owns Lifetime Access.',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'World Radio Explorer has been unlocked.',
+                              textAlign: TextAlign.center,
                             ),
                           ] else if (_checked) ...[
                             const Icon(Icons.info_outline_rounded, size: 56),
@@ -187,17 +209,15 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                           ],
                           const SizedBox(height: 20),
                           if (_hasLifetimeAccess) ...[
-                            FilledButton(
-                              onPressed: () => Navigator.of(context)
-                                  .pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const MainNavigation(initialIndex: 2),
-                                ),
-                                (route) => false,
-                              ),
-                              child: const Text(
-                                  'Continue to World Radio Explorer'),
+                            FilledButton.icon(
+                              icon: const Icon(Icons.radio),
+                              onPressed: _openRadioDirectory,
+                              label: const Text('Open Radio Directory'),
+                            ),
+                            const SizedBox(height: 8),
+                            OutlinedButton(
+                              onPressed: _openRadioDirectory,
+                              child: const Text('Return To Radio Directory'),
                             ),
                           ] else if (_checked && userEmail.isEmpty) ...[
                             FilledButton(
@@ -222,7 +242,7 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                               child: const Text('Verify Purchase'),
                             ),
                           ],
-                          if (_checked) ...[
+                          if (_checked && !_hasLifetimeAccess) ...[
                             const SizedBox(height: 8),
                             OutlinedButton(
                               onPressed: userEmail.isEmpty
