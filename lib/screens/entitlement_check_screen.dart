@@ -1,13 +1,20 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../core/membership/membership_service.dart';
 import '../core/navigation/main_navigation.dart';
+import '../core/purchase/email_verify_dialog.dart';
+import '../core/purchase/pending_purchase_action.dart';
 
-/// Reconciles Lifetime Membership purchases by email. Signed-in users are
-/// checked against their account email; anonymous visitors can enter the email
-/// they used at Stripe Checkout.
+/// Settings > Membership Status.
+///
+/// Verify Purchase is the primary action and checks Firestore immediately --
+/// no Firebase email-link verification is required just to find out whether
+/// an email already owns Lifetime Access. Signed-in (verified) users are
+/// checked automatically against their account email; anonymous visitors
+/// enter the email used at Stripe Checkout. Everything resolves within this
+/// one screen: Lifetime Membership Found -> Activate, or Continue With
+/// Payment. Send Verification Link remains available as a secondary option.
 class EntitlementCheckScreen extends StatefulWidget {
   const EntitlementCheckScreen({super.key});
 
@@ -18,15 +25,15 @@ class EntitlementCheckScreen extends StatefulWidget {
 class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
   final _purchaseEmailController = TextEditingController();
   bool _isChecking = true;
+  bool _checked = false;
   bool _hasLifetimeAccess = false;
-  bool _matched = false;
   String? _error;
   String? _lastCheckedEmail;
 
   @override
   void initState() {
     super.initState();
-    _checkEntitlement();
+    _autoCheckSignedInUser();
   }
 
   @override
@@ -35,69 +42,79 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
     super.dispose();
   }
 
-  Future<void> _checkEntitlement({bool requireEmail = false}) async {
+  /// On open: if a verified account is already signed in, check its
+  /// entitlement automatically. Otherwise show the Verify Purchase form
+  /// immediately -- no verification required to reach it.
+  Future<void> _autoCheckSignedInUser() async {
+    final accountEmail =
+        FirebaseAuth.instance.currentUser?.email?.trim().toLowerCase() ?? '';
+    if (accountEmail.isEmpty) {
+      setState(() => _isChecking = false);
+      return;
+    }
+    setState(() => _isChecking = true);
+    try {
+      final state = await MembershipService().startOrRestore();
+      setState(() {
+        _lastCheckedEmail = accountEmail;
+        _hasLifetimeAccess = state.hasLifetimeAccess;
+        _checked = true;
+        _isChecking = false;
+      });
+    } catch (_) {
+      setState(() => _isChecking = false);
+    }
+  }
+
+  Future<void> _verifyPurchase() async {
+    final email = _purchaseEmailController.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      setState(() {
+        _error = 'Enter the email address used during checkout.';
+        _checked = false;
+      });
+      return;
+    }
     setState(() {
       _isChecking = true;
       _error = null;
+      _checked = false;
     });
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      final accountEmail = user?.email?.trim().toLowerCase() ?? '';
-
-      if (accountEmail.isNotEmpty) {
-        // Route through MembershipService so the result is cached locally
-        // (used by RadioAccessGate to unlock World Radio Explorer without
-        // another Firestore round trip).
-        final state = await MembershipService().startOrRestore();
-        setState(() {
-          _lastCheckedEmail = accountEmail;
-          _hasLifetimeAccess = state.hasLifetimeAccess;
-          _matched = true;
-          _isChecking = false;
-        });
-        return;
-      }
-
-      final purchaseEmail = _purchaseEmailController.text.trim().toLowerCase();
-      if (purchaseEmail.isEmpty) {
-        setState(() {
-          _isChecking = false;
-          _matched = false;
-          _hasLifetimeAccess = false;
-          _error =
-              requireEmail ? 'Enter the email used during checkout.' : null;
-        });
-        return;
-      }
-
-      final callable = FirebaseFunctions.instance.httpsCallable(
-        'checkEntitlementByEmail',
-      );
-      final result = await callable.call<Map<String, dynamic>>({
-        'email': purchaseEmail,
-      });
+      final state = await MembershipService().lookupEntitlementByEmail(email);
       setState(() {
-        _lastCheckedEmail = purchaseEmail;
-        _hasLifetimeAccess = result.data['hasLifetimeAccess'] as bool? ?? false;
-        _matched = result.data['matched'] as bool? ?? false;
+        _lastCheckedEmail = email.trim().toLowerCase();
+        _hasLifetimeAccess = state.hasLifetimeAccess;
+        _checked = true;
         _isChecking = false;
       });
-    } on FirebaseFunctionsException catch (_) {
+    } catch (_) {
       setState(() {
         _error =
             'We could not check membership status right now. Please try again.';
         _isChecking = false;
       });
-    } on StateError catch (_) {
-      setState(() {
-        _error = 'Verify your email before checking membership status.';
-        _isChecking = false;
-      });
     }
   }
 
-  void _checkEnteredPurchaseEmail() {
-    _checkEntitlement(requireEmail: true);
+  void _continueWithPayment() {
+    final verifiedUser = MembershipService().verifiedUser;
+    if (verifiedUser != null) {
+      // Already verified: skip straight to checkout, same as RadioAccessGate.
+      Navigator.of(context).pushNamed('/billing-notice');
+      return;
+    }
+    EmailVerifyDialog.requestVerification(
+      context,
+      PendingPurchaseAction.unlock,
+    );
+  }
+
+  void _sendVerificationLinkInstead() {
+    EmailVerifyDialog.requestVerification(
+      context,
+      PendingPurchaseAction.restore,
+    );
   }
 
   @override
@@ -130,7 +147,10 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                         children: [
                           if (userEmail.isEmpty) ...[
                             const Text(
-                              'Enter the email address used during Stripe checkout to restore your Lifetime Membership.',
+                              'Enter the email address used during Stripe '
+                              'checkout. We will check for an existing '
+                              'Lifetime Membership right away -- no email '
+                              'verification required for this check.',
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 12),
@@ -142,7 +162,7 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                                 labelText: 'Purchase email',
                                 border: OutlineInputBorder(),
                               ),
-                              onSubmitted: (_) => _checkEnteredPurchaseEmail(),
+                              onSubmitted: (_) => _verifyPurchase(),
                             ),
                             const SizedBox(height: 20),
                           ],
@@ -153,24 +173,18 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                                 color: Colors.green, size: 56),
                             const SizedBox(height: 16),
                             Text(
-                              'Lifetime Membership is active for $email.',
+                              'Lifetime Membership Found\nActive for $email.',
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
-                          ] else if (_matched) ...[
+                          ] else if (_checked) ...[
                             const Icon(Icons.info_outline_rounded, size: 56),
                             const SizedBox(height: 16),
-                            const Text(
-                              'No active Lifetime Membership was found for this account.',
-                              textAlign: TextAlign.center,
-                            ),
-                          ] else ...[
-                            const Icon(Icons.mail_lock_outlined, size: 56),
-                            const SizedBox(height: 16),
                             Text(
-                              'We could not find a purchase for ${email.isEmpty ? 'that email' : email}. '
-                              'Access is linked to the billing email used at checkout. '
-                              'Please use the exact email address used during purchase.',
+                              'No Lifetime Membership was found for '
+                              '${email.isEmpty ? 'that email' : email}. '
+                              'Access is linked to the billing email used at '
+                              'checkout.',
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
@@ -189,16 +203,38 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                               child: const Text(
                                   'Continue to World Radio Explorer'),
                             ),
+                          ] else if (_checked && userEmail.isEmpty) ...[
+                            FilledButton(
+                              onPressed: _continueWithPayment,
+                              child: const Text('Continue With Payment'),
+                            ),
                             const SizedBox(height: 8),
+                            TextButton(
+                              onPressed: _sendVerificationLinkInstead,
+                              child: const Text('Send Verification Link'),
+                            ),
+                          ] else if (_checked && userEmail.isNotEmpty) ...[
+                            FilledButton(
+                              onPressed: _continueWithPayment,
+                              child: const Text('Continue With Payment'),
+                            ),
+                          ] else ...[
+                            FilledButton(
+                              onPressed: userEmail.isEmpty
+                                  ? _verifyPurchase
+                                  : _autoCheckSignedInUser,
+                              child: const Text('Verify Purchase'),
+                            ),
                           ],
-                          OutlinedButton(
-                            onPressed: userEmail.isEmpty
-                                ? _checkEnteredPurchaseEmail
-                                : _checkEntitlement,
-                            child: Text(userEmail.isEmpty
-                                ? 'Check purchase email'
-                                : 'Check again'),
-                          ),
+                          if (_checked) ...[
+                            const SizedBox(height: 8),
+                            OutlinedButton(
+                              onPressed: userEmail.isEmpty
+                                  ? _verifyPurchase
+                                  : _autoCheckSignedInUser,
+                              child: const Text('Check Again'),
+                            ),
+                          ],
                         ],
                       ),
               ),
