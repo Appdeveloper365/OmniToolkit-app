@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 
 import '../membership/membership_service.dart';
 import 'email_verify_dialog.dart';
+import 'entitlement_watcher.dart';
 import 'pending_purchase_action.dart';
+import 'radio_launch_controller.dart';
 
 /// Gates access to the World Radio Explorer module behind a one-time
 /// Lifetime Access purchase. Every other OmniToolkit module remains free
@@ -79,9 +81,36 @@ class RadioAccessGate {
   }
 
   static Future<void> _unlockNow(BuildContext context) async {
-    final verifiedUser = MembershipService().verifiedUser;
-    if (verifiedUser != null) {
-      Navigator.of(context).pushNamed('/billing-notice');
+    final service = MembershipService();
+    final verifiedUser = service.verifiedUser;
+    if (verifiedUser != null && verifiedUser.email != null) {
+      final email = verifiedUser.email!;
+      // Recognize an existing purchase first -- never show the payment
+      // screen again to someone who has already unlocked Lifetime Access.
+      try {
+        final state = await service.startOrRestore();
+        if (state.hasLifetimeAccess) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(
+                'Lifetime Membership Activated. World Radio Explorer is unlocked.',
+              ),
+            ));
+            RadioLaunchController.requestOpen();
+          }
+          return;
+        }
+      } catch (_) {
+        // Entitlement check failed (offline, etc.); fall through so the
+        // user can still start checkout.
+      }
+      // Not purchased yet: watch for the webhook fulfilling the purchase so
+      // this app instance auto-unlocks the instant payment completes,
+      // without requiring another manual restore tap.
+      EntitlementWatcher.instance.watch(email);
+      if (context.mounted) {
+        Navigator.of(context).pushNamed('/billing-notice');
+      }
       return;
     }
     await EmailVerifyDialog.requestVerification(
@@ -113,9 +142,16 @@ class RestorePurchaseFlow {
             'Lifetime Membership Activated. World Radio Explorer is unlocked.',
           ),
         ));
+        RadioLaunchController.requestOpen();
       } else {
+        // Keep listening in case a purchase is completing on another tab or
+        // device right now -- this app instance will unlock automatically.
+        EntitlementWatcher.instance.watch(verifiedUser.email!);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('No purchase was found for this email.'),
+          content: Text(
+            'No purchase was found yet for this email. We will unlock '
+            'automatically the moment a purchase completes.',
+          ),
         ));
       }
     } catch (_) {

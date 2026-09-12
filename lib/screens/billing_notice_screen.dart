@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../core/purchase/entitlement_watcher.dart';
+
 /// Billing Notice: shown before Stripe Checkout. Checkout is available only
 /// after the visitor acknowledges the purchase terms.
 class BillingNoticeScreen extends StatefulWidget {
@@ -55,6 +57,22 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
           code: 'unavailable',
           message: 'Stripe Checkout could not be opened.',
         );
+      }
+
+      // Keep listening in this tab: the instant the Stripe webhook marks
+      // the purchase complete, this app auto-unlocks World Radio Explorer
+      // without requiring the user to return and tap anything.
+      if (signedInEmail != null && signedInEmail.isNotEmpty) {
+        EntitlementWatcher.instance.watch(signedInEmail);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+            'Complete your payment in the new tab. This app will unlock '
+            'automatically once the purchase completes.',
+          ),
+          duration: Duration(seconds: 6),
+        ));
       }
     } on FirebaseFunctionsException catch (error) {
       if (mounted) {

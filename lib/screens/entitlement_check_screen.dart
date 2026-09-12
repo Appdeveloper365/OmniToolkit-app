@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../core/membership/membership_service.dart';
+import '../core/navigation/main_navigation.dart';
 
 /// Reconciles Lifetime Membership purchases by email. Signed-in users are
 /// checked against their account email; anonymous visitors can enter the email
@@ -175,6 +176,21 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                             ),
                           ],
                           const SizedBox(height: 20),
+                          if (_hasLifetimeAccess) ...[
+                            FilledButton(
+                              onPressed: () => Navigator.of(context)
+                                  .pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const MainNavigation(initialIndex: 2),
+                                ),
+                                (route) => false,
+                              ),
+                              child: const Text(
+                                  'Continue to World Radio Explorer'),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
                           OutlinedButton(
                             onPressed: userEmail.isEmpty
                                 ? _checkEnteredPurchaseEmail

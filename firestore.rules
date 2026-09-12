@@ -43,8 +43,14 @@ service cloud.firestore {
     // Only Cloud Functions (Admin SDK) may write; clients may only read
     // their own authenticated account's entitlement record.
     match /entitlements/{email} {
-      // Callable functions perform trial and membership lookups.
-      allow read: if false;
+      // Callable functions perform trial and membership lookups. The
+      // verified owner may also read their own record directly so the app
+      // can maintain a real-time listener that auto-unlocks the instant the
+      // Stripe webhook marks a purchase complete (no manual restore tap
+      // required). Only Cloud Functions (Admin SDK) may write.
+      allow read: if request.auth != null
+                  && request.auth.token.email_verified == true
+                  && request.auth.token.email.lower() == email;
       allow write: if false;
     }
 
