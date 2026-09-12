@@ -5,6 +5,7 @@ import '../core/membership/membership_service.dart';
 import '../core/navigation/main_navigation.dart';
 import '../core/purchase/email_verify_dialog.dart';
 import '../core/purchase/pending_purchase_action.dart';
+import '../core/purchase/staged_loader.dart';
 
 /// Settings > Membership Status.
 ///
@@ -107,6 +108,7 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
     EmailVerifyDialog.requestVerification(
       context,
       PendingPurchaseAction.unlock,
+      prefill: _lastCheckedEmail ?? _purchaseEmailController.text.trim(),
     );
   }
 
@@ -114,6 +116,7 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
     EmailVerifyDialog.requestVerification(
       context,
       PendingPurchaseAction.restore,
+      prefill: _purchaseEmailController.text.trim(),
     );
   }
 
@@ -134,14 +137,7 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: _isChecking
-                    ? const Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircularProgressIndicator(),
-                          SizedBox(height: 16),
-                          Text('Checking membership status...'),
-                        ],
-                      )
+                    ? const StagedLoader()
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [

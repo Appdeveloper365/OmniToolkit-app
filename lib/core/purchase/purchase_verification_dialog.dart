@@ -1,26 +1,29 @@
 /// FILE: lib/core/purchase/purchase_verification_dialog.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../membership/membership_service.dart';
 import 'email_verify_dialog.dart';
 import 'pending_purchase_action.dart';
 import 'radio_launch_controller.dart';
+import 'staged_loader.dart';
+
+enum _RestoreState { input, checking, verified, notFound, error }
 
 /// Primary "Restore Purchase" entry point.
 ///
-/// Verify Purchase checks Firestore (via a public, no-auth-required Cloud
-/// Function) immediately -- Firebase email-link verification is never
-/// required just to find out whether an email already owns Lifetime
-/// Access. Everything happens inline in this one dialog:
-///   * Lifetime Membership found -> activate immediately, no further steps.
-///   * Not found -> offer to continue with payment (which still verifies
-///     email ownership before Stripe checkout, same as before).
-/// "Send Verification Link" remains available as a secondary action for
-/// anyone who wants to skip straight to checkout.
+/// Verify Purchase checks Firestore + Stripe Search API immediately --
+/// Firebase email-link verification is never required just to find out
+/// whether an email already owns Lifetime Access. Everything happens inline
+/// in this one dialog:
+///   * Lifetime Membership found -> staged loader -> verified (auto-open in 1s)
+///   * Not found -> offer to continue with payment or try another email
+///   * Send Verification Link remains available as a secondary action.
 class PurchaseVerificationDialog {
   static Future<void> show(BuildContext context) {
     return showDialog<void>(
       context: context,
+      barrierDismissible: false,
       builder: (_) => _PurchaseVerificationDialogBody(rootContext: context),
     );
   }
@@ -39,10 +42,11 @@ class _PurchaseVerificationDialogBody extends StatefulWidget {
 class _PurchaseVerificationDialogBodyState
     extends State<_PurchaseVerificationDialogBody> {
   final _emailController = TextEditingController();
-  bool _checking = false;
-  bool _checked = false;
-  bool _hasLifetimeAccess = false;
-  String? _error;
+  _RestoreState _state = _RestoreState.input;
+  String _checkedEmail = '';
+  String _error = '';
+
+  bool get _emailValid => _emailController.text.trim().contains('@');
 
   @override
   void dispose() {
@@ -51,47 +55,47 @@ class _PurchaseVerificationDialogBodyState
   }
 
   Future<void> _verifyPurchase() async {
-    final email = _emailController.text.trim();
-    if (email.isEmpty || !email.contains('@')) {
+    final email = _emailController.text.trim().toLowerCase();
+    if (!email.contains('@')) {
       setState(() {
         _error = 'Enter the email address used during checkout.';
-        _checked = false;
+        _state = _RestoreState.error;
       });
       return;
     }
+
     setState(() {
-      _checking = true;
-      _error = null;
-      _checked = false;
+      _checkedEmail = email;
+      _state = _RestoreState.checking;
     });
+
     try {
       final state = await MembershipService().lookupEntitlementByEmail(email);
       if (!mounted) return;
-      setState(() {
-        _checking = false;
-        _checked = true;
-        _hasLifetimeAccess = state.hasLifetimeAccess;
-      });
+      if (state.hasLifetimeAccess) {
+        setState(() => _state = _RestoreState.verified);
+        Timer(const Duration(seconds: 1), () {
+          if (!mounted) return;
+          Navigator.of(context).pop();
+          final root = widget.rootContext;
+          if (root.mounted) {
+            ScaffoldMessenger.of(root).showSnackBar(const SnackBar(
+              content: Text(
+                'Lifetime Membership Activated. World Radio Explorer is unlocked.',
+              ),
+            ));
+            RadioLaunchController.requestOpen();
+          }
+        });
+      } else {
+        setState(() => _state = _RestoreState.notFound);
+      }
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _checking = false;
-        _error =
-            'We could not check membership status right now. Please try again.';
+        _error = "Couldn't reach the server. Please try again.";
+        _state = _RestoreState.error;
       });
-    }
-  }
-
-  void _activateNow() {
-    Navigator.of(context).pop();
-    final root = widget.rootContext;
-    if (root.mounted) {
-      ScaffoldMessenger.of(root).showSnackBar(const SnackBar(
-        content: Text(
-          'Lifetime Membership Activated. World Radio Explorer is unlocked.',
-        ),
-      ));
-      RadioLaunchController.requestOpen();
     }
   }
 
@@ -103,7 +107,11 @@ class _PurchaseVerificationDialogBodyState
       if (verifiedUser != null) {
         Navigator.of(root).pushNamed('/billing-notice');
       } else {
-        EmailVerifyDialog.requestVerification(root, PendingPurchaseAction.unlock);
+        EmailVerifyDialog.requestVerification(
+          root,
+          PendingPurchaseAction.unlock,
+          prefill: _checkedEmail,
+        );
       }
     }
   }
@@ -113,100 +121,167 @@ class _PurchaseVerificationDialogBodyState
     final root = widget.rootContext;
     if (root.mounted) {
       EmailVerifyDialog.requestVerification(
-          root, PendingPurchaseAction.restore);
+        root,
+        PendingPurchaseAction.restore,
+        prefill: _emailController.text.trim(),
+      );
+    }
+  }
+
+  String _title() {
+    switch (_state) {
+      case _RestoreState.verified:
+        return '✅ Lifetime Membership Verified';
+      case _RestoreState.notFound:
+        return 'No Membership Found';
+      case _RestoreState.error:
+        return 'Something went wrong';
+      case _RestoreState.checking:
+        return 'Checking Membership...';
+      case _RestoreState.input:
+        return 'Restore Purchase';
+    }
+  }
+
+  Widget _content() {
+    switch (_state) {
+      case _RestoreState.input:
+        return Column(
+          key: const ValueKey('input'),
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Enter the email you purchased with, then tap Verify Purchase '
+              'to restore your Lifetime Access.',
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              autofocus: true,
+              autocorrect: false,
+              enableSuggestions: false,
+              onChanged: (_) => setState(() {}),
+              onSubmitted: (_) => _emailValid ? _verifyPurchase() : null,
+              decoration: const InputDecoration(
+                hintText: 'you@example.com',
+                labelText: 'Purchase email',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        );
+
+      case _RestoreState.checking:
+        return const StagedLoader(key: ValueKey('checking'));
+
+      case _RestoreState.verified:
+        return const Column(
+          key: ValueKey('verified'),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.verified, color: Colors.green, size: 48),
+            SizedBox(height: 12),
+            Text(
+              'Opening World Radio Explorer...',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 16),
+            LinearProgressIndicator(),
+          ],
+        );
+
+      case _RestoreState.notFound:
+        return const Column(
+          key: ValueKey('notfound'),
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('❌ No Lifetime Membership found.'),
+            SizedBox(height: 12),
+            Text('World Radio Explorer requires Lifetime Access.'),
+            SizedBox(height: 12),
+            Text(
+              r'$9.99 USD (Launch Price)',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 4),
+            Text('Available for the first 500 customers.'),
+          ],
+        );
+
+      case _RestoreState.error:
+        return Text(
+          _error,
+          key: const ValueKey('error'),
+          style: const TextStyle(color: Colors.red),
+        );
+    }
+  }
+
+  List<Widget> _actions() {
+    switch (_state) {
+      case _RestoreState.input:
+        return [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: _sendVerificationLinkInstead,
+            child: const Text('Send Verification Link'),
+          ),
+          FilledButton(
+            onPressed: _emailValid ? _verifyPurchase : null,
+            child: const Text('Verify Purchase'),
+          ),
+        ];
+
+      case _RestoreState.checking:
+        return const [];
+
+      case _RestoreState.verified:
+        return const [];
+
+      case _RestoreState.notFound:
+        return [
+          TextButton(
+            onPressed: () => setState(() => _state = _RestoreState.input),
+            child: const Text('Try Another Email'),
+          ),
+          FilledButton(
+            onPressed: _continueWithPayment,
+            child: const Text('Continue With Payment'),
+          ),
+        ];
+
+      case _RestoreState.error:
+        return [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+          FilledButton(
+            onPressed: () => setState(() => _state = _RestoreState.input),
+            child: const Text('Try Again'),
+          ),
+        ];
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Verify Purchase'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Enter the email address used at checkout. We will check for '
-              'an existing Lifetime Membership right away -- no email '
-              'verification required for this check.',
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              autocorrect: false,
-              enableSuggestions: false,
-              decoration: const InputDecoration(
-                labelText: 'Purchase email',
-                border: OutlineInputBorder(),
-              ),
-              onSubmitted: (_) => _verifyPurchase(),
-            ),
-            const SizedBox(height: 16),
-            if (_checking) ...[
-              const Center(child: CircularProgressIndicator()),
-            ] else if (_error != null) ...[
-              Text(_error!, style: const TextStyle(color: Colors.red)),
-            ] else if (_checked && _hasLifetimeAccess) ...[
-              const Row(
-                children: [
-                  Icon(Icons.check_circle_rounded, color: Colors.green),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Lifetime Membership Found',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'This email already owns Lifetime Access to World Radio '
-                'Explorer.',
-              ),
-            ] else if (_checked && !_hasLifetimeAccess) ...[
-              const Row(
-                children: [
-                  Icon(Icons.info_outline_rounded),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'No Lifetime Membership was found for this email yet.',
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ],
+      title: Text(_title()),
+      content: AnimatedSize(
+        duration: const Duration(milliseconds: 150),
+        child: SingleChildScrollView(
+          child: _content(),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: _sendVerificationLinkInstead,
-          child: const Text('Send Verification Link'),
-        ),
-        if (_checked && _hasLifetimeAccess)
-          FilledButton(
-            onPressed: _activateNow,
-            child: const Text('Activate Lifetime Membership'),
-          )
-        else if (_checked && !_hasLifetimeAccess)
-          FilledButton(
-            onPressed: _continueWithPayment,
-            child: const Text('Continue With Payment'),
-          )
-        else
-          FilledButton(
-            onPressed: _checking ? null : _verifyPurchase,
-            child: const Text('Verify Purchase'),
-          ),
-      ],
+      actions: _actions(),
     );
   }
 }

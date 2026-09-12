@@ -7,15 +7,13 @@ import '../membership/membership_service.dart';
 import 'pending_purchase_action.dart';
 import 'radio_launch_controller.dart';
 
-/// Polls entitlement status via the existing secure callable functions so
-/// the app auto-unlocks soon after the Stripe webhook marks a purchase
-/// complete -- without the user needing to reopen the app or tap
-/// "Restore Purchase" again.
+/// Polls entitlement status via secure callable functions so the app
+/// auto-unlocks soon after the Stripe webhook marks a purchase complete --
+/// without the user needing to reopen the app or tap "Restore Purchase" again.
 ///
 /// Firestore itself is server-side only: entitlements/{email} is never
 /// read directly by the client (see firestore.rules). All status checks go
-/// through MembershipService.startOrRestore(), which calls the
-/// startOrRestoreTrial callable function.
+/// through MembershipService callable functions.
 class EntitlementWatcher {
   EntitlementWatcher._();
   static final EntitlementWatcher instance = EntitlementWatcher._();
@@ -28,6 +26,7 @@ class EntitlementWatcher {
   int _attempts = 0;
 
   bool get isWatching => _timer != null;
+  String? get watchedEmail => _watchedEmail;
 
   void watch(String email, {VoidCallback? onUnlocked}) {
     final normalized = email.trim().toLowerCase();
@@ -47,8 +46,16 @@ class EntitlementWatcher {
       return;
     }
     try {
-      final state = await MembershipService().startOrRestore();
-      if (state.hasLifetimeAccess) {
+      final service = MembershipService();
+      bool owns = false;
+      if (service.verifiedUser != null) {
+        final state = await service.startOrRestore();
+        owns = state.hasLifetimeAccess;
+      } else {
+        final state = await service.lookupEntitlementByEmail(email);
+        owns = state.hasLifetimeAccess;
+      }
+      if (owns) {
         await PendingPurchaseActionStore.consume();
         stop();
         onUnlocked?.call();
@@ -61,12 +68,20 @@ class EntitlementWatcher {
   }
 
   /// Manual "I've paid -- Check Now" fallback: checks once, immediately.
-  Future<bool> checkNow() async {
-    final email = _watchedEmail;
-    if (email == null) return false;
+  Future<bool> checkNow({String? emailOverride}) async {
+    final email = emailOverride?.trim().toLowerCase() ?? _watchedEmail;
+    if (email == null || email.isEmpty) return false;
     try {
-      final state = await MembershipService().startOrRestore();
-      if (state.hasLifetimeAccess) {
+      final service = MembershipService();
+      bool owns = false;
+      if (service.verifiedUser != null) {
+        final state = await service.startOrRestore();
+        owns = state.hasLifetimeAccess;
+      } else {
+        final state = await service.lookupEntitlementByEmail(email);
+        owns = state.hasLifetimeAccess;
+      }
+      if (owns) {
         await PendingPurchaseActionStore.consume();
         stop();
         RadioLaunchController.requestOpen();
