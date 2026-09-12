@@ -220,13 +220,19 @@ exports.stripeWebhook = onRequest(
 );
 
 /**
- * CALLABLE FUNCTION: Starts or restores the single seven-day trial for an
- * email address. The transaction makes trial creation idempotent across
- * reinstalls and devices.
+ * CALLABLE FUNCTION: Restores existing entitlement status (Lifetime Access
+ * or none) for a verified email address.
+ *
+ * OmniToolkit is free to use; only the World Radio Explorer module requires
+ * a one-time Lifetime Access purchase. This function no longer starts a
+ * 7-day trial -- it simply records that the email has been verified and
+ * returns the caller's current entitlement, creating a bare (no-trial)
+ * entitlement record on first verification. Kept under its original name
+ * for backward compatibility with already-deployed clients.
  */
 exports.startOrRestoreTrial = onCall(async (request) => {
   if (!request.auth || request.auth.token?.email_verified !== true) {
-    throw new HttpsError("unauthenticated", "Verify email ownership before starting a trial.");
+    throw new HttpsError("unauthenticated", "Verify email ownership before continuing.");
   }
 
   const email = normalizeEmail(request.auth.token.email);
@@ -238,26 +244,15 @@ exports.startOrRestoreTrial = onCall(async (request) => {
   let entitlement;
   await db.runTransaction(async (transaction) => {
     const snapshot = await transaction.get(entitlementRef);
-    const current = snapshot.exists ? snapshot.data() : {};
+    const now = admin.firestore.Timestamp.now();
     if (!snapshot.exists) {
-      const now = admin.firestore.Timestamp.now();
-      const trialEnd = admin.firestore.Timestamp.fromMillis(
-        now.toMillis() + 7 * 24 * 60 * 60 * 1000
-      );
-      transaction.set(entitlementRef, entitlementPayload(email, {
-        trialStartDate: now,
-        trialEndDate: trialEnd,
-        emailVerified: true,
-        hasLifetimeAccess: false,
-        lastSeenDate: now,
-      }));
-      entitlement = entitlementPayload(email, {
-        trialStartDate: now,
-        trialEndDate: trialEnd,
+      const payload = entitlementPayload(email, {
         emailVerified: true,
         hasLifetimeAccess: false,
         lastSeenDate: now,
       });
+      transaction.set(entitlementRef, payload);
+      entitlement = payload;
       return;
     }
 
@@ -265,7 +260,7 @@ exports.startOrRestoreTrial = onCall(async (request) => {
       emailVerified: true,
       lastSeenDate: admin.firestore.FieldValue.serverTimestamp(),
     });
-    entitlement = { ...current, emailVerified: true };
+    entitlement = { ...snapshot.data(), emailVerified: true };
   });
 
   return entitlementResponse(email, entitlement);

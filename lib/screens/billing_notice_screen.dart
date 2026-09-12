@@ -122,6 +122,11 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
                     ),
                     const SizedBox(height: 4),
                     const Text(
+                      'Unlocks World Radio Explorer. All other OmniToolkit modules remain free forever.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
                       r'$9.99 USD (Launch Price)',
                       textAlign: TextAlign.center,
                     ),

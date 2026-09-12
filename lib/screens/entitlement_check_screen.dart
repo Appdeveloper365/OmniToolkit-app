@@ -2,6 +2,8 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../core/membership/membership_service.dart';
+
 /// Reconciles Lifetime Membership purchases by email. Signed-in users are
 /// checked against their account email; anonymous visitors can enter the email
 /// they used at Stripe Checkout.
@@ -42,15 +44,14 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
       final accountEmail = user?.email?.trim().toLowerCase() ?? '';
 
       if (accountEmail.isNotEmpty) {
-        final callable = FirebaseFunctions.instance.httpsCallable(
-          'checkEntitlementForSignedInUser',
-        );
-        final result = await callable.call<Map<String, dynamic>>();
+        // Route through MembershipService so the result is cached locally
+        // (used by RadioAccessGate to unlock World Radio Explorer without
+        // another Firestore round trip).
+        final state = await MembershipService().startOrRestore();
         setState(() {
           _lastCheckedEmail = accountEmail;
-          _hasLifetimeAccess =
-              result.data['hasLifetimeAccess'] as bool? ?? false;
-          _matched = result.data['matched'] as bool? ?? false;
+          _hasLifetimeAccess = state.hasLifetimeAccess;
+          _matched = true;
           _isChecking = false;
         });
         return;
@@ -84,6 +85,11 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
       setState(() {
         _error =
             'We could not check membership status right now. Please try again.';
+        _isChecking = false;
+      });
+    } on StateError catch (_) {
+      setState(() {
+        _error = 'Verify your email before checking membership status.';
         _isChecking = false;
       });
     }
