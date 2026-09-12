@@ -302,21 +302,6 @@ class MembershipService {
     }
   }
 
-  /// Caches Lifetime Access locally as soon as EntitlementWatcher observes
-  /// entitlements/{email}.hasLifetimeAccess flip to true in real time, so
-  /// RadioAccessGate unlocks instantly without waiting for another callable
-  /// round trip.
-  Future<void> cacheLifetimeAccess(String email, {DateTime? purchaseDate}) async {
-    final normalized = email.trim().toLowerCase();
-    await _save(MembershipState(
-      email: normalized,
-      emailVerified: true,
-      hasLifetimeAccess: true,
-      trialActive: false,
-      purchaseDate: purchaseDate ?? DateTime.now(),
-    ));
-  }
-
   Future<void> _save(MembershipState state) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('membership.email', state.email);

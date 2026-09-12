@@ -1,57 +1,87 @@
 /// FILE: lib/core/purchase/entitlement_watcher.dart
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 import '../membership/membership_service.dart';
 import 'pending_purchase_action.dart';
 import 'radio_launch_controller.dart';
 
-/// Watches entitlements/{email} in Firestore in real time so the app
-/// auto-unlocks the instant the Stripe webhook marks a purchase complete --
-/// the user never has to reopen the app or tap "Restore Purchase" again.
+/// Polls entitlement status via the existing secure callable functions so
+/// the app auto-unlocks soon after the Stripe webhook marks a purchase
+/// complete -- without the user needing to reopen the app or tap
+/// "Restore Purchase" again.
 ///
-/// Requires firestore.rules to allow the verified owner to read their own
-/// entitlement document directly (see firestore.rules).
+/// Firestore itself is server-side only: entitlements/{email} is never
+/// read directly by the client (see firestore.rules). All status checks go
+/// through MembershipService.startOrRestore(), which calls the
+/// startOrRestoreTrial callable function.
 class EntitlementWatcher {
   EntitlementWatcher._();
   static final EntitlementWatcher instance = EntitlementWatcher._();
 
-  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _sub;
-  String? _watchedEmail;
+  static const _pollInterval = Duration(seconds: 5);
+  static const _maxAttempts = 60; // ~5 minutes
 
-  bool get isWatching => _sub != null;
+  Timer? _timer;
+  String? _watchedEmail;
+  int _attempts = 0;
+
+  bool get isWatching => _timer != null;
 
   void watch(String email, {VoidCallback? onUnlocked}) {
     final normalized = email.trim().toLowerCase();
-    if (_watchedEmail == normalized && _sub != null) return;
-    _sub?.cancel();
+    if (_watchedEmail == normalized && _timer != null) return;
+    stop();
     _watchedEmail = normalized;
+    _attempts = 0;
+    _timer = Timer.periodic(_pollInterval, (_) => _poll(onUnlocked));
+  }
+
+  Future<void> _poll(VoidCallback? onUnlocked) async {
+    final email = _watchedEmail;
+    if (email == null) return;
+    _attempts++;
+    if (_attempts > _maxAttempts) {
+      stop();
+      return;
+    }
     try {
-      _sub = FirebaseFirestore.instance
-          .collection('entitlements')
-          .doc(normalized)
-          .snapshots()
-          .listen((snapshot) async {
-        final data = snapshot.data();
-        if (data == null || data['hasLifetimeAccess'] != true) return;
-        await MembershipService().cacheLifetimeAccess(normalized);
+      final state = await MembershipService().startOrRestore();
+      if (state.hasLifetimeAccess) {
         await PendingPurchaseActionStore.consume();
-        await stop();
+        stop();
         onUnlocked?.call();
         RadioLaunchController.requestOpen();
-      }, onError: (error) {
-        debugPrint('[EntitlementWatcher] snapshot error: $error');
-      });
+      }
     } catch (error) {
-      debugPrint('[EntitlementWatcher] listen failed: $error');
+      debugPrint('[EntitlementWatcher] poll failed: $error');
+      // Keep polling; the next successful attempt will pick up the purchase.
     }
   }
 
-  Future<void> stop() async {
-    await _sub?.cancel();
-    _sub = null;
+  /// Manual "I've paid -- Check Now" fallback: checks once, immediately.
+  Future<bool> checkNow() async {
+    final email = _watchedEmail;
+    if (email == null) return false;
+    try {
+      final state = await MembershipService().startOrRestore();
+      if (state.hasLifetimeAccess) {
+        await PendingPurchaseActionStore.consume();
+        stop();
+        RadioLaunchController.requestOpen();
+        return true;
+      }
+    } catch (_) {
+      // Ignore; caller surfaces its own error message.
+    }
+    return false;
+  }
+
+  void stop() {
+    _timer?.cancel();
+    _timer = null;
     _watchedEmail = null;
+    _attempts = 0;
   }
 }
