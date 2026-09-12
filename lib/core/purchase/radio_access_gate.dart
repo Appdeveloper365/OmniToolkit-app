@@ -5,6 +5,7 @@ import '../membership/membership_service.dart';
 import 'email_verify_dialog.dart';
 import 'entitlement_watcher.dart';
 import 'pending_purchase_action.dart';
+import 'purchase_verification_dialog.dart';
 import 'radio_launch_controller.dart';
 
 /// Gates access to the World Radio Explorer module behind a one-time
@@ -127,10 +128,11 @@ class RestorePurchaseFlow {
     final service = MembershipService();
     final verifiedUser = service.verifiedUser;
     if (verifiedUser == null) {
-      await EmailVerifyDialog.requestVerification(
-        context,
-        PendingPurchaseAction.restore,
-      );
+      // Verify Purchase is the primary action here: check Firestore
+      // immediately by email, with no Firebase email-link verification
+      // required. Send Verification Link remains available, but only as a
+      // secondary action inside the same dialog.
+      await PurchaseVerificationDialog.show(context);
       return;
     }
     try {

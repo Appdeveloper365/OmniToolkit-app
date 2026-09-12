@@ -267,18 +267,18 @@ exports.startOrRestoreTrial = onCall(async (request) => {
 });
 
 /**
- * CALLABLE FUNCTION: Public restore lookup. Lets any visitor (signed in or
- * not) check Lifetime Membership status by supplying the email used at
- * checkout. No other account data is exposed.
+ * CALLABLE FUNCTION: Public restore lookup. Lets ANY visitor (signed in or
+ * not, verified or not) check Lifetime Membership status by supplying the
+ * email used at checkout. Intentionally requires no Firebase Authentication
+ * -- "Verify Purchase" must work immediately, before any email-link
+ * verification, so users are never forced into a verification loop just to
+ * find out whether they already own Lifetime Access. Only a boolean-ish
+ * entitlement summary is exposed; no other account data.
  */
 exports.checkEntitlementByEmail = onCall(async (request) => {
-  if (!request.auth || request.auth.token?.email_verified !== true) {
-    throw new HttpsError("unauthenticated", "Verified email sign-in is required to restore membership.");
-  }
-
-  const email = normalizeEmail(request.auth.token.email);
-  if (!email) {
-    throw new HttpsError("invalid-argument", "A verified account email is required.");
+  const email = normalizeEmail(request.data?.email);
+  if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+    throw new HttpsError("invalid-argument", "A valid email address is required.");
   }
 
   const entitlementSnapshot = await db.collection("entitlements").doc(email).get();

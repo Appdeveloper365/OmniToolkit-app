@@ -125,6 +125,27 @@ class MembershipService {
     }
   }
 
+  /// Immediate "Verify Purchase" lookup by email -- deliberately requires no
+  /// Firebase email-link verification. Used by the Restore Purchase dialog
+  /// so a returning customer can confirm Lifetime Access with a single tap,
+  /// before (or entirely without) proving ownership of the email via a
+  /// verification link. If a Lifetime Membership is found, the result is
+  /// cached locally so RadioAccessGate unlocks immediately.
+  Future<MembershipState> lookupEntitlementByEmail(String email) async {
+    final normalized = email.trim().toLowerCase();
+    if (normalized.isEmpty || !normalized.contains('@')) {
+      throw ArgumentError('A valid email address is required.');
+    }
+    final result = await FirebaseFunctions.instance
+        .httpsCallable('checkEntitlementByEmail')
+        .call<Map<String, dynamic>>({'email': normalized});
+    final state = MembershipState.fromData(result.data);
+    if (state.hasLifetimeAccess) {
+      await _save(state);
+    }
+    return state;
+  }
+
   Future<String?> pendingEmail() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_pendingEmailKey);
