@@ -17,12 +17,41 @@ service cloud.firestore {
                       "paymentStatus",
                       "hasLifetimeAccess",
                       "premium_active",
+                      "uid",
+                      "email",
+                      "createdAt",
+                      "trialStartDate",
+                      "trialExpiresAt",
                       "purchaseDate",
                       "stripeCustomerId",
-                      "stripeSessionId"
+                      "stripeSessionId",
+                      "purchaseEmail"
                     ]);
 
       allow delete: if false;
+
+      // Payment history is written only by Cloud Functions (Admin SDK);
+      // the owning user may read their own receipts.
+      match /payments/{paymentId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if false;
+      }
+    }
+
+    // Lifetime Membership entitlements are keyed by the purchase email so
+    // anonymous purchases can be claimed by a later matching sign-in.
+    // Only Cloud Functions (Admin SDK) may write; clients may only read
+    // their own authenticated account's entitlement record.
+    match /entitlements/{email} {
+      // Entitlements are server-side only. The client never reads Firestore
+      // directly -- it polls status through the startOrRestoreTrial /
+      // checkEntitlementByEmail / checkEntitlementForSignedInUser callable
+      // functions (Cloud Functions use the Admin SDK, which bypasses these
+      // rules). This keeps the client's only dependency on entitlement data
+      // as a narrow, server-validated boolean response instead of direct
+      // document access.
+      allow read: if false;
+      allow write: if false;
     }
 
     match /stripeWebhookEvents/{eventId} {

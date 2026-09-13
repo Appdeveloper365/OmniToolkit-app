@@ -2,17 +2,20 @@
   "name": "omnitoolkit-functions",
   "description": "OmniToolkit Stripe Checkout & Webhook Backend Cloud Functions",
   "scripts": {
-    "serve": "firebase serve --only functions",
+    "serve": "firebase emulators:start --only functions",
     "shell": "firebase functions:shell",
     "start": "npm run shell",
-    "deploy": "firebase deploy --only functions"
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
   },
   "engines": {
-    "node": "18"
+    "node": "20"
   },
+  "main": "index.js",
   "dependencies": {
-    "firebase-admin": "^11.8.0",
-    "firebase-functions": "^4.3.1",
-    "stripe": "^12.9.0"
-  }
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^5.0.0",
+    "stripe": "^15.0.0"
+  },
+  "private": true
 }

@@ -81,7 +81,9 @@ class AppDatabase {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             url TEXT NOT NULL,
-            codec TEXT
+            codec TEXT,
+            country TEXT,
+            countrycode TEXT
           )
         ''');
         await db.execute('CREATE INDEX idx_notes_date ON calendar_notes(note_date)');
@@ -202,6 +204,19 @@ class AppDatabase {
           await db.execute('CREATE INDEX IF NOT EXISTS idx_zip ON lookup(zip)');
           await db.execute('CREATE INDEX IF NOT EXISTS idx_city ON lookup(city)');
           await db.execute('CREATE INDEX IF NOT EXISTS idx_area ON lookup(areaCode)');
+        }
+        if (oldVersion < 6) {
+          // radio_streams was missing country/countrycode columns that
+          // AssetImporter writes on every launch; the insert silently
+          // failed (caught in main.dart) leaving the offline radio
+          // directory permanently empty. Add the missing columns so
+          // existing installs self-heal without losing other data.
+          if (!(await _columnExists(db, 'radio_streams', 'country'))) {
+            await db.execute('ALTER TABLE radio_streams ADD COLUMN country TEXT');
+          }
+          if (!(await _columnExists(db, 'radio_streams', 'countrycode'))) {
+            await db.execute('ALTER TABLE radio_streams ADD COLUMN countrycode TEXT');
+          }
         }
       },
     );

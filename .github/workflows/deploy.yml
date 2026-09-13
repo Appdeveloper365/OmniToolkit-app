@@ -3,7 +3,7 @@ name: Build & Deploy Web PWA
 on:
   push:
     branches:
-      - main
+      - pwa-production
 
 permissions:
   contents: write
@@ -43,9 +43,25 @@ jobs:
 
       - name: Preserve Static Legal Docs
         run: |
-          if [ -d docs ]; then
-            mkdir -p build/web/docs
-            cp -R docs/. build/web/docs/
+          # IMPORTANT: Only copy the named legal document files. Never copy
+          # docs/index.html (or use a directory-wide "cp -R docs/. build/web/")
+          # here -- that previously overwrote the real Flutter-built
+          # build/web/index.html with the static legal-docs landing page,
+          # causing Microsoft Store to reject the app for missing
+          # functionality (10.1.2.10) because reviewers saw a documentation
+          # hub instead of the actual OmniToolkit application.
+          mkdir -p build/web/docs
+          LEGAL_FILES="privacy.html privacy-policy.html terms.html terms-of-service.html"
+          for f in $LEGAL_FILES; do
+            if [ -f "docs/$f" ]; then
+              cp "docs/$f" "build/web/$f"
+              cp "docs/$f" "build/web/docs/$f"
+            fi
+          done
+          # docs/index.html is safe to copy ONLY into the nested build/web/docs/
+          # path (never build/web/index.html at root, which is the real app entry).
+          if [ -f "docs/index.html" ]; then
+            cp "docs/index.html" "build/web/docs/index.html"
           fi
 
       - name: Ensure GitHub Pages Metadata
@@ -75,4 +91,3 @@ jobs:
           git commit -m "deploy: ${GITHUB_SHA}"
           REMOTE_GH_PAGES_SHA=$(git rev-parse refs/remotes/origin/gh-pages)
           git push --force-with-lease=refs/heads/gh-pages:${REMOTE_GH_PAGES_SHA} "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:gh-pages
-
