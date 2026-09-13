@@ -43,11 +43,21 @@ jobs:
 
       - name: Preserve Static Legal Docs
         run: |
-          if [ -d docs ]; then
-            mkdir -p build/web/docs
-            cp -R docs/. build/web/docs/
-            cp -R docs/. build/web/
-          fi
+          # IMPORTANT: Only copy the named legal document files. Never copy
+          # docs/index.html (or use a directory-wide "cp -R docs/. build/web/")
+          # here -- that previously overwrote the real Flutter-built
+          # build/web/index.html with the static legal-docs landing page,
+          # causing Microsoft Store to reject the app for missing
+          # functionality (10.1.2.10) because reviewers saw a documentation
+          # hub instead of the actual OmniToolkit application.
+          mkdir -p build/web/docs
+          LEGAL_FILES="privacy.html privacy-policy.html terms.html terms-of-service.html"
+          for f in $LEGAL_FILES; do
+            if [ -f "docs/$f" ]; then
+              cp "docs/$f" "build/web/$f"
+              cp "docs/$f" "build/web/docs/$f"
+            fi
+          done
 
       - name: Ensure GitHub Pages Metadata
         run: touch build/web/.nojekyll
