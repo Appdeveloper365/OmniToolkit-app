@@ -58,6 +58,11 @@ jobs:
               cp "docs/$f" "build/web/docs/$f"
             fi
           done
+          # docs/index.html is safe to copy ONLY into the nested build/web/docs/
+          # path (never build/web/index.html at root, which is the real app entry).
+          if [ -f "docs/index.html" ]; then
+            cp "docs/index.html" "build/web/docs/index.html"
+          fi
 
       - name: Ensure GitHub Pages Metadata
         run: touch build/web/.nojekyll
