@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../core/membership/membership_service.dart';
 import '../core/navigation/main_navigation.dart';
 import '../core/purchase/email_verify_dialog.dart';
+import '../core/purchase/entitlement_watcher.dart';
 import '../core/purchase/pending_purchase_action.dart';
 import '../core/purchase/staged_loader.dart';
 
@@ -15,7 +16,14 @@ import '../core/purchase/staged_loader.dart';
 /// checked automatically against their account email; anonymous visitors
 /// enter the email used at Stripe Checkout. Everything resolves within this
 /// one screen: Lifetime Membership Found -> Activate, or Continue With
-/// Payment. Send Verification Link remains available as a secondary option.
+/// Payment.
+///
+/// If no purchase is found, a verification link is sent automatically (no
+/// extra button tap, no re-entering the email in a second dialog) so the
+/// user only has to check their inbox. Clicking that link opens OmniToolkit
+/// and lands directly on the payment screen (see
+/// MainNavigation._completePendingVerification, PendingPurchaseAction.unlock)
+/// instead of asking them to confirm anything else first.
 class EntitlementCheckScreen extends StatefulWidget {
   const EntitlementCheckScreen({super.key});
 
@@ -30,6 +38,8 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
   bool _hasLifetimeAccess = false;
   String? _error;
   String? _lastCheckedEmail;
+  bool _verificationLinkSent = false;
+  bool _isSendingLink = false;
 
   @override
   void initState() {
@@ -83,12 +93,20 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
     });
     try {
       final state = await MembershipService().lookupEntitlementByEmail(email);
+      final normalized = email.trim().toLowerCase();
       setState(() {
-        _lastCheckedEmail = email.trim().toLowerCase();
+        _lastCheckedEmail = normalized;
         _hasLifetimeAccess = state.hasLifetimeAccess;
         _checked = true;
         _isChecking = false;
       });
+      if (!state.hasLifetimeAccess) {
+        // No purchase found for an unverified email: automatically send the
+        // verification link (no extra button tap, no re-entering the email
+        // in a second dialog). Clicking the link in that email will land
+        // the user directly on the payment screen.
+        _autoSendVerificationLink(normalized);
+      }
     } catch (_) {
       setState(() {
         _error =
@@ -121,12 +139,46 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
     );
   }
 
-  void _sendVerificationLinkInstead() {
-    EmailVerifyDialog.requestVerification(
-      context,
-      PendingPurchaseAction.restore,
-      prefill: _purchaseEmailController.text.trim(),
-    );
+  /// Sends a Firebase email-link verification message for [email] without
+  /// opening a second dialog or asking the user to re-type/re-confirm an
+  /// email we already have. Marks the pending action as `unlock` so that
+  /// once the user clicks the link, MainNavigation routes them straight to
+  /// the payment screen instead of showing another confirmation dialog.
+  Future<void> _autoSendVerificationLink(String email, {bool resend = false}) async {
+    if (email.isEmpty) return;
+    if (_isSendingLink) return;
+    if (_verificationLinkSent && !resend) return;
+    setState(() => _isSendingLink = true);
+    try {
+      await PendingPurchaseActionStore.set(PendingPurchaseAction.unlock);
+      await MembershipService().sendVerificationLink(email);
+      EntitlementWatcher.instance.watch(email);
+      if (!mounted) return;
+      setState(() {
+        _verificationLinkSent = true;
+        _isSendingLink = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          'Verification link sent to $email. Open the email and click the '
+          'link -- it will take you straight to payment.',
+        ),
+        duration: const Duration(seconds: 5),
+      ));
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isSendingLink = false);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+          'Could not send the verification link. Please try again.',
+        ),
+      ));
+    }
+  }
+
+  void _resendVerificationLink() {
+    final email = _lastCheckedEmail ?? _purchaseEmailController.text.trim().toLowerCase();
+    _autoSendVerificationLink(email, resend: true);
   }
 
   @override
@@ -206,6 +258,20 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
+                            if (userEmail.isEmpty && _verificationLinkSent) ...[
+                              const SizedBox(height: 16),
+                              Text(
+                                '✅ Verification link sent to $email. Open '
+                                'the email and click the link -- it will '
+                                'take you straight to payment, with no need '
+                                'to re-enter your email.',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ],
                           const SizedBox(height: 20),
                           if (_hasLifetimeAccess) ...[
@@ -220,14 +286,20 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                               child: const Text('Return To Radio Directory'),
                             ),
                           ] else if (_checked && userEmail.isEmpty) ...[
-                            FilledButton(
-                              onPressed: _continueWithPayment,
-                              child: const Text('Continue With Payment'),
-                            ),
-                            const SizedBox(height: 8),
-                            TextButton(
-                              onPressed: _sendVerificationLinkInstead,
-                              child: const Text('Send Verification Link'),
+                            // Verification link was already sent automatically
+                            // as soon as "not found" was determined -- no
+                            // extra button tap and no second dialog asking
+                            // the user to re-enter/re-confirm their email.
+                            FilledButton.icon(
+                              icon: const Icon(Icons.mark_email_read_outlined),
+                              onPressed: _isSendingLink ? null : _resendVerificationLink,
+                              label: Text(
+                                _isSendingLink
+                                    ? 'Sending...'
+                                    : (_verificationLinkSent
+                                        ? 'Resend Verification Link'
+                                        : 'Send Verification Link'),
+                              ),
                             ),
                           ] else if (_checked && userEmail.isNotEmpty) ...[
                             FilledButton(

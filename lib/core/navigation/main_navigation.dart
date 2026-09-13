@@ -73,7 +73,12 @@ class _MainNavigationState extends State<MainNavigation> {
   /// -> Unlock Radio Directory
   ///
   /// CASE B: hasLifetimeAccess = false
-  /// -> Show "No Lifetime Membership found" dialog with [Continue With Payment]
+  /// -> If this link was requested to complete a purchase (pending action
+  ///    == unlock), skip straight to the payment screen -- the user already
+  ///    confirmed purchase intent before the link was sent, so requiring
+  ///    another dialog tap or email re-entry would be redundant/confusing.
+  /// -> Otherwise (restore/undetermined intent), show "No Lifetime
+  ///    Membership found" dialog with [Continue With Payment].
   ///
   /// Never shows the Verify Email dialog again or creates verification loops.
   Future<void> _completePendingVerification() async {
@@ -99,7 +104,7 @@ class _MainNavigationState extends State<MainNavigation> {
       }
     }
 
-    await PendingPurchaseActionStore.consume();
+    final pendingAction = await PendingPurchaseActionStore.consume();
     if (!mounted) return;
 
     // 2. Check Firestore entitlement immediately
@@ -141,11 +146,27 @@ class _MainNavigationState extends State<MainNavigation> {
       ));
       _openRadioTab();
     } else {
-      // CASE B: Prompt to Continue With Payment (or opens Payment Portal)
+      // CASE B: No Lifetime Membership found.
       if (checkEmail != null && checkEmail.isNotEmpty) {
         EntitlementWatcher.instance.watch(checkEmail);
       }
-      _showNoLifetimeMembershipFoundDialog();
+      if (pendingAction == PendingPurchaseAction.unlock) {
+        // This email link was requested specifically to complete a
+        // purchase (RadioAccessGate "Unlock Now" / Account & Billing
+        // "Send Verification Link"). The user already confirmed intent
+        // to buy before this link was sent, so skip the extra
+        // confirmation dialog and land directly on the payment screen
+        // instead of asking them to tap through another dialog or
+        // re-enter their email.
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Email verified. Continue with your purchase below.'),
+        ));
+        Navigator.of(context).pushNamed('/billing-notice');
+      } else {
+        // Restore/undetermined intent: offer Continue With Payment instead
+        // of forcing straight into checkout.
+        _showNoLifetimeMembershipFoundDialog();
+      }
     }
   }
 
