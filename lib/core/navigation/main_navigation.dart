@@ -1,4 +1,3 @@
-/// FILE: lib/core/navigation/main_navigation.dart
 import 'package:flutter/material.dart';
 
 import '../../modules/calculator/screens/calculator_screen.dart';
@@ -8,7 +7,6 @@ import '../../modules/password/password_screen.dart';
 import '../../modules/radio/screens/radio_screen.dart';
 import '../settings/settings_screen.dart';
 import '../theme/app_logo.dart';
-import '../widgets/trial_banner.dart';
 
 /// Root scaffold hosting navigation for all modules and settings.
 class MainNavigation extends StatefulWidget {
@@ -31,12 +29,30 @@ class _MainNavigationState extends State<MainNavigation> {
   ];
 
   static const _destinations = [
-    NavigationDestination(icon: Icon(Icons.calendar_month_outlined), selectedIcon: Icon(Icons.calendar_month), label: 'Calendar'),
-    NavigationDestination(icon: Icon(Icons.calculate_outlined), selectedIcon: Icon(Icons.calculate), label: 'Calculator'),
-    NavigationDestination(icon: Icon(Icons.radio_outlined), selectedIcon: Icon(Icons.radio), label: 'Radio/TV'),
-    NavigationDestination(icon: Icon(Icons.location_searching_outlined), selectedIcon: Icon(Icons.location_on), label: 'Lookup'),
-    NavigationDestination(icon: Icon(Icons.password_outlined), selectedIcon: Icon(Icons.password), label: 'Password'),
-    NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: 'Settings'),
+    NavigationDestination(
+        icon: Icon(Icons.calendar_month_outlined),
+        selectedIcon: Icon(Icons.calendar_month),
+        label: 'Calendar'),
+    NavigationDestination(
+        icon: Icon(Icons.calculate_outlined),
+        selectedIcon: Icon(Icons.calculate),
+        label: 'Calculator'),
+    NavigationDestination(
+        icon: Icon(Icons.radio_outlined),
+        selectedIcon: Icon(Icons.radio),
+        label: 'Radio/TV'),
+    NavigationDestination(
+        icon: Icon(Icons.location_searching_outlined),
+        selectedIcon: Icon(Icons.location_on),
+        label: 'Lookup'),
+    NavigationDestination(
+        icon: Icon(Icons.password_outlined),
+        selectedIcon: Icon(Icons.password),
+        label: 'Password'),
+    NavigationDestination(
+        icon: Icon(Icons.settings_outlined),
+        selectedIcon: Icon(Icons.settings),
+        label: 'Settings'),
   ];
 
   @override
@@ -45,60 +61,43 @@ class _MainNavigationState extends State<MainNavigation> {
 
     if (isWide) {
       return Scaffold(
-        body: Column(
+        body: Row(
           children: [
-            const TrialBanner(),
-            Expanded(
-              child: Row(
-                children: [
-                  SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: MediaQuery.of(context).size.height,
-                      ),
-                      child: IntrinsicHeight(
-                        child: NavigationRail(
-                          leading: const Padding(
-                            padding: EdgeInsets.only(top: 16, bottom: 8),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                AppLogo(size: 84),
-                                SizedBox(height: 4),
-                              ],
-                            ),
-                          ),
-                          selectedIndex: _index,
-                          onDestinationSelected: (i) => setState(() => _index = i),
-                          labelType: NavigationRailLabelType.all,
-                          destinations: _destinations
-                              .map((d) => NavigationRailDestination(
-                                    icon: d.icon,
-                                    selectedIcon: d.selectedIcon,
-                                    label: Text(d.label),
-                                  ))
-                              .toList(),
-                        ),
+            SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height),
+                child: IntrinsicHeight(
+                  child: NavigationRail(
+                    leading: const Padding(
+                      padding: EdgeInsets.only(top: 16, bottom: 8),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [AppLogo(size: 84), SizedBox(height: 4)],
                       ),
                     ),
+                    selectedIndex: _index,
+                    onDestinationSelected: (i) => setState(() => _index = i),
+                    labelType: NavigationRailLabelType.all,
+                    destinations: _destinations
+                        .map((d) => NavigationRailDestination(
+                            icon: d.icon,
+                            selectedIcon: d.selectedIcon,
+                            label: Text(d.label)))
+                        .toList(),
                   ),
-                  const VerticalDivider(width: 1),
-                  Expanded(child: _screens[_index]),
-                ],
+                ),
               ),
             ),
+            const VerticalDivider(width: 1),
+            Expanded(child: _screens[_index]),
           ],
         ),
       );
     }
 
     return Scaffold(
-      body: Column(
-        children: [
-          const TrialBanner(),
-          Expanded(child: _screens[_index]),
-        ],
-      ),
+      body: _screens[_index],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),

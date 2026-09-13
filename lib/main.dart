@@ -9,10 +9,8 @@ import 'package:media_kit/media_kit.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 
 import 'core/data/asset_importer.dart';
-import 'core/navigation/route_guard.dart';
+import 'core/navigation/main_navigation.dart';
 import 'core/theme/app_theme.dart';
-import 'firebase_options.dart';
-import 'screens/share_target_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,14 +33,6 @@ Future<void> _initializeApplication() async {
   }
 
   try {
-    await DefaultFirebaseOptions.initializeFirebaseApp();
-    debugPrint('[Firebase] Successfully initialized');
-  } catch (error, stackTrace) {
-    debugPrint('[Firebase] Initialization failed: $error\n$stackTrace');
-    debugPrint('[Firebase] Error description: ${DefaultFirebaseOptions.describeInitializationFailure(error)}');
-  }
-
-  try {
     await AssetImporter.importFirstLaunch();
     debugPrint('[App] Assets imported successfully');
   } catch (e) {
@@ -54,7 +44,8 @@ Future<void> _initializeApplication() async {
     try {
       MediaKit.ensureInitialized();
       JustAudioMediaKit.ensureInitialized();
-      debugPrint('[Audio] Media_kit initialized for ${Platform.isWindows ? 'Windows' : 'Linux'}');
+      debugPrint(
+          '[Audio] Media_kit initialized for ${Platform.isWindows ? 'Windows' : 'Linux'}');
     } catch (e) {
       debugPrint('[Audio] Media_kit initialization failed: $e');
     }
@@ -115,7 +106,8 @@ class _AppStartupGateState extends State<AppStartupGate> {
         builder: (context, snapshot) {
           if (_error != null) {
             return Scaffold(
-              appBar: AppBar(title: const Text('Startup configuration problem')),
+              appBar:
+                  AppBar(title: const Text('Startup configuration problem')),
               body: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -188,26 +180,13 @@ class OmniToolkitApp extends ConsumerWidget {
       onGenerateRoute: (settings) {
         final uri = Uri.parse(settings.name ?? '/');
 
-        // Match /share route for Web Share Target and query parameters
-        if (uri.path == '/share') {
-          final title = uri.queryParameters['title'];
-          final text = uri.queryParameters['text'];
-          final url = uri.queryParameters['url'];
-
-          return MaterialPageRoute(
-            settings: settings,
-            builder: (_) => ShareTargetScreen(
-              title: title,
-              text: text,
-              url: url,
-            ),
-          );
+        switch (uri.path) {
+          case '/':
+          default:
+            return MaterialPageRoute(
+                settings: settings, builder: (_) => const MainNavigation());
         }
-
-        // Delegate all other routes to Protected Route Guard
-        return generateProtectedRoutes(settings);
       },
     );
   }
 }
-

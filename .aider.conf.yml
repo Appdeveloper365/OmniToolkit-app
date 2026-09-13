@@ -1,5 +1,7 @@
 # .aider.conf.yml — local Ollama model, offline only
-model: ollama_chat/qwen2.5-coder:14b
+model: ollama_chat/qwen2.5-coder:7b
+# Under memory pressure (browser/IDE open) use the 3b instead:
+# model: ollama_chat/qwen2.5-coder:3b
 auto-lint: true
 auto-test: true
 test-cmd: flutter test
