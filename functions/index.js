@@ -14,6 +14,7 @@ const stripePriceId = defineSecret("STRIPE_PRICE_ID");
 
 const APP_BASE_URL =
   process.env.APP_BASE_URL || "https://appdeveloper365.github.io/OmniToolkit-app";
+const MAX_ACTIVE_DEVICES = 3;
 
 function normalizeEmail(value) {
   return (value || "").trim().toLowerCase();
@@ -35,7 +36,90 @@ function timestampToIso(value) {
   return value?.toDate ? value.toDate().toISOString() : null;
 }
 
-function entitlementResponse(email, data) {
+function normalizeDeviceId(value) {
+  return String(value || "").trim();
+}
+
+function normalizePlatform(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function activeDevicePayload(email, deviceId, platform, values = {}) {
+  return {
+    email,
+    deviceId,
+    platform,
+    firstSeen: values.firstSeen ?? admin.firestore.FieldValue.serverTimestamp(),
+    lastSeen: values.lastSeen ?? admin.firestore.FieldValue.serverTimestamp(),
+  };
+}
+
+function activeDeviceResponse(data) {
+  return {
+    email: data?.email || "",
+    deviceId: data?.deviceId || "",
+    platform: data?.platform || "",
+    firstSeen: timestampToIso(data?.firstSeen),
+    lastSeen: timestampToIso(data?.lastSeen),
+  };
+}
+
+async function listActiveDevicesForEmail(email) {
+  const snap = await db
+    .collection("entitlements")
+    .doc(email)
+    .collection("activeDevices")
+    .orderBy("lastSeen", "desc")
+    .limit(50)
+    .get();
+  return snap.docs.map((doc) => activeDeviceResponse(doc.data()));
+}
+
+async function registerActiveDeviceForEmail(email, deviceId, platform) {
+  if (!email || !deviceId) {
+    const existingDevices = await listActiveDevicesForEmail(email);
+    return {
+      deviceLimitReached: existingDevices.length >= MAX_ACTIVE_DEVICES,
+      activeDeviceCount: existingDevices.length,
+      activeDevices: existingDevices,
+    };
+  }
+
+  const devicesRef = db
+    .collection("entitlements")
+    .doc(email)
+    .collection("activeDevices");
+  const deviceRef = devicesRef.doc(deviceId);
+  let deviceLimitReached = false;
+
+  await db.runTransaction(async (transaction) => {
+    const [deviceSnapshot, devicesSnapshot] = await Promise.all([
+      transaction.get(deviceRef),
+      transaction.get(devicesRef.limit(MAX_ACTIVE_DEVICES + 1)),
+    ]);
+    if (deviceSnapshot.exists) {
+      transaction.update(deviceRef, {
+        platform,
+        lastSeen: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      return;
+    }
+    if (devicesSnapshot.size >= MAX_ACTIVE_DEVICES) {
+      deviceLimitReached = true;
+      return;
+    }
+    transaction.set(deviceRef, activeDevicePayload(email, deviceId, platform));
+  });
+
+  const activeDevices = await listActiveDevicesForEmail(email);
+  return {
+    deviceLimitReached,
+    activeDeviceCount: activeDevices.length,
+    activeDevices,
+  };
+}
+
+function entitlementResponse(email, data, deviceState = {}) {
   const trialEndDate = data?.trialEndDate;
   const trialActive = !data?.hasLifetimeAccess &&
     trialEndDate?.toDate && trialEndDate.toDate().getTime() > Date.now();
@@ -47,6 +131,9 @@ function entitlementResponse(email, data) {
     trialEndDate: timestampToIso(trialEndDate),
     purchaseDate: timestampToIso(data?.purchaseDate),
     emailVerified: data?.emailVerified === true,
+    deviceLimitReached: deviceState.deviceLimitReached === true,
+    activeDeviceCount: deviceState.activeDeviceCount || 0,
+    activeDevices: deviceState.activeDevices || [],
   };
 }
 
@@ -291,6 +378,8 @@ exports.startOrRestoreTrial = onCall(
     }
 
     const email = normalizeEmail(request.auth.token.email);
+    const deviceId = normalizeDeviceId(request.data?.deviceId);
+    const platform = normalizePlatform(request.data?.platform) || "unknown";
     if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
       throw new HttpsError("invalid-argument", "A valid email address is required.");
     }
@@ -327,7 +416,16 @@ exports.startOrRestoreTrial = onCall(
       entitlement = { ...snapshot.data(), emailVerified: true };
     });
 
-    return entitlementResponse(email, entitlement);
+    let deviceState = {
+      deviceLimitReached: false,
+      activeDeviceCount: 0,
+      activeDevices: [],
+    };
+    if (entitlement?.hasLifetimeAccess === true) {
+      deviceState = await registerActiveDeviceForEmail(email, deviceId, platform);
+    }
+
+    return entitlementResponse(email, entitlement, deviceState);
   }
 );
 
@@ -422,3 +520,49 @@ exports.checkEntitlementForSignedInUser = onCall(
     };
   }
 );
+
+/**
+ * CALLABLE FUNCTION: Returns active premium devices for the signed-in
+ * Lifetime Membership email.
+ */
+exports.listActiveDevices = onCall(async (request) => {
+  if (!request.auth || request.auth.token?.email_verified !== true) {
+    throw new HttpsError("unauthenticated", "Verify email ownership before continuing.");
+  }
+  const email = normalizeEmail(request.auth.token.email);
+  if (!email) {
+    throw new HttpsError("invalid-argument", "A valid email address is required.");
+  }
+  const entitlementSnapshot = await db.collection("entitlements").doc(email).get();
+  if (!entitlementSnapshot.exists || entitlementSnapshot.data()?.hasLifetimeAccess !== true) {
+    return { activeDevices: [], activeDeviceCount: 0, maxActiveDevices: MAX_ACTIVE_DEVICES };
+  }
+  const activeDevices = await listActiveDevicesForEmail(email);
+  return {
+    activeDevices,
+    activeDeviceCount: activeDevices.length,
+    maxActiveDevices: MAX_ACTIVE_DEVICES,
+  };
+});
+
+/**
+ * CALLABLE FUNCTION: Removes an active premium device for the signed-in
+ * Lifetime Membership email.
+ */
+exports.removeActiveDevice = onCall(async (request) => {
+  if (!request.auth || request.auth.token?.email_verified !== true) {
+    throw new HttpsError("unauthenticated", "Verify email ownership before continuing.");
+  }
+  const email = normalizeEmail(request.auth.token.email);
+  const deviceId = normalizeDeviceId(request.data?.deviceId);
+  if (!email || !deviceId) {
+    throw new HttpsError("invalid-argument", "A valid deviceId is required.");
+  }
+  await db
+    .collection("entitlements")
+    .doc(email)
+    .collection("activeDevices")
+    .doc(deviceId)
+    .delete();
+  return { removed: true, deviceId };
+});

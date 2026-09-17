@@ -108,36 +108,41 @@ class _MainNavigationState extends State<MainNavigation> {
     if (!mounted) return;
 
     // 2. Check Firestore entitlement immediately
-    bool hasLifetimeAccess = false;
+    MembershipState? membershipState;
     final verifiedUser = service.verifiedUser;
     final checkEmail = verifiedUser?.email ?? email;
 
     if (verifiedUser != null) {
       try {
-        final state = await service.startOrRestore();
-        hasLifetimeAccess = state.hasLifetimeAccess;
+        membershipState =
+            await service.startOrRestore(registerCurrentDevice: true);
       } catch (_) {
         if (checkEmail != null && checkEmail.isNotEmpty) {
           try {
-            final state = await service.lookupEntitlementByEmail(checkEmail);
-            hasLifetimeAccess = state.hasLifetimeAccess;
+            membershipState =
+                await service.lookupEntitlementByEmail(checkEmail);
           } catch (_) {
-            hasLifetimeAccess = false;
+            membershipState = null;
           }
         }
       }
     } else if (checkEmail != null && checkEmail.isNotEmpty) {
       try {
-        final state = await service.lookupEntitlementByEmail(checkEmail);
-        hasLifetimeAccess = state.hasLifetimeAccess;
+        membershipState = await service.lookupEntitlementByEmail(checkEmail);
       } catch (_) {
-        hasLifetimeAccess = false;
+        membershipState = null;
       }
     }
 
     if (!mounted) return;
 
-    if (hasLifetimeAccess) {
+    if (membershipState?.deviceLimitReached == true) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+          'Device Limit Reached. This membership is active on the maximum number of devices.',
+        ),
+      ));
+    } else if (membershipState?.hasLifetimeAccess == true) {
       // CASE A: Activate Membership & Unlock Radio Directory
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text(

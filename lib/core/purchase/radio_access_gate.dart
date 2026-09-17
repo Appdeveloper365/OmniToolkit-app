@@ -12,9 +12,27 @@ import 'radio_launch_controller.dart';
 /// Lifetime Access purchase. Every other OmniToolkit module remains free
 /// and is never blocked by this gate.
 class RadioAccessGate {
+  static Future<MembershipState?> _radioState() async {
+    final service = MembershipService();
+    final verified = service.verifiedUser;
+    if (verified == null) {
+      return null;
+    }
+    try {
+      final refreshed = await service.startOrRestore(registerCurrentDevice: true);
+      return refreshed;
+    } catch (_) {
+      final cached = await service.cached();
+      if (cached?.emailVerified == true) {
+        return cached;
+      }
+      return null;
+    }
+  }
+
   static Future<bool> hasAccess() async {
-    final state = await MembershipService().cached();
-    return state?.hasLifetimeAccess ?? false;
+    final state = await _radioState();
+    return state?.canUnlockRadioDirectory ?? false;
   }
 
   /// Checks cached entitlement and either invokes [onGranted] immediately or
@@ -23,12 +41,35 @@ class RadioAccessGate {
     BuildContext context,
     VoidCallback onGranted,
   ) async {
-    if (await hasAccess()) {
+    final state = await _radioState();
+    if (state?.canUnlockRadioDirectory == true) {
       onGranted();
       return;
     }
     if (!context.mounted) return;
+    if (state?.deviceLimitReached == true) {
+      _showDeviceLimitReachedDialog(context);
+      return;
+    }
     _showUpgradeDialog(context, onGranted);
+  }
+
+  static void _showDeviceLimitReachedDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Device Limit Reached'),
+        content: const Text(
+          'This membership is active on the maximum number of devices.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   static void _showUpgradeDialog(BuildContext context, VoidCallback onGranted) {
@@ -89,7 +130,14 @@ class RadioAccessGate {
       // Recognize an existing purchase first -- never show the payment
       // screen again to someone who has already unlocked Lifetime Access.
       try {
-        final state = await service.startOrRestore();
+        final state =
+            await service.startOrRestore(registerCurrentDevice: true);
+        if (state.deviceLimitReached) {
+          if (context.mounted) {
+            _showDeviceLimitReachedDialog(context);
+          }
+          return;
+        }
         if (state.hasLifetimeAccess) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -136,9 +184,11 @@ class RestorePurchaseFlow {
       return;
     }
     try {
-      final state = await service.startOrRestore();
+      final state = await service.startOrRestore(registerCurrentDevice: true);
       if (!context.mounted) return;
-      if (state.hasLifetimeAccess) {
+      if (state.deviceLimitReached) {
+        _showDeviceLimitReachedDialog(context);
+      } else if (state.hasLifetimeAccess) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(
             'Lifetime Membership Activated. World Radio Explorer is unlocked.',

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'premium_membership_screen.dart';
 import 'settings_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -34,6 +35,26 @@ class SettingsScreen extends ConsumerWidget {
                             .updateSettings(use24HourFormat: v),
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  child: ListTile(
+                    leading: const Icon(Icons.workspace_premium_rounded,
+                        color: Colors.amber),
+                    title: const Text('Premium Membership',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: const Text('Manage active premium devices'),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const PremiumMembershipScreen(),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(height: 16),

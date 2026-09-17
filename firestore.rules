@@ -52,6 +52,13 @@ service cloud.firestore {
       // document access.
       allow read: if false;
       allow write: if false;
+
+      // Active device entries for Lifetime Membership are also server-side
+      // only. Clients manage devices through callable Cloud Functions.
+      match /activeDevices/{deviceId} {
+        allow read: if false;
+        allow write: if false;
+      }
     }
 
     match /stripeWebhookEvents/{eventId} {

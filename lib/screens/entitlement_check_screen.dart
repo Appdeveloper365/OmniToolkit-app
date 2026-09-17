@@ -6,6 +6,7 @@ import '../core/navigation/main_navigation.dart';
 import '../core/purchase/email_verify_dialog.dart';
 import '../core/purchase/entitlement_watcher.dart';
 import '../core/purchase/pending_purchase_action.dart';
+import '../core/purchase/radio_access_gate.dart';
 import '../core/purchase/staged_loader.dart';
 
 /// Settings > Membership Status.
@@ -117,12 +118,14 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
   }
 
   void _openRadioDirectory() {
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => const MainNavigation(initialIndex: 2),
-      ),
-      (route) => false,
-    );
+    RadioAccessGate.ensureAccess(context, () {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => const MainNavigation(initialIndex: 2),
+        ),
+        (route) => false,
+      );
+    });
   }
 
   void _continueWithPayment() {

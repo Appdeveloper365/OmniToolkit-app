@@ -40,6 +40,9 @@ class MembershipState {
     required this.emailVerified,
     required this.hasLifetimeAccess,
     required this.trialActive,
+    this.deviceLimitReached = false,
+    this.activeDeviceCount = 0,
+    this.activeDevices = const <MembershipDevice>[],
     this.trialStartDate,
     this.trialEndDate,
     this.purchaseDate,
@@ -49,12 +52,16 @@ class MembershipState {
   final bool emailVerified;
   final bool hasLifetimeAccess;
   final bool trialActive;
+  final bool deviceLimitReached;
+  final int activeDeviceCount;
+  final List<MembershipDevice> activeDevices;
   final DateTime? trialStartDate;
   final DateTime? trialEndDate;
   final DateTime? purchaseDate;
 
   bool get hasAccess => emailVerified && (hasLifetimeAccess || trialActive);
   bool get trialExpired => !hasLifetimeAccess && !trialActive;
+  bool get canUnlockRadioDirectory => hasLifetimeAccess && !deviceLimitReached;
 
   factory MembershipState.fromData(Map<String, dynamic> data) {
     DateTime? parseDate(Object? value) =>
@@ -64,6 +71,13 @@ class MembershipState {
       emailVerified: data['emailVerified'] as bool? ?? false,
       hasLifetimeAccess: data['hasLifetimeAccess'] as bool? ?? false,
       trialActive: data['trialActive'] as bool? ?? false,
+      deviceLimitReached: data['deviceLimitReached'] as bool? ?? false,
+      activeDeviceCount: data['activeDeviceCount'] as int? ?? 0,
+      activeDevices: ((data['activeDevices'] as List<dynamic>?) ?? const [])
+          .whereType<Map<dynamic, dynamic>>()
+          .map((raw) =>
+              MembershipDevice.fromData(Map<String, dynamic>.from(raw)))
+          .toList(),
       trialStartDate: parseDate(data['trialStartDate']),
       trialEndDate: parseDate(data['trialEndDate']),
       purchaseDate: parseDate(data['purchaseDate']),
@@ -83,6 +97,9 @@ class MembershipState {
       emailVerified: prefs.getBool('membership.emailVerified') ?? false,
       hasLifetimeAccess: lifetime,
       trialActive: end != null && end.isAfter(DateTime.now()),
+      deviceLimitReached:
+          prefs.getBool('membership.deviceLimitReached') ?? false,
+      activeDeviceCount: prefs.getInt('membership.activeDeviceCount') ?? 0,
       trialEndDate: end,
       trialStartDate:
           DateTime.tryParse(prefs.getString('membership.trialStartDate') ?? ''),
@@ -92,8 +109,37 @@ class MembershipState {
   }
 }
 
+class MembershipDevice {
+  const MembershipDevice({
+    required this.email,
+    required this.deviceId,
+    required this.platform,
+    this.firstSeen,
+    this.lastSeen,
+  });
+
+  final String email;
+  final String deviceId;
+  final String platform;
+  final DateTime? firstSeen;
+  final DateTime? lastSeen;
+
+  factory MembershipDevice.fromData(Map<String, dynamic> data) {
+    DateTime? parseDate(Object? value) =>
+        value is String ? DateTime.tryParse(value)?.toLocal() : null;
+    return MembershipDevice(
+      email: (data['email'] as String? ?? '').trim().toLowerCase(),
+      deviceId: (data['deviceId'] as String? ?? '').trim(),
+      platform: (data['platform'] as String? ?? '').trim(),
+      firstSeen: parseDate(data['firstSeen']),
+      lastSeen: parseDate(data['lastSeen']),
+    );
+  }
+}
+
 class MembershipService {
   static const _pendingEmailKey = 'membership.pendingEmail';
+  static const _deviceIdKey = 'membership.deviceId';
   static const continueUrl =
       'https://appdeveloper365.github.io/OmniToolkit-app/';
 
@@ -322,7 +368,7 @@ class MembershipService {
     return null;
   }
 
-  Future<MembershipState> startOrRestore() async {
+  Future<MembershipState> startOrRestore({bool registerCurrentDevice = false}) async {
     final user = verifiedUser;
     if (user == null || user.email == null) {
       throw StateError(
@@ -331,7 +377,10 @@ class MembershipService {
     try {
       final result = await FirebaseFunctions.instance
           .httpsCallable('startOrRestoreTrial')
-          .call<Map<String, dynamic>>();
+          .call<Map<String, dynamic>>({
+        if (registerCurrentDevice) 'deviceId': await deviceId(),
+        if (registerCurrentDevice) 'platform': platformName,
+      });
       final state = MembershipState.fromData(result.data);
       diagnostics.trialCreationResult =
           'success (trialActive=${state.trialActive}, lifetime=${state.hasLifetimeAccess})';
@@ -351,9 +400,61 @@ class MembershipService {
     await prefs.setBool('membership.emailVerified', state.emailVerified);
     await prefs.setBool(
         'membership.hasLifetimeAccess', state.hasLifetimeAccess);
+    await prefs.setBool(
+        'membership.deviceLimitReached', state.deviceLimitReached);
+    await prefs.setInt('membership.activeDeviceCount', state.activeDeviceCount);
     await _setDate(prefs, 'membership.trialStartDate', state.trialStartDate);
     await _setDate(prefs, 'membership.trialEndDate', state.trialEndDate);
     await _setDate(prefs, 'membership.purchaseDate', state.purchaseDate);
+  }
+
+  Future<String> deviceId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final existing = prefs.getString(_deviceIdKey);
+    if (existing != null && existing.isNotEmpty) {
+      return existing;
+    }
+    final generated = '${DateTime.now().microsecondsSinceEpoch}'
+        '-${DateTime.now().millisecondsSinceEpoch.toRadixString(16)}';
+    await prefs.setString(_deviceIdKey, generated);
+    return generated;
+  }
+
+  String get platformName {
+    if (kIsWeb) return 'web';
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        return 'android';
+      case TargetPlatform.iOS:
+        return 'ios';
+      case TargetPlatform.linux:
+        return 'linux';
+      case TargetPlatform.macOS:
+        return 'macos';
+      case TargetPlatform.windows:
+        return 'windows';
+      case TargetPlatform.fuchsia:
+        return 'fuchsia';
+    }
+  }
+
+  Future<List<MembershipDevice>> listActiveDevices() async {
+    final result = await FirebaseFunctions.instance
+        .httpsCallable('listActiveDevices')
+        .call<Map<String, dynamic>>();
+    final devices = (result.data['activeDevices'] as List<dynamic>? ?? const [])
+        .whereType<Map<dynamic, dynamic>>()
+        .map((raw) => MembershipDevice.fromData(Map<String, dynamic>.from(raw)))
+        .toList();
+    devices.sort((a, b) => (b.lastSeen ?? DateTime.fromMillisecondsSinceEpoch(0))
+        .compareTo(a.lastSeen ?? DateTime.fromMillisecondsSinceEpoch(0)));
+    return devices;
+  }
+
+  Future<void> removeActiveDevice(String deviceId) async {
+    await FirebaseFunctions.instance
+        .httpsCallable('removeActiveDevice')
+        .call<Map<String, dynamic>>({'deviceId': deviceId});
   }
 
   Future<void> _setDate(
