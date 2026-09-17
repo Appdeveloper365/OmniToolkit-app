@@ -59,6 +59,22 @@ class SettingsScreen extends ConsumerWidget {
                   child: ListTile(
                     leading: const Icon(Icons.workspace_premium_rounded,
                         color: Colors.amber),
+                    title: const Text('Premium Membership',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: const Text(
+                        'Manage lifetime access and active devices'),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () =>
+                        Navigator.pushNamed(context, '/premium-membership'),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  child: ListTile(
+                    leading: const Icon(Icons.verified_user_outlined,
+                        color: Colors.green),
                     title: const Text('Membership Status',
                         style: TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: const Text(

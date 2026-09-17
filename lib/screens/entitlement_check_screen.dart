@@ -36,6 +36,7 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
   bool _isChecking = true;
   bool _checked = false;
   bool _hasLifetimeAccess = false;
+  bool _deviceLimitReached = false;
   String? _error;
   String? _lastCheckedEmail;
   bool _verificationLinkSent = false;
@@ -69,6 +70,7 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
       setState(() {
         _lastCheckedEmail = accountEmail;
         _hasLifetimeAccess = state.hasLifetimeAccess;
+        _deviceLimitReached = state.deviceLimitReached;
         _checked = true;
         _isChecking = false;
       });
@@ -97,6 +99,7 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
       setState(() {
         _lastCheckedEmail = normalized;
         _hasLifetimeAccess = state.hasLifetimeAccess;
+        _deviceLimitReached = false;
         _checked = true;
         _isChecking = false;
       });
@@ -244,9 +247,32 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                             ),
                             const SizedBox(height: 8),
                             const Text(
-                              'World Radio Explorer has been unlocked.',
+                              'Lifetime access is verified.',
                               textAlign: TextAlign.center,
                             ),
+                            if (_deviceLimitReached) ...[
+                              const SizedBox(height: 12),
+                              const Text(
+                                'Device Limit Reached\nThis membership is active on the maximum number of devices.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.deepOrange,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ] else ...[
+                              const SizedBox(height: 8),
+                              const Text(
+                                'World Radio Explorer has been unlocked.',
+                                textAlign: TextAlign.center,
+                              ),
+                            ] else if (userEmail.isEmpty) ...[
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Please verify this email to activate Radio Directory on this device.',
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ] else if (_checked) ...[
                             const Icon(Icons.info_outline_rounded, size: 56),
                             const SizedBox(height: 16),
@@ -275,16 +301,46 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                           ],
                           const SizedBox(height: 20),
                           if (_hasLifetimeAccess) ...[
-                            FilledButton.icon(
-                              icon: const Icon(Icons.radio),
-                              onPressed: _openRadioDirectory,
-                              label: const Text('Open Radio Directory'),
-                            ),
-                            const SizedBox(height: 8),
-                            OutlinedButton(
-                              onPressed: _openRadioDirectory,
-                              child: const Text('Return To Radio Directory'),
-                            ),
+                            if (userEmail.isEmpty) ...[
+                              FilledButton.icon(
+                                icon: const Icon(Icons.mark_email_read_outlined),
+                                onPressed: _isSendingLink
+                                    ? null
+                                    : () => _autoSendVerificationLink(
+                                        _lastCheckedEmail ??
+                                            _purchaseEmailController.text
+                                                .trim()
+                                                .toLowerCase(),
+                                        resend: _verificationLinkSent,
+                                      ),
+                                label: Text(
+                                  _isSendingLink
+                                      ? 'Sending...'
+                                      : (_verificationLinkSent
+                                          ? 'Resend Verification Link'
+                                          : 'Send Verification Link'),
+                                ),
+                              ),
+                            ] else if (_deviceLimitReached) ...[
+                              FilledButton.icon(
+                                icon:
+                                    const Icon(Icons.workspace_premium_rounded),
+                                onPressed: () => Navigator.pushNamed(
+                                    context, '/premium-membership'),
+                                label: const Text('Manage Active Devices'),
+                              ),
+                            ] else ...[
+                              FilledButton.icon(
+                                icon: const Icon(Icons.radio),
+                                onPressed: _openRadioDirectory,
+                                label: const Text('Open Radio Directory'),
+                              ),
+                              const SizedBox(height: 8),
+                              OutlinedButton(
+                                onPressed: _openRadioDirectory,
+                                child: const Text('Return To Radio Directory'),
+                              ),
+                            ],
                           ] else if (_checked && userEmail.isEmpty) ...[
                             // Verification link was already sent automatically
                             // as soon as "not found" was determined -- no
