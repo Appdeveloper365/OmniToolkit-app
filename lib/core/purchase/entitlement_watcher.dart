@@ -50,10 +50,7 @@ class EntitlementWatcher {
       bool owns = false;
       if (service.verifiedUser != null) {
         final state = await service.startOrRestore();
-        owns = state.hasLifetimeAccess;
-      } else {
-        final state = await service.lookupEntitlementByEmail(email);
-        owns = state.hasLifetimeAccess;
+        owns = state.canUnlockRadioDirectory;
       }
       if (owns) {
         await PendingPurchaseActionStore.consume();
@@ -76,10 +73,7 @@ class EntitlementWatcher {
       bool owns = false;
       if (service.verifiedUser != null) {
         final state = await service.startOrRestore();
-        owns = state.hasLifetimeAccess;
-      } else {
-        final state = await service.lookupEntitlementByEmail(email);
-        owns = state.hasLifetimeAccess;
+        owns = state.canUnlockRadioDirectory;
       }
       if (owns) {
         await PendingPurchaseActionStore.consume();

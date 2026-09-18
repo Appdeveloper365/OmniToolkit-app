@@ -440,6 +440,9 @@ exports.startOrRestoreTrial = onCall(
     let activeDevices = [];
     let deviceLimitReached = false;
     if (entitlement?.hasLifetimeAccess === true) {
+      if (!deviceId) {
+        throw new HttpsError("invalid-argument", "A valid deviceId is required.");
+      }
       const registration = await registerActiveDevice(email, deviceId, platform);
       activeDevices = registration.activeDevices;
       deviceLimitReached = registration.deviceLimitReached;

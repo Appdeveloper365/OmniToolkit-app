@@ -143,7 +143,7 @@ class RadioAccessGate {
       // screen again to someone who has already unlocked Lifetime Access.
       try {
         final state = await service.startOrRestore();
-        if (state.hasLifetimeAccess) {
+        if (state.canUnlockRadioDirectory) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text(
@@ -151,6 +151,12 @@ class RadioAccessGate {
               ),
             ));
             RadioLaunchController.requestOpen();
+          }
+          return;
+        }
+        if (state.hasLifetimeAccess && state.deviceLimitReached) {
+          if (context.mounted) {
+            _showDeviceLimitDialog(context);
           }
           return;
         }
@@ -191,13 +197,15 @@ class RestorePurchaseFlow {
     try {
       final state = await service.startOrRestore();
       if (!context.mounted) return;
-      if (state.hasLifetimeAccess) {
+      if (state.canUnlockRadioDirectory) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(
             'Lifetime Membership Activated. World Radio Explorer is unlocked.',
           ),
         ));
         RadioLaunchController.requestOpen();
+      } else if (state.hasLifetimeAccess && state.deviceLimitReached) {
+        _showDeviceLimitDialog(context);
       } else {
         // Keep listening in case a purchase is completing on another tab or
         // device right now -- this app instance will unlock automatically.
