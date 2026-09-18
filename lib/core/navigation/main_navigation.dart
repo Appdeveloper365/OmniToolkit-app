@@ -173,6 +173,9 @@ class _MainNavigationState extends State<MainNavigation> {
 
     if (membershipState.hasLifetimeAccess) {
       if (membershipState.deviceLimitReached) {
+        if (_index == _radioIndex) {
+          setState(() => _index = 0);
+        }
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(
             'Device Limit Reached. This membership is active on the maximum number of devices.',
