@@ -15,8 +15,24 @@ class DeviceIdentity {
 
 class DeviceIdentityService {
   static const _deviceIdKey = 'membership.deviceId';
+  static Future<DeviceIdentity>? _currentRequest;
 
-  Future<DeviceIdentity> current() async {
+  Future<DeviceIdentity> current() {
+    final inFlight = _currentRequest;
+    if (inFlight != null) {
+      return inFlight;
+    }
+    final request = _loadCurrent();
+    _currentRequest = request;
+    request.whenComplete(() {
+      if (identical(_currentRequest, request)) {
+        _currentRequest = null;
+      }
+    });
+    return request;
+  }
+
+  Future<DeviceIdentity> _loadCurrent() async {
     final prefs = await SharedPreferences.getInstance();
     var deviceId = prefs.getString(_deviceIdKey)?.trim() ?? '';
     if (deviceId.isEmpty) {

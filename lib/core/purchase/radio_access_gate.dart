@@ -16,16 +16,16 @@ class RadioAccessGate {
     final service = MembershipService();
     final verifiedUser = service.verifiedUser;
     if (verifiedUser == null) return null;
-    try {
-      return await service.startOrRestore();
-    } catch (_) {
-      return service.cached();
-    }
+    return service.startOrRestore();
   }
 
   static Future<bool> hasAccess() async {
-    final state = await _latestState();
-    return state?.hasAccess ?? false;
+    try {
+      final state = await _latestState();
+      return state?.hasAccess ?? false;
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Checks cached entitlement and either invokes [onGranted] immediately or
@@ -34,7 +34,18 @@ class RadioAccessGate {
     BuildContext context,
     VoidCallback onGranted,
   ) async {
-    final state = await _latestState();
+    MembershipState? state;
+    try {
+      state = await _latestState();
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+          'We could not verify your membership right now. Please try again.',
+        ),
+      ));
+      return;
+    }
     if (state?.hasAccess == true) {
       onGranted();
       return;

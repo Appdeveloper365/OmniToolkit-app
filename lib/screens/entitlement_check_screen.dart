@@ -6,6 +6,7 @@ import '../core/navigation/main_navigation.dart';
 import '../core/purchase/email_verify_dialog.dart';
 import '../core/purchase/entitlement_watcher.dart';
 import '../core/purchase/pending_purchase_action.dart';
+import '../core/purchase/radio_access_gate.dart';
 import '../core/purchase/staged_loader.dart';
 
 /// Settings > Membership Status.
@@ -99,7 +100,7 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
       setState(() {
         _lastCheckedEmail = normalized;
         _hasLifetimeAccess = state.hasLifetimeAccess;
-        _deviceLimitReached = false;
+        _deviceLimitReached = state.deviceLimitReached;
         _checked = true;
         _isChecking = false;
       });
@@ -120,12 +121,14 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
   }
 
   void _openRadioDirectory() {
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => const MainNavigation(initialIndex: 2),
-      ),
-      (route) => false,
-    );
+    RadioAccessGate.ensureAccess(context, () {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => const MainNavigation(initialIndex: 2),
+        ),
+        (route) => false,
+      );
+    });
   }
 
   void _continueWithPayment() {
@@ -261,17 +264,19 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                                 ),
                               ),
                             ] else ...[
-                              const SizedBox(height: 8),
-                              const Text(
-                                'World Radio Explorer has been unlocked.',
-                                textAlign: TextAlign.center,
-                              ),
-                            ] else if (userEmail.isEmpty) ...[
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Please verify this email to activate Radio Directory on this device.',
-                                textAlign: TextAlign.center,
-                              ),
+                              if (userEmail.isEmpty) ...[
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'Please verify this email to activate Radio Directory on this device.',
+                                  textAlign: TextAlign.center,
+                                ),
+                              ] else ...[
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'World Radio Explorer has been unlocked.',
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ],
                           ] else if (_checked) ...[
                             const Icon(Icons.info_outline_rounded, size: 56),

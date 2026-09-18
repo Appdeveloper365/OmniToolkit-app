@@ -73,14 +73,9 @@ async function listActiveDevicesForEmail(email) {
   const devicesRef = db.collection("entitlements").doc(email).collection("devices");
   const snapshot = await devicesRef
     .where("removedAt", "==", null)
+    .orderBy("lastSeen", "desc")
     .get();
-  return snapshot.docs
-    .map((doc) => activeDeviceResponse(doc.data()))
-    .sort((a, b) => {
-      const left = Date.parse(a.lastSeen || "") || 0;
-      const right = Date.parse(b.lastSeen || "") || 0;
-      return right - left;
-    });
+  return snapshot.docs.map((doc) => activeDeviceResponse(doc.data()));
 }
 
 async function registerActiveDevice(email, deviceId, platform) {
@@ -90,14 +85,19 @@ async function registerActiveDevice(email, deviceId, platform) {
   }
 
   const normalizedPlatform = normalizePlatform(platform) || "unknown";
+  const entitlementRef = db.collection("entitlements").doc(email);
   const devicesRef = db.collection("entitlements").doc(email).collection("devices");
   const deviceRef = devicesRef.doc(normalizedDeviceId);
 
   const registration = await db.runTransaction(async (transaction) => {
-    const [deviceSnapshot, activeSnapshot] = await Promise.all([
+    const [entitlementSnapshot, deviceSnapshot, activeSnapshot] = await Promise.all([
+      transaction.get(entitlementRef),
       transaction.get(deviceRef),
       transaction.get(devicesRef.where("removedAt", "==", null)),
     ]);
+    if (!entitlementSnapshot.exists) {
+      throw new HttpsError("failed-precondition", "No lifetime membership found.");
+    }
     const activeDevices = activeSnapshot.docs.map((doc) =>
       activeDeviceResponse(doc.data())
     );
@@ -113,6 +113,7 @@ async function registerActiveDevice(email, deviceId, platform) {
 
     const now = admin.firestore.FieldValue.serverTimestamp();
     if (!deviceSnapshot.exists) {
+      transaction.update(entitlementRef, { lastSeenDate: now });
       transaction.set(deviceRef, {
         email,
         deviceId: normalizedDeviceId,
@@ -134,7 +135,9 @@ async function registerActiveDevice(email, deviceId, platform) {
         },
         { merge: true }
       );
+      transaction.update(entitlementRef, { lastSeenDate: now });
     } else {
+      transaction.update(entitlementRef, { lastSeenDate: now });
       transaction.update(deviceRef, {
         email,
         deviceId: normalizedDeviceId,
@@ -436,13 +439,10 @@ exports.startOrRestoreTrial = onCall(
 
     let activeDevices = [];
     let deviceLimitReached = false;
-    if (entitlement?.hasLifetimeAccess === true && deviceId) {
+    if (entitlement?.hasLifetimeAccess === true) {
       const registration = await registerActiveDevice(email, deviceId, platform);
       activeDevices = registration.activeDevices;
       deviceLimitReached = registration.deviceLimitReached;
-    } else if (entitlement?.hasLifetimeAccess === true) {
-      activeDevices = await listActiveDevicesForEmail(email);
-      deviceLimitReached = activeDevices.length > MAX_ACTIVE_DEVICES;
     }
 
     return {
@@ -570,13 +570,17 @@ exports.listActiveDevices = onCall(async (request) => {
   }
 
   const activeDevices = await listActiveDevicesForEmail(email);
+  const currentDeviceId = normalizeDeviceId(request.data?.deviceId);
+  const currentDeviceIsActive = currentDeviceId &&
+    activeDevices.some((device) => device.deviceId === currentDeviceId);
   return {
     email,
     maxActiveDevices: MAX_ACTIVE_DEVICES,
     activeDeviceCount: activeDevices.length,
-    deviceLimitReached: activeDevices.length > MAX_ACTIVE_DEVICES,
+    deviceLimitReached:
+      activeDevices.length >= MAX_ACTIVE_DEVICES && !currentDeviceIsActive,
     activeDevices,
-    currentDeviceId: normalizeDeviceId(request.data?.deviceId),
+    currentDeviceId,
   };
 });
 
@@ -620,7 +624,7 @@ exports.removeActiveDevice = onCall(async (request) => {
     email,
     maxActiveDevices: MAX_ACTIVE_DEVICES,
     activeDeviceCount: activeDevices.length,
-    deviceLimitReached: activeDevices.length > MAX_ACTIVE_DEVICES,
+    deviceLimitReached: false,
     activeDevices,
   };
 });

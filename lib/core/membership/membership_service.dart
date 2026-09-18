@@ -94,6 +94,7 @@ class MembershipState {
       emailVerified &&
       ((hasLifetimeAccess && !deviceLimitReached) || trialActive);
   bool get trialExpired => !hasLifetimeAccess && !trialActive;
+  bool get canUnlockRadioDirectory => hasLifetimeAccess && !deviceLimitReached;
 
   factory MembershipState.fromData(Map<String, dynamic> data) {
     DateTime? parseDate(Object? value) =>
@@ -421,11 +422,7 @@ class MembershipService {
         .call<Map<String, dynamic>>({
       'deviceId': identity.deviceId,
     });
-    return ((result.data['activeDevices'] as List<dynamic>?) ?? [])
-        .whereType<Map>()
-        .map((entry) => ActiveDevice.fromData(
-            Map<String, dynamic>.from(entry as Map<dynamic, dynamic>)))
-        .toList();
+    return _parseActiveDevices(result.data['activeDevices']);
   }
 
   Future<List<ActiveDevice>> removeActiveDevice(String deviceId) async {
@@ -434,14 +431,24 @@ class MembershipService {
         .call<Map<String, dynamic>>({
       'deviceId': deviceId,
     });
-    return ((result.data['activeDevices'] as List<dynamic>?) ?? [])
+    return _parseActiveDevices(result.data['activeDevices']);
+  }
+
+  Future<DeviceIdentity> currentDeviceIdentity() => _deviceIdentityService.current();
+
+  List<ActiveDevice> _parseActiveDevices(Object? data) {
+    final devices = ((data as List<dynamic>?) ?? [])
         .whereType<Map>()
         .map((entry) => ActiveDevice.fromData(
             Map<String, dynamic>.from(entry as Map<dynamic, dynamic>)))
         .toList();
+    devices.sort((a, b) {
+      final left = a.lastSeen ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final right = b.lastSeen ?? DateTime.fromMillisecondsSinceEpoch(0);
+      return right.compareTo(left);
+    });
+    return devices;
   }
-
-  Future<DeviceIdentity> currentDeviceIdentity() => _deviceIdentityService.current();
 
   Future<void> _setDate(
       SharedPreferences prefs, String key, DateTime? value) async {

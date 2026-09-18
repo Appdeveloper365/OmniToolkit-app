@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/membership/membership_service.dart';
 import '../core/navigation/main_navigation.dart';
 import '../core/purchase/entitlement_watcher.dart';
+import '../core/purchase/radio_access_gate.dart';
 import '../core/purchase/radio_launch_controller.dart';
 
 /// Billing Notice: shown before Stripe Checkout. Checkout is available only
@@ -183,12 +184,14 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
 
   void _openRadioDirectory(BuildContext context) {
     if (!mounted) return;
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => const MainNavigation(initialIndex: 2),
-      ),
-      (route) => false,
-    );
+    RadioAccessGate.ensureAccess(context, () {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => const MainNavigation(initialIndex: 2),
+        ),
+        (route) => false,
+      );
+    });
   }
 
   Future<void> _startCheckout() async {

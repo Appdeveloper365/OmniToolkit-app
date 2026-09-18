@@ -108,39 +108,74 @@ class _MainNavigationState extends State<MainNavigation> {
     if (!mounted) return;
 
     // 2. Check Firestore entitlement immediately
-    bool hasLifetimeAccess = false;
-    bool deviceLimitReached = false;
     final verifiedUser = service.verifiedUser;
-    final checkEmail = verifiedUser?.email ?? email;
+    if (verifiedUser == null) {
+      final checkEmail = email?.trim().toLowerCase() ?? '';
+      if (checkEmail.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+            'We could not verify your membership right now. Please try again.',
+          ),
+        ));
+        return;
+      }
 
-    if (verifiedUser != null) {
+      MembershipState lookupState;
       try {
-        final state = await service.startOrRestore();
-        hasLifetimeAccess = state.hasLifetimeAccess;
-        deviceLimitReached = state.deviceLimitReached;
+        lookupState = await service.lookupEntitlementByEmail(checkEmail);
       } catch (_) {
-        if (checkEmail != null && checkEmail.isNotEmpty) {
-          try {
-            final state = await service.lookupEntitlementByEmail(checkEmail);
-            hasLifetimeAccess = state.hasLifetimeAccess;
-          } catch (_) {
-            hasLifetimeAccess = false;
-          }
-        }
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+            'We could not verify your membership right now. Please try again.',
+          ),
+        ));
+        return;
       }
-    } else if (checkEmail != null && checkEmail.isNotEmpty) {
-      try {
-        final state = await service.lookupEntitlementByEmail(checkEmail);
-        hasLifetimeAccess = state.hasLifetimeAccess;
-      } catch (_) {
-        hasLifetimeAccess = false;
+
+      if (!mounted) return;
+      if (lookupState.hasLifetimeAccess) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+            'We found your lifetime membership. Sign in again to activate this device.',
+          ),
+        ));
+        Navigator.of(context).pushNamed('/premium-membership');
+        return;
       }
+
+      EntitlementWatcher.instance.watch(checkEmail);
+      if (pendingAction == PendingPurchaseAction.unlock) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Email verified. Continue with your purchase below.'),
+        ));
+        Navigator.of(context).pushNamed('/billing-notice');
+        return;
+      }
+      _showNoLifetimeMembershipFoundDialog();
+      return;
+    }
+
+    MembershipState membershipState;
+    try {
+      membershipState = await service.startOrRestore();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+          'We could not verify your membership right now. Please try again.',
+        ),
+      ));
+      return;
     }
 
     if (!mounted) return;
 
-    if (hasLifetimeAccess) {
-      if (deviceLimitReached) {
+    if (membershipState.hasLifetimeAccess) {
+      if (membershipState.deviceLimitReached) {
+        if (_index == _radioIndex) {
+          setState(() => _index = 0);
+        }
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(
             'Device Limit Reached. This membership is active on the maximum number of devices.',
@@ -158,8 +193,9 @@ class _MainNavigationState extends State<MainNavigation> {
       _openRadioTab();
     } else {
       // CASE B: No Lifetime Membership found.
-      if (checkEmail != null && checkEmail.isNotEmpty) {
-        EntitlementWatcher.instance.watch(checkEmail);
+      final verifiedEmail = verifiedUser.email;
+      if (verifiedEmail != null && verifiedEmail.isNotEmpty) {
+        EntitlementWatcher.instance.watch(verifiedEmail);
       }
       if (pendingAction == PendingPurchaseAction.unlock) {
         // This email link was requested specifically to complete a

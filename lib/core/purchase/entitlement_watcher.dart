@@ -50,7 +50,7 @@ class EntitlementWatcher {
       bool owns = false;
       if (service.verifiedUser != null) {
         final state = await service.startOrRestore();
-        owns = state.hasAccess;
+        owns = state.hasLifetimeAccess;
       } else {
         final state = await service.lookupEntitlementByEmail(email);
         owns = state.hasLifetimeAccess;
@@ -76,7 +76,7 @@ class EntitlementWatcher {
       bool owns = false;
       if (service.verifiedUser != null) {
         final state = await service.startOrRestore();
-        owns = state.hasAccess;
+        owns = state.hasLifetimeAccess;
       } else {
         final state = await service.lookupEntitlementByEmail(email);
         owns = state.hasLifetimeAccess;
