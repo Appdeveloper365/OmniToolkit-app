@@ -12,27 +12,20 @@ import 'radio_launch_controller.dart';
 /// Lifetime Access purchase. Every other OmniToolkit module remains free
 /// and is never blocked by this gate.
 class RadioAccessGate {
-  static Future<MembershipState?> _radioState() async {
+  static Future<MembershipState?> _latestState() async {
     final service = MembershipService();
-    final verified = service.verifiedUser;
-    if (verified == null) {
-      return null;
-    }
-    try {
-      final refreshed = await service.startOrRestore(registerCurrentDevice: true);
-      return refreshed;
-    } catch (_) {
-      final cached = await service.cached();
-      if (cached?.emailVerified == true) {
-        return cached;
-      }
-      return null;
-    }
+    final verifiedUser = service.verifiedUser;
+    if (verifiedUser == null) return null;
+    return service.startOrRestore();
   }
 
   static Future<bool> hasAccess() async {
-    final state = await _radioState();
-    return state?.canUnlockRadioDirectory ?? false;
+    try {
+      final state = await _latestState();
+      return state?.hasAccess ?? false;
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Checks cached entitlement and either invokes [onGranted] immediately or
@@ -41,20 +34,32 @@ class RadioAccessGate {
     BuildContext context,
     VoidCallback onGranted,
   ) async {
-    final state = await _radioState();
-    if (state?.canUnlockRadioDirectory == true) {
+    MembershipState? state;
+    try {
+      state = await _latestState();
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+          'We could not verify your membership right now. Please try again.',
+        ),
+      ));
+      return;
+    }
+    if (state?.hasAccess == true) {
       onGranted();
       return;
     }
-    if (!context.mounted) return;
-    if (state?.deviceLimitReached == true) {
-      _showDeviceLimitReachedDialog(context);
+    if (state?.hasLifetimeAccess == true && state?.deviceLimitReached == true) {
+      if (!context.mounted) return;
+      _showDeviceLimitDialog(context);
       return;
     }
+    if (!context.mounted) return;
     _showUpgradeDialog(context, onGranted);
   }
 
-  static void _showDeviceLimitReachedDialog(BuildContext context) {
+  static void _showDeviceLimitDialog(BuildContext context) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -65,7 +70,14 @@ class RadioAccessGate {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('OK'),
+            child: const Text('Close'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              Navigator.pushNamed(context, '/premium-membership');
+            },
+            child: const Text('Manage Devices'),
           ),
         ],
       ),
@@ -130,14 +142,7 @@ class RadioAccessGate {
       // Recognize an existing purchase first -- never show the payment
       // screen again to someone who has already unlocked Lifetime Access.
       try {
-        final state =
-            await service.startOrRestore(registerCurrentDevice: true);
-        if (state.deviceLimitReached) {
-          if (context.mounted) {
-            _showDeviceLimitReachedDialog(context);
-          }
-          return;
-        }
+        final state = await service.startOrRestore();
         if (state.hasLifetimeAccess) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -184,11 +189,9 @@ class RestorePurchaseFlow {
       return;
     }
     try {
-      final state = await service.startOrRestore(registerCurrentDevice: true);
+      final state = await service.startOrRestore();
       if (!context.mounted) return;
-      if (state.deviceLimitReached) {
-        _showDeviceLimitReachedDialog(context);
-      } else if (state.hasLifetimeAccess) {
+      if (state.hasLifetimeAccess) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(
             'Lifetime Membership Activated. World Radio Explorer is unlocked.',

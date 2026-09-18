@@ -108,41 +108,41 @@ class _MainNavigationState extends State<MainNavigation> {
     if (!mounted) return;
 
     // 2. Check Firestore entitlement immediately
-    MembershipState? membershipState;
     final verifiedUser = service.verifiedUser;
-    final checkEmail = verifiedUser?.email ?? email;
+    if (verifiedUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+          'We could not verify your membership right now. Please try again.',
+        ),
+      ));
+      return;
+    }
 
-    if (verifiedUser != null) {
-      try {
-        membershipState =
-            await service.startOrRestore(registerCurrentDevice: true);
-      } catch (_) {
-        if (checkEmail != null && checkEmail.isNotEmpty) {
-          try {
-            membershipState =
-                await service.lookupEntitlementByEmail(checkEmail);
-          } catch (_) {
-            membershipState = null;
-          }
-        }
-      }
-    } else if (checkEmail != null && checkEmail.isNotEmpty) {
-      try {
-        membershipState = await service.lookupEntitlementByEmail(checkEmail);
-      } catch (_) {
-        membershipState = null;
-      }
+    MembershipState membershipState;
+    try {
+      membershipState = await service.startOrRestore();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+          'We could not verify your membership right now. Please try again.',
+        ),
+      ));
+      return;
     }
 
     if (!mounted) return;
 
-    if (membershipState?.deviceLimitReached == true) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-          'Device Limit Reached. This membership is active on the maximum number of devices.',
-        ),
-      ));
-    } else if (membershipState?.hasLifetimeAccess == true) {
+    if (membershipState.hasLifetimeAccess) {
+      if (membershipState.deviceLimitReached) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+            'Device Limit Reached. This membership is active on the maximum number of devices.',
+          ),
+        ));
+        Navigator.of(context).pushNamed('/premium-membership');
+        return;
+      }
       // CASE A: Activate Membership & Unlock Radio Directory
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text(
@@ -152,8 +152,9 @@ class _MainNavigationState extends State<MainNavigation> {
       _openRadioTab();
     } else {
       // CASE B: No Lifetime Membership found.
-      if (checkEmail != null && checkEmail.isNotEmpty) {
-        EntitlementWatcher.instance.watch(checkEmail);
+      final verifiedEmail = verifiedUser.email;
+      if (verifiedEmail != null && verifiedEmail.isNotEmpty) {
+        EntitlementWatcher.instance.watch(verifiedEmail);
       }
       if (pendingAction == PendingPurchaseAction.unlock) {
         // This email link was requested specifically to complete a

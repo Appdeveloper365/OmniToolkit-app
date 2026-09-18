@@ -140,27 +140,33 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
     }
 
     try {
-      final cached = await MembershipService().cached();
-      if (cached?.hasLifetimeAccess == true) {
-        if (!mounted) return;
-        setState(() {
-          _alreadyOwned = true;
-          _verifiedEmail =
-              signedInEmail.isNotEmpty ? signedInEmail : (cached?.email ?? '');
-        });
-        _scheduleAutoRedirect();
-        return;
-      }
       if (signedInEmail.isNotEmpty) {
-        final state =
-            await MembershipService().lookupEntitlementByEmail(signedInEmail);
+        final state = await MembershipService().startOrRestore();
         if (state.hasLifetimeAccess && mounted) {
           setState(() {
             _alreadyOwned = true;
             _verifiedEmail = signedInEmail;
           });
-          _scheduleAutoRedirect();
+          if (state.deviceLimitReached) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(
+                'Device Limit Reached. This membership is active on the maximum number of devices.',
+              ),
+            ));
+          } else {
+            _scheduleAutoRedirect();
+          }
         }
+        return;
+      }
+      final cached = await MembershipService().cached();
+      if (cached?.hasLifetimeAccess == true) {
+        if (!mounted) return;
+        setState(() {
+          _alreadyOwned = true;
+          _verifiedEmail = cached?.email ?? '';
+        });
+        _scheduleAutoRedirect();
       }
     } catch (_) {
       // Continue normally to checkout form if offline
@@ -208,6 +214,10 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
       // DUPLICATE PURCHASE PROTECTION (Server Layer response):
       // Never navigate to a blank page or pop blindly. Show verified UI.
       if (result.data['alreadyOwned'] == true) {
+        MembershipState? state;
+        try {
+          state = await MembershipService().startOrRestore();
+        } catch (_) {}
         if (billingEmail.isNotEmpty) {
           try {
             await MembershipService().lookupEntitlementByEmail(billingEmail);
@@ -224,8 +234,16 @@ class _BillingNoticeScreenState extends State<BillingNoticeScreen> {
               'Lifetime Membership Verified. World Radio Explorer is unlocked.',
             ),
           ));
-          RadioLaunchController.requestOpen();
-          _scheduleAutoRedirect();
+          if (state?.deviceLimitReached == true) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(
+                'Device Limit Reached. This membership is active on the maximum number of devices.',
+              ),
+            ));
+          } else {
+            RadioLaunchController.requestOpen();
+            _scheduleAutoRedirect();
+          }
         }
         return;
       }

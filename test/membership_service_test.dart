@@ -25,6 +25,7 @@ void main() {
     expect(state.deviceLimitReached, isTrue);
     expect(state.activeDeviceCount, 3);
     expect(state.activeDevices, hasLength(1));
+    expect(state.activeDevices.first, isA<ActiveDevice>());
     expect(state.canUnlockRadioDirectory, isFalse);
   });
 

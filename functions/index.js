@@ -20,6 +20,14 @@ function normalizeEmail(value) {
   return (value || "").trim().toLowerCase();
 }
 
+function normalizeDeviceId(value) {
+  return (value || "").trim();
+}
+
+function normalizePlatform(value) {
+  return (value || "").trim().toLowerCase();
+}
+
 function entitlementPayload(email, values = {}) {
   return {
     email,
@@ -36,90 +44,7 @@ function timestampToIso(value) {
   return value?.toDate ? value.toDate().toISOString() : null;
 }
 
-function normalizeDeviceId(value) {
-  return String(value || "").trim();
-}
-
-function normalizePlatform(value) {
-  return String(value || "").trim().toLowerCase();
-}
-
-function activeDevicePayload(email, deviceId, platform, values = {}) {
-  return {
-    email,
-    deviceId,
-    platform,
-    firstSeen: values.firstSeen ?? admin.firestore.FieldValue.serverTimestamp(),
-    lastSeen: values.lastSeen ?? admin.firestore.FieldValue.serverTimestamp(),
-  };
-}
-
-function activeDeviceResponse(data) {
-  return {
-    email: data?.email || "",
-    deviceId: data?.deviceId || "",
-    platform: data?.platform || "",
-    firstSeen: timestampToIso(data?.firstSeen),
-    lastSeen: timestampToIso(data?.lastSeen),
-  };
-}
-
-async function listActiveDevicesForEmail(email) {
-  const snap = await db
-    .collection("entitlements")
-    .doc(email)
-    .collection("activeDevices")
-    .orderBy("lastSeen", "desc")
-    .limit(50)
-    .get();
-  return snap.docs.map((doc) => activeDeviceResponse(doc.data()));
-}
-
-async function registerActiveDeviceForEmail(email, deviceId, platform) {
-  if (!email || !deviceId) {
-    const existingDevices = await listActiveDevicesForEmail(email);
-    return {
-      deviceLimitReached: existingDevices.length >= MAX_ACTIVE_DEVICES,
-      activeDeviceCount: existingDevices.length,
-      activeDevices: existingDevices,
-    };
-  }
-
-  const devicesRef = db
-    .collection("entitlements")
-    .doc(email)
-    .collection("activeDevices");
-  const deviceRef = devicesRef.doc(deviceId);
-  let deviceLimitReached = false;
-
-  await db.runTransaction(async (transaction) => {
-    const [deviceSnapshot, devicesSnapshot] = await Promise.all([
-      transaction.get(deviceRef),
-      transaction.get(devicesRef.limit(MAX_ACTIVE_DEVICES + 1)),
-    ]);
-    if (deviceSnapshot.exists) {
-      transaction.update(deviceRef, {
-        platform,
-        lastSeen: admin.firestore.FieldValue.serverTimestamp(),
-      });
-      return;
-    }
-    if (devicesSnapshot.size >= MAX_ACTIVE_DEVICES) {
-      deviceLimitReached = true;
-      return;
-    }
-    transaction.set(deviceRef, activeDevicePayload(email, deviceId, platform));
-  });
-
-  const activeDevices = await listActiveDevicesForEmail(email);
-  return {
-    deviceLimitReached,
-    activeDeviceCount: activeDevices.length,
-    activeDevices,
-  };
-}
-
-function entitlementResponse(email, data, deviceState = {}) {
+function entitlementResponse(email, data) {
   const trialEndDate = data?.trialEndDate;
   const trialActive = !data?.hasLifetimeAccess &&
     trialEndDate?.toDate && trialEndDate.toDate().getTime() > Date.now();
@@ -131,9 +56,102 @@ function entitlementResponse(email, data, deviceState = {}) {
     trialEndDate: timestampToIso(trialEndDate),
     purchaseDate: timestampToIso(data?.purchaseDate),
     emailVerified: data?.emailVerified === true,
-    deviceLimitReached: deviceState.deviceLimitReached === true,
-    activeDeviceCount: deviceState.activeDeviceCount || 0,
-    activeDevices: deviceState.activeDevices || [],
+  };
+}
+
+function activeDeviceResponse(device) {
+  return {
+    email: normalizeEmail(device?.email || ""),
+    deviceId: normalizeDeviceId(device?.deviceId || ""),
+    platform: normalizePlatform(device?.platform || ""),
+    firstSeen: timestampToIso(device?.firstSeen),
+    lastSeen: timestampToIso(device?.lastSeen),
+  };
+}
+
+async function listActiveDevicesForEmail(email) {
+  const devicesRef = db.collection("entitlements").doc(email).collection("devices");
+  const snapshot = await devicesRef
+    .where("removedAt", "==", null)
+    .get();
+  return snapshot.docs
+    .map((doc) => activeDeviceResponse(doc.data()))
+    .sort((a, b) => {
+      const left = Date.parse(a.lastSeen || "") || 0;
+      const right = Date.parse(b.lastSeen || "") || 0;
+      return right - left;
+    });
+}
+
+async function registerActiveDevice(email, deviceId, platform) {
+  const normalizedDeviceId = normalizeDeviceId(deviceId);
+  if (!normalizedDeviceId) {
+    throw new HttpsError("invalid-argument", "A valid deviceId is required.");
+  }
+
+  const normalizedPlatform = normalizePlatform(platform) || "unknown";
+  const devicesRef = db.collection("entitlements").doc(email).collection("devices");
+  const deviceRef = devicesRef.doc(normalizedDeviceId);
+
+  const registration = await db.runTransaction(async (transaction) => {
+    const [deviceSnapshot, activeSnapshot] = await Promise.all([
+      transaction.get(deviceRef),
+      transaction.get(devicesRef.where("removedAt", "==", null)),
+    ]);
+    const activeDevices = activeSnapshot.docs.map((doc) =>
+      activeDeviceResponse(doc.data())
+    );
+    const existing = deviceSnapshot.exists ? deviceSnapshot.data() : null;
+    const isExistingActive = existing && existing.removedAt == null;
+    const activeCount = activeDevices.length;
+
+    if (!isExistingActive && activeCount >= MAX_ACTIVE_DEVICES) {
+      return {
+        deviceLimitReached: true,
+      };
+    }
+
+    const now = admin.firestore.FieldValue.serverTimestamp();
+    if (!deviceSnapshot.exists) {
+      transaction.set(deviceRef, {
+        email,
+        deviceId: normalizedDeviceId,
+        platform: normalizedPlatform,
+        firstSeen: now,
+        lastSeen: now,
+        removedAt: null,
+      });
+    } else if (existing.removedAt != null) {
+      transaction.set(
+        deviceRef,
+        {
+          email,
+          deviceId: normalizedDeviceId,
+          platform: normalizedPlatform,
+          firstSeen: existing.firstSeen ?? now,
+          lastSeen: now,
+          removedAt: null,
+        },
+        { merge: true }
+      );
+    } else {
+      transaction.update(deviceRef, {
+        email,
+        deviceId: normalizedDeviceId,
+        platform: normalizedPlatform,
+        lastSeen: now,
+      });
+    }
+
+    return {
+      deviceLimitReached: false,
+    };
+  });
+
+  const activeDevices = await listActiveDevicesForEmail(email);
+  return {
+    ...registration,
+    activeDevices,
   };
 }
 
@@ -378,11 +396,11 @@ exports.startOrRestoreTrial = onCall(
     }
 
     const email = normalizeEmail(request.auth.token.email);
-    const deviceId = normalizeDeviceId(request.data?.deviceId);
-    const platform = normalizePlatform(request.data?.platform) || "unknown";
     if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
       throw new HttpsError("invalid-argument", "A valid email address is required.");
     }
+    const deviceId = normalizeDeviceId(request.data?.deviceId);
+    const platform = normalizePlatform(request.data?.platform);
 
     let stripe = null;
     try {
@@ -416,16 +434,21 @@ exports.startOrRestoreTrial = onCall(
       entitlement = { ...snapshot.data(), emailVerified: true };
     });
 
-    let deviceState = {
-      deviceLimitReached: false,
-      activeDeviceCount: 0,
-      activeDevices: [],
-    };
+    let activeDevices = [];
+    let deviceLimitReached = false;
     if (entitlement?.hasLifetimeAccess === true) {
-      deviceState = await registerActiveDeviceForEmail(email, deviceId, platform);
+      const registration = await registerActiveDevice(email, deviceId, platform);
+      activeDevices = registration.activeDevices;
+      deviceLimitReached = registration.deviceLimitReached;
     }
 
-    return entitlementResponse(email, entitlement, deviceState);
+    return {
+      ...entitlementResponse(email, entitlement),
+      maxActiveDevices: MAX_ACTIVE_DEVICES,
+      activeDeviceCount: activeDevices.length,
+      deviceLimitReached,
+      activeDevices,
+    };
   }
 );
 
@@ -521,48 +544,84 @@ exports.checkEntitlementForSignedInUser = onCall(
   }
 );
 
-/**
- * CALLABLE FUNCTION: Returns active premium devices for the signed-in
- * Lifetime Membership email.
- */
 exports.listActiveDevices = onCall(async (request) => {
   if (!request.auth || request.auth.token?.email_verified !== true) {
-    throw new HttpsError("unauthenticated", "Verify email ownership before continuing.");
+    throw new HttpsError("unauthenticated", "Verified email sign-in is required.");
   }
+
   const email = normalizeEmail(request.auth.token.email);
-  if (!email) {
+  if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
     throw new HttpsError("invalid-argument", "A valid email address is required.");
   }
+
   const entitlementSnapshot = await db.collection("entitlements").doc(email).get();
-  if (!entitlementSnapshot.exists || entitlementSnapshot.data()?.hasLifetimeAccess !== true) {
-    return { activeDevices: [], activeDeviceCount: 0, maxActiveDevices: MAX_ACTIVE_DEVICES };
+  const entitlement = entitlementSnapshot.exists ? entitlementSnapshot.data() : {};
+  if (entitlement?.hasLifetimeAccess !== true) {
+    return {
+      email,
+      maxActiveDevices: MAX_ACTIVE_DEVICES,
+      activeDeviceCount: 0,
+      deviceLimitReached: false,
+      activeDevices: [],
+    };
   }
+
   const activeDevices = await listActiveDevicesForEmail(email);
+  const currentDeviceId = normalizeDeviceId(request.data?.deviceId);
+  const currentDeviceIsActive = currentDeviceId &&
+    activeDevices.some((device) => device.deviceId === currentDeviceId);
   return {
-    activeDevices,
-    activeDeviceCount: activeDevices.length,
+    email,
     maxActiveDevices: MAX_ACTIVE_DEVICES,
+    activeDeviceCount: activeDevices.length,
+    deviceLimitReached:
+      activeDevices.length >= MAX_ACTIVE_DEVICES && !currentDeviceIsActive,
+    activeDevices,
+    currentDeviceId,
   };
 });
 
-/**
- * CALLABLE FUNCTION: Removes an active premium device for the signed-in
- * Lifetime Membership email.
- */
 exports.removeActiveDevice = onCall(async (request) => {
   if (!request.auth || request.auth.token?.email_verified !== true) {
-    throw new HttpsError("unauthenticated", "Verify email ownership before continuing.");
+    throw new HttpsError("unauthenticated", "Verified email sign-in is required.");
   }
+
   const email = normalizeEmail(request.auth.token.email);
+  if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+    throw new HttpsError("invalid-argument", "A valid email address is required.");
+  }
+
   const deviceId = normalizeDeviceId(request.data?.deviceId);
-  if (!email || !deviceId) {
+  if (!deviceId) {
     throw new HttpsError("invalid-argument", "A valid deviceId is required.");
   }
-  await db
+
+  const entitlementSnapshot = await db.collection("entitlements").doc(email).get();
+  const entitlement = entitlementSnapshot.exists ? entitlementSnapshot.data() : {};
+  if (entitlement?.hasLifetimeAccess !== true) {
+    throw new HttpsError("failed-precondition", "No lifetime membership found.");
+  }
+
+  const deviceRef = db
     .collection("entitlements")
     .doc(email)
-    .collection("activeDevices")
-    .doc(deviceId)
-    .delete();
-  return { removed: true, deviceId };
+    .collection("devices")
+    .doc(deviceId);
+  const deviceSnapshot = await deviceRef.get();
+  if (!deviceSnapshot.exists || deviceSnapshot.data()?.removedAt != null) {
+    throw new HttpsError("not-found", "Device not found.");
+  }
+
+  await deviceRef.update({
+    removedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  const activeDevices = await listActiveDevicesForEmail(email);
+  return {
+    email,
+    maxActiveDevices: MAX_ACTIVE_DEVICES,
+    activeDeviceCount: activeDevices.length,
+    deviceLimitReached: false,
+    activeDevices,
+  };
 });
