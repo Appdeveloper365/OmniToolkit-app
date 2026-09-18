@@ -111,26 +111,48 @@ class _MainNavigationState extends State<MainNavigation> {
     final verifiedUser = service.verifiedUser;
     if (verifiedUser == null) {
       final checkEmail = email?.trim().toLowerCase() ?? '';
-      if (checkEmail.isNotEmpty) {
-        try {
-          final state = await service.lookupEntitlementByEmail(checkEmail);
-          if (!mounted) return;
-          if (state.hasLifetimeAccess) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text(
-                'We found your lifetime membership. Sign in again to activate this device.',
-              ),
-            ));
-            Navigator.of(context).pushNamed('/premium-membership');
-            return;
-          }
-        } catch (_) {}
+      if (checkEmail.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+            'We could not verify your membership right now. Please try again.',
+          ),
+        ));
+        return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-          'We could not verify your membership right now. Please try again.',
-        ),
-      ));
+
+      MembershipState lookupState;
+      try {
+        lookupState = await service.lookupEntitlementByEmail(checkEmail);
+      } catch (_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+            'We could not verify your membership right now. Please try again.',
+          ),
+        ));
+        return;
+      }
+
+      if (!mounted) return;
+      if (lookupState.hasLifetimeAccess) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+            'We found your lifetime membership. Sign in again to activate this device.',
+          ),
+        ));
+        Navigator.of(context).pushNamed('/premium-membership');
+        return;
+      }
+
+      EntitlementWatcher.instance.watch(checkEmail);
+      if (pendingAction == PendingPurchaseAction.unlock) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Email verified. Continue with your purchase below.'),
+        ));
+        Navigator.of(context).pushNamed('/billing-notice');
+        return;
+      }
+      _showNoLifetimeMembershipFoundDialog();
       return;
     }
 

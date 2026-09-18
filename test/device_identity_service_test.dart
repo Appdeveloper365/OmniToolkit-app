@@ -16,4 +16,15 @@ void main() {
     expect(identities[0].deviceId, identities[1].deviceId);
     expect(identities[0].platform, identities[1].platform);
   });
+
+  test('current preserves a previously stored device id', () async {
+    SharedPreferences.setMockInitialValues({
+      'membership.deviceId': 'persisted-device-id',
+    });
+    final service = DeviceIdentityService();
+
+    final identity = await service.current();
+
+    expect(identity.deviceId, 'persisted-device-id');
+  });
 }

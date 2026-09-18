@@ -100,7 +100,7 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
       setState(() {
         _lastCheckedEmail = normalized;
         _hasLifetimeAccess = state.hasLifetimeAccess;
-        _deviceLimitReached = false;
+        _deviceLimitReached = state.deviceLimitReached;
         _checked = true;
         _isChecking = false;
       });
