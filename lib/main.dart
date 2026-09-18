@@ -9,7 +9,9 @@ import 'core/navigation/main_navigation.dart';
 import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'screens/billing_notice_screen.dart';
+import 'screens/active_devices_screen.dart';
 import 'screens/entitlement_check_screen.dart';
+import 'screens/premium_membership_screen.dart';
 import 'screens/share_target_screen.dart';
 
 Future<void> main() async {
@@ -61,6 +63,18 @@ class OmniToolkitApp extends ConsumerWidget {
           return MaterialPageRoute(
             settings: settings,
             builder: (_) => const EntitlementCheckScreen(),
+          );
+        }
+        if (uri.path == '/premium-membership') {
+          return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => const PremiumMembershipScreen(),
+          );
+        }
+        if (uri.path == '/active-devices') {
+          return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => const ActiveDevicesScreen(),
           );
         }
         if (uri.path == '/share') {

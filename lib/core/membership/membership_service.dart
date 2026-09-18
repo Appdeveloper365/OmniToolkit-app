@@ -5,6 +5,35 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'browser_location.dart';
+import 'device_identity_service.dart';
+
+class ActiveDevice {
+  const ActiveDevice({
+    required this.email,
+    required this.deviceId,
+    required this.platform,
+    this.firstSeen,
+    this.lastSeen,
+  });
+
+  final String email;
+  final String deviceId;
+  final String platform;
+  final DateTime? firstSeen;
+  final DateTime? lastSeen;
+
+  factory ActiveDevice.fromData(Map<String, dynamic> data) {
+    DateTime? parseDate(Object? value) =>
+        value is String ? DateTime.tryParse(value)?.toLocal() : null;
+    return ActiveDevice(
+      email: (data['email'] as String? ?? '').trim().toLowerCase(),
+      deviceId: (data['deviceId'] as String? ?? '').trim(),
+      platform: (data['platform'] as String? ?? '').trim().toLowerCase(),
+      firstSeen: parseDate(data['firstSeen']),
+      lastSeen: parseDate(data['lastSeen']),
+    );
+  }
+}
 
 class EmailLinkDiagnostics {
   String currentUrl = '';
@@ -43,6 +72,10 @@ class MembershipState {
     this.trialStartDate,
     this.trialEndDate,
     this.purchaseDate,
+    this.deviceLimitReached = false,
+    this.maxActiveDevices = 3,
+    this.activeDeviceCount = 0,
+    this.activeDevices = const [],
   });
 
   final String email;
@@ -52,8 +85,14 @@ class MembershipState {
   final DateTime? trialStartDate;
   final DateTime? trialEndDate;
   final DateTime? purchaseDate;
+  final bool deviceLimitReached;
+  final int maxActiveDevices;
+  final int activeDeviceCount;
+  final List<ActiveDevice> activeDevices;
 
-  bool get hasAccess => emailVerified && (hasLifetimeAccess || trialActive);
+  bool get hasAccess =>
+      emailVerified &&
+      ((hasLifetimeAccess && !deviceLimitReached) || trialActive);
   bool get trialExpired => !hasLifetimeAccess && !trialActive;
 
   factory MembershipState.fromData(Map<String, dynamic> data) {
@@ -67,6 +106,14 @@ class MembershipState {
       trialStartDate: parseDate(data['trialStartDate']),
       trialEndDate: parseDate(data['trialEndDate']),
       purchaseDate: parseDate(data['purchaseDate']),
+      deviceLimitReached: data['deviceLimitReached'] as bool? ?? false,
+      maxActiveDevices: data['maxActiveDevices'] as int? ?? 3,
+      activeDeviceCount: data['activeDeviceCount'] as int? ?? 0,
+      activeDevices: ((data['activeDevices'] as List<dynamic>?) ?? [])
+          .whereType<Map>()
+          .map((entry) => ActiveDevice.fromData(
+              Map<String, dynamic>.from(entry as Map<dynamic, dynamic>)))
+          .toList(),
     );
   }
 
@@ -88,6 +135,9 @@ class MembershipState {
           DateTime.tryParse(prefs.getString('membership.trialStartDate') ?? ''),
       purchaseDate:
           DateTime.tryParse(prefs.getString('membership.purchaseDate') ?? ''),
+      deviceLimitReached: prefs.getBool('membership.deviceLimitReached') ?? false,
+      maxActiveDevices: prefs.getInt('membership.maxActiveDevices') ?? 3,
+      activeDeviceCount: prefs.getInt('membership.activeDeviceCount') ?? 0,
     );
   }
 }
@@ -96,6 +146,7 @@ class MembershipService {
   static const _pendingEmailKey = 'membership.pendingEmail';
   static const continueUrl =
       'https://appdeveloper365.github.io/OmniToolkit-app/';
+  final DeviceIdentityService _deviceIdentityService = DeviceIdentityService();
 
   final diagnostics = EmailLinkDiagnostics();
 
@@ -329,9 +380,13 @@ class MembershipService {
           'Verify your email before starting or restoring access.');
     }
     try {
+      final deviceIdentity = await _deviceIdentityService.current();
       final result = await FirebaseFunctions.instance
           .httpsCallable('startOrRestoreTrial')
-          .call<Map<String, dynamic>>();
+          .call<Map<String, dynamic>>({
+        'deviceId': deviceIdentity.deviceId,
+        'platform': deviceIdentity.platform,
+      });
       final state = MembershipState.fromData(result.data);
       diagnostics.trialCreationResult =
           'success (trialActive=${state.trialActive}, lifetime=${state.hasLifetimeAccess})';
@@ -354,7 +409,39 @@ class MembershipService {
     await _setDate(prefs, 'membership.trialStartDate', state.trialStartDate);
     await _setDate(prefs, 'membership.trialEndDate', state.trialEndDate);
     await _setDate(prefs, 'membership.purchaseDate', state.purchaseDate);
+    await prefs.setBool('membership.deviceLimitReached', state.deviceLimitReached);
+    await prefs.setInt('membership.maxActiveDevices', state.maxActiveDevices);
+    await prefs.setInt('membership.activeDeviceCount', state.activeDeviceCount);
   }
+
+  Future<List<ActiveDevice>> listActiveDevices() async {
+    final identity = await _deviceIdentityService.current();
+    final result = await FirebaseFunctions.instance
+        .httpsCallable('listActiveDevices')
+        .call<Map<String, dynamic>>({
+      'deviceId': identity.deviceId,
+    });
+    return ((result.data['activeDevices'] as List<dynamic>?) ?? [])
+        .whereType<Map>()
+        .map((entry) => ActiveDevice.fromData(
+            Map<String, dynamic>.from(entry as Map<dynamic, dynamic>)))
+        .toList();
+  }
+
+  Future<List<ActiveDevice>> removeActiveDevice(String deviceId) async {
+    final result = await FirebaseFunctions.instance
+        .httpsCallable('removeActiveDevice')
+        .call<Map<String, dynamic>>({
+      'deviceId': deviceId,
+    });
+    return ((result.data['activeDevices'] as List<dynamic>?) ?? [])
+        .whereType<Map>()
+        .map((entry) => ActiveDevice.fromData(
+            Map<String, dynamic>.from(entry as Map<dynamic, dynamic>)))
+        .toList();
+  }
+
+  Future<DeviceIdentity> currentDeviceIdentity() => _deviceIdentityService.current();
 
   Future<void> _setDate(
       SharedPreferences prefs, String key, DateTime? value) async {

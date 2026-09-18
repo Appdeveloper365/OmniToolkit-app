@@ -12,9 +12,20 @@ import 'radio_launch_controller.dart';
 /// Lifetime Access purchase. Every other OmniToolkit module remains free
 /// and is never blocked by this gate.
 class RadioAccessGate {
+  static Future<MembershipState?> _latestState() async {
+    final service = MembershipService();
+    final verifiedUser = service.verifiedUser;
+    if (verifiedUser == null) return null;
+    try {
+      return await service.startOrRestore();
+    } catch (_) {
+      return service.cached();
+    }
+  }
+
   static Future<bool> hasAccess() async {
-    final state = await MembershipService().cached();
-    return state?.hasLifetimeAccess ?? false;
+    final state = await _latestState();
+    return state?.hasAccess ?? false;
   }
 
   /// Checks cached entitlement and either invokes [onGranted] immediately or
@@ -23,12 +34,43 @@ class RadioAccessGate {
     BuildContext context,
     VoidCallback onGranted,
   ) async {
-    if (await hasAccess()) {
+    final state = await _latestState();
+    if (state?.hasAccess == true) {
       onGranted();
+      return;
+    }
+    if (state?.hasLifetimeAccess == true && state?.deviceLimitReached == true) {
+      if (!context.mounted) return;
+      _showDeviceLimitDialog(context);
       return;
     }
     if (!context.mounted) return;
     _showUpgradeDialog(context, onGranted);
+  }
+
+  static void _showDeviceLimitDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Device Limit Reached'),
+        content: const Text(
+          'This membership is active on the maximum number of devices.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Close'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              Navigator.pushNamed(context, '/premium-membership');
+            },
+            child: const Text('Manage Devices'),
+          ),
+        ],
+      ),
+    );
   }
 
   static void _showUpgradeDialog(BuildContext context, VoidCallback onGranted) {
