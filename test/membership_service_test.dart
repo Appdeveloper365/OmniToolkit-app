@@ -26,6 +26,7 @@ void main() {
     expect(state.activeDeviceCount, 3);
     expect(state.activeDevices, hasLength(1));
     expect(state.activeDevices.first, isA<ActiveDevice>());
+    expect(state.hasAccess, isFalse);
     expect(state.canUnlockRadioDirectory, isFalse);
   });
 
@@ -43,6 +44,27 @@ void main() {
       expect(state.deviceLimitReached, isFalse);
       expect(state.activeDeviceCount, 0);
       expect(state.canUnlockRadioDirectory, isTrue);
+    });
+  });
+
+  test('MembershipState.fromCache denies access when the device limit is reached',
+      () {
+    SharedPreferences.setMockInitialValues({
+      'membership.email': 'buyer@example.com',
+      'membership.hasLifetimeAccess': true,
+      'membership.emailVerified': true,
+      'membership.deviceLimitReached': true,
+      'membership.activeDeviceCount': 3,
+    });
+
+    final prefs = SharedPreferences.getInstance();
+
+    return prefs.then((value) {
+      final state = MembershipState.fromCache(value);
+      expect(state.hasLifetimeAccess, isTrue);
+      expect(state.deviceLimitReached, isTrue);
+      expect(state.hasAccess, isFalse);
+      expect(state.canUnlockRadioDirectory, isFalse);
     });
   });
 }

@@ -30,7 +30,7 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  late int _index = widget.initialIndex;
+  late int _index = widget.initialIndex == _radioIndex ? 0 : widget.initialIndex;
 
   /// Index of the Radio/TV destination, the only module gated behind a
   /// one-time Lifetime Access purchase. Every other destination is free.
@@ -40,8 +40,16 @@ class _MainNavigationState extends State<MainNavigation> {
   void initState() {
     super.initState();
     RadioLaunchController.register(_openRadioTab);
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _completePendingVerification());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (widget.initialIndex == _radioIndex && mounted) {
+        RadioAccessGate.ensureAccess(context, () {
+          if (mounted) {
+            setState(() => _index = _radioIndex);
+          }
+        });
+      }
+      await _completePendingVerification();
+    });
   }
 
   @override
@@ -58,7 +66,11 @@ class _MainNavigationState extends State<MainNavigation> {
     if (!mounted) return;
     Navigator.of(context, rootNavigator: true)
         .popUntil((route) => route.isFirst);
-    setState(() => _index = _radioIndex);
+    RadioAccessGate.ensureAccess(context, () {
+      if (mounted) {
+        setState(() => _index = _radioIndex);
+      }
+    });
   }
 
   /// Handles Firebase email-link sign-in callback when OmniToolkit is opened
