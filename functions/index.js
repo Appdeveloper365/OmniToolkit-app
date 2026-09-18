@@ -74,7 +74,6 @@ async function listActiveDevicesForEmail(email) {
   const snapshot = await devicesRef
     .where("removedAt", "==", null)
     .orderBy("lastSeen", "desc")
-    .limit(MAX_ACTIVE_DEVICES)
     .get();
   return snapshot.docs.map((doc) => activeDeviceResponse(doc.data()));
 }

@@ -2,12 +2,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class PremiumMembershipScreen extends StatelessWidget {
-  const PremiumMembershipScreen({super.key});
+  const PremiumMembershipScreen({super.key, String? signedInEmail})
+      : _signedInEmail = signedInEmail;
+
+  final String? _signedInEmail;
 
   @override
   Widget build(BuildContext context) {
-    final signedInEmail =
-        FirebaseAuth.instance.currentUser?.email?.trim().toLowerCase() ?? '';
+    final signedInEmail = (_signedInEmail ??
+            FirebaseAuth.instance.currentUser?.email?.trim().toLowerCase() ??
+            '')
+        .trim()
+        .toLowerCase();
     final signedIn = signedInEmail.isNotEmpty;
 
     return Scaffold(

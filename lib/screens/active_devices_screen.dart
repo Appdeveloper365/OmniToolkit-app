@@ -71,7 +71,7 @@ class _ActiveDevicesScreenState extends State<ActiveDevicesScreen> {
           builder: (context) => AlertDialog(
             title: const Text('Remove device?'),
             content: Text(
-              'Remove ${device.platform.toUpperCase()} (${device.deviceId}) from this membership?',
+              'Remove ${device.platform.toUpperCase()} (${_maskDeviceId(device.deviceId)}) from this membership?',
             ),
             actions: [
               TextButton(
@@ -179,7 +179,7 @@ class _ActiveDevicesScreenState extends State<ActiveDevicesScreen> {
                               '${device.platform.toUpperCase()}${isCurrentDevice ? ' (This device)' : ''}',
                             ),
                             subtitle: Text(
-                              'Device ID: ${device.deviceId}\n'
+                              'Device ID: ${_maskDeviceId(device.deviceId)}\n'
                               'First seen: ${_formatDate(device.firstSeen)}\n'
                               'Last seen: ${_formatDate(device.lastSeen)}',
                             ),
@@ -210,5 +210,11 @@ class _ActiveDevicesScreenState extends State<ActiveDevicesScreen> {
         '${local.day.toString().padLeft(2, '0')} '
         '${local.hour.toString().padLeft(2, '0')}:'
         '${local.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _maskDeviceId(String value) {
+    final trimmed = value.trim();
+    if (trimmed.length <= 8) return trimmed;
+    return '${trimmed.substring(0, 4)}…${trimmed.substring(trimmed.length - 4)}';
   }
 }

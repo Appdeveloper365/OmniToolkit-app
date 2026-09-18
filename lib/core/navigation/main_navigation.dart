@@ -110,6 +110,22 @@ class _MainNavigationState extends State<MainNavigation> {
     // 2. Check Firestore entitlement immediately
     final verifiedUser = service.verifiedUser;
     if (verifiedUser == null) {
+      final checkEmail = email?.trim().toLowerCase() ?? '';
+      if (checkEmail.isNotEmpty) {
+        try {
+          final state = await service.lookupEntitlementByEmail(checkEmail);
+          if (!mounted) return;
+          if (state.hasLifetimeAccess) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(
+                'We found your lifetime membership. Sign in again to activate this device.',
+              ),
+            ));
+            Navigator.of(context).pushNamed('/premium-membership');
+            return;
+          }
+        } catch (_) {}
+      }
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text(
           'We could not verify your membership right now. Please try again.',
