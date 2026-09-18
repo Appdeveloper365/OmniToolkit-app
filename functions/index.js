@@ -73,14 +73,10 @@ async function listActiveDevicesForEmail(email) {
   const devicesRef = db.collection("entitlements").doc(email).collection("devices");
   const snapshot = await devicesRef
     .where("removedAt", "==", null)
+    .orderBy("lastSeen", "desc")
+    .limit(MAX_ACTIVE_DEVICES)
     .get();
-  return snapshot.docs
-    .map((doc) => activeDeviceResponse(doc.data()))
-    .sort((a, b) => {
-      const left = Date.parse(a.lastSeen || "") || 0;
-      const right = Date.parse(b.lastSeen || "") || 0;
-      return right - left;
-    });
+  return snapshot.docs.map((doc) => activeDeviceResponse(doc.data()));
 }
 
 async function registerActiveDevice(email, deviceId, platform) {

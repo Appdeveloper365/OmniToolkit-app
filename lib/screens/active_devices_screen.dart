@@ -58,6 +58,14 @@ class _ActiveDevicesScreenState extends State<ActiveDevicesScreen> {
 
   Future<void> _removeDevice(ActiveDevice device) async {
     if (_removing) return;
+    if (device.deviceId == _currentDeviceId) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('This device cannot be removed while it is in use.'),
+        ),
+      );
+      return;
+    }
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -177,11 +185,13 @@ class _ActiveDevicesScreenState extends State<ActiveDevicesScreen> {
                             ),
                             isThreeLine: true,
                             trailing: IconButton(
-                              onPressed: _removing
+                              onPressed: _removing || isCurrentDevice
                                   ? null
                                   : () => _removeDevice(device),
                               icon: const Icon(Icons.delete_outline_rounded),
-                              tooltip: 'Remove device',
+                              tooltip: isCurrentDevice
+                                  ? 'This device cannot be removed while in use'
+                                  : 'Remove device',
                             ),
                           ),
                         );

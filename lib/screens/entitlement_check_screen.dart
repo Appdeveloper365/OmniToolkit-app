@@ -264,17 +264,19 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
                                 ),
                               ),
                             ] else ...[
-                              const SizedBox(height: 8),
-                              const Text(
-                                'World Radio Explorer has been unlocked.',
-                                textAlign: TextAlign.center,
-                              ),
-                            ] else if (userEmail.isEmpty) ...[
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Please verify this email to activate Radio Directory on this device.',
-                                textAlign: TextAlign.center,
-                              ),
+                              if (userEmail.isEmpty) ...[
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'Please verify this email to activate Radio Directory on this device.',
+                                  textAlign: TextAlign.center,
+                                ),
+                              ] else ...[
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'World Radio Explorer has been unlocked.',
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ],
                           ] else if (_checked) ...[
                             const Icon(Icons.info_outline_rounded, size: 56),
