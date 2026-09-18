@@ -38,6 +38,22 @@ void main() {
     expect(find.text('Active Devices'), findsOneWidget);
     expect(find.text('Verify Membership'), findsOneWidget);
 
+    await tester.tap(find.text('Active Devices'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(Placeholder), findsOneWidget);
+  });
+
+  testWidgets('verify membership tile routes when signed out', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: const PremiumMembershipScreen(),
+        routes: {
+          '/membership-status': (_) => const Placeholder(),
+        },
+      ),
+    );
+
     await tester.tap(find.text('Verify Membership'));
     await tester.pumpAndSettle();
 

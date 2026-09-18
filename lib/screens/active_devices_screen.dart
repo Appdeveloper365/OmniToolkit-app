@@ -71,7 +71,7 @@ class _ActiveDevicesScreenState extends State<ActiveDevicesScreen> {
           builder: (context) => AlertDialog(
             title: const Text('Remove device?'),
             content: Text(
-              'Remove ${device.platform.toUpperCase()} (${_maskDeviceId(device.deviceId)}) from this membership?',
+              'Remove ${device.platform.toUpperCase()} (${maskDeviceId(device.deviceId)}) from this membership?',
             ),
             actions: [
               TextButton(
@@ -132,6 +132,7 @@ class _ActiveDevicesScreenState extends State<ActiveDevicesScreen> {
               : RefreshIndicator(
                   onRefresh: _load,
                   child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(16),
                     children: [
                       if (state != null && state.deviceLimitReached) ...[
@@ -168,32 +169,13 @@ class _ActiveDevicesScreenState extends State<ActiveDevicesScreen> {
                       ..._devices.map((device) {
                         final isCurrentDevice =
                             device.deviceId == _currentDeviceId;
-                        return Card(
-                          child: ListTile(
-                            leading: Icon(
-                              isCurrentDevice
-                                  ? Icons.smartphone_rounded
-                                  : Icons.devices_other_rounded,
-                            ),
-                            title: Text(
-                              '${device.platform.toUpperCase()}${isCurrentDevice ? ' (This device)' : ''}',
-                            ),
-                            subtitle: Text(
-                              'Device ID: ${_maskDeviceId(device.deviceId)}\n'
-                              'First seen: ${_formatDate(device.firstSeen)}\n'
-                              'Last seen: ${_formatDate(device.lastSeen)}',
-                            ),
-                            isThreeLine: true,
-                            trailing: IconButton(
-                              onPressed: _removing || isCurrentDevice
-                                  ? null
-                                  : () => _removeDevice(device),
-                              icon: const Icon(Icons.delete_outline_rounded),
-                              tooltip: isCurrentDevice
-                                  ? 'This device cannot be removed while in use'
-                                  : 'Remove device',
-                            ),
-                          ),
+                        return ActiveDeviceCard(
+                          device: device,
+                          isCurrentDevice: isCurrentDevice,
+                          onRemove: _removing || isCurrentDevice
+                              ? null
+                              : () => _removeDevice(device),
+                          formatDate: _formatDate,
                         );
                       }),
                     ],
@@ -211,10 +193,72 @@ class _ActiveDevicesScreenState extends State<ActiveDevicesScreen> {
         '${local.hour.toString().padLeft(2, '0')}:'
         '${local.minute.toString().padLeft(2, '0')}';
   }
+}
 
-  String _maskDeviceId(String value) {
-    final trimmed = value.trim();
-    if (trimmed.length <= 8) return trimmed;
-    return '${trimmed.substring(0, 4)}…${trimmed.substring(trimmed.length - 4)}';
+class ActiveDeviceCard extends StatelessWidget {
+  const ActiveDeviceCard({
+    super.key,
+    required this.device,
+    required this.isCurrentDevice,
+    required this.onRemove,
+    required this.formatDate,
+  });
+
+  final ActiveDevice device;
+  final bool isCurrentDevice;
+  final VoidCallback? onRemove;
+  final String Function(DateTime?) formatDate;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  isCurrentDevice
+                      ? Icons.smartphone_rounded
+                      : Icons.devices_other_rounded,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '${device.platform.toUpperCase()}${isCurrentDevice ? ' (This device)' : ''}',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                IconButton(
+                  onPressed: onRemove,
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  tooltip: isCurrentDevice
+                      ? 'This device cannot be removed while in use'
+                      : 'Remove device',
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text('Device ID: ${maskDeviceId(device.deviceId)}'),
+            const SizedBox(height: 4),
+            Text('First seen: ${formatDate(device.firstSeen)}'),
+            const SizedBox(height: 4),
+            Text('Last seen: ${formatDate(device.lastSeen)}'),
+          ],
+        ),
+      ),
+    );
   }
+}
+
+String maskDeviceId(String value) {
+  final trimmed = value.trim();
+  if (trimmed.length <= 8) return trimmed;
+  return '${trimmed.substring(0, 4)}…${trimmed.substring(trimmed.length - 4)}';
 }

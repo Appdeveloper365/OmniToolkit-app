@@ -85,14 +85,19 @@ async function registerActiveDevice(email, deviceId, platform) {
   }
 
   const normalizedPlatform = normalizePlatform(platform) || "unknown";
+  const entitlementRef = db.collection("entitlements").doc(email);
   const devicesRef = db.collection("entitlements").doc(email).collection("devices");
   const deviceRef = devicesRef.doc(normalizedDeviceId);
 
   const registration = await db.runTransaction(async (transaction) => {
-    const [deviceSnapshot, activeSnapshot] = await Promise.all([
+    const [entitlementSnapshot, deviceSnapshot, activeSnapshot] = await Promise.all([
+      transaction.get(entitlementRef),
       transaction.get(deviceRef),
       transaction.get(devicesRef.where("removedAt", "==", null)),
     ]);
+    if (!entitlementSnapshot.exists) {
+      throw new HttpsError("failed-precondition", "No lifetime membership found.");
+    }
     const activeDevices = activeSnapshot.docs.map((doc) =>
       activeDeviceResponse(doc.data())
     );
@@ -108,6 +113,7 @@ async function registerActiveDevice(email, deviceId, platform) {
 
     const now = admin.firestore.FieldValue.serverTimestamp();
     if (!deviceSnapshot.exists) {
+      transaction.update(entitlementRef, { lastSeenDate: now });
       transaction.set(deviceRef, {
         email,
         deviceId: normalizedDeviceId,
@@ -129,7 +135,9 @@ async function registerActiveDevice(email, deviceId, platform) {
         },
         { merge: true }
       );
+      transaction.update(entitlementRef, { lastSeenDate: now });
     } else {
+      transaction.update(entitlementRef, { lastSeenDate: now });
       transaction.update(deviceRef, {
         email,
         deviceId: normalizedDeviceId,

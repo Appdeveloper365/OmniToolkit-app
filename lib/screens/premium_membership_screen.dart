@@ -34,9 +34,10 @@ class PremiumMembershipScreen extends StatelessWidget {
                     : 'Sign in with your verified purchase email to manage devices.',
               ),
               trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: signedIn
-                  ? () => Navigator.pushNamed(context, '/active-devices')
-                  : null,
+              onTap: () => Navigator.pushNamed(
+                context,
+                signedIn ? '/active-devices' : '/membership-status',
+              ),
             ),
           ),
           if (!signedIn) ...[
