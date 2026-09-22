@@ -40,7 +40,7 @@ flutter run -d windows
 
 If you want a repository-agnostic setup to avoid cloud-agent credit usage, see:
 
-- [LOCAL_AI_SETUP.md](LOCAL_AI_SETUP.md)
+- [UNIVERSAL_LOCAL_AI_SETUP.md](UNIVERSAL_LOCAL_AI_SETUP.md)
 
 ## Build
 
