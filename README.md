@@ -36,6 +36,12 @@ flutter test
 flutter run -d windows
 `
 
+## Local AI Coding Setup
+
+If you want to avoid cloud-agent credit usage, see:
+
+- [LOCAL_AI_SETUP.md](LOCAL_AI_SETUP.md)
+
 ## Build
 
 `ash
