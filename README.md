@@ -36,9 +36,9 @@ flutter test
 flutter run -d windows
 `
 
-## Local AI Coding Setup
+## Universal Local AI Coding Setup
 
-If you want to avoid cloud-agent credit usage, see:
+If you want a repository-agnostic setup to avoid cloud-agent credit usage, see:
 
 - [LOCAL_AI_SETUP.md](LOCAL_AI_SETUP.md)
 
