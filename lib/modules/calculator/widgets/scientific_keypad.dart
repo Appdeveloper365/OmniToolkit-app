@@ -52,11 +52,14 @@ class ScientificKeypad extends ConsumerWidget {
 
     return Column(
       children: [
-        CalculatorKeypadGrid(
-          rows: functionRows,
-          maxWidth: 520,
-          minCellSize: 48,
-          spacing: 4,
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: CalculatorKeypadGrid(
+            rows: functionRows,
+            maxWidth: 520,
+            minCellSize: 48,
+            spacing: 4,
+          ),
         ),
         const SizedBox(height: 8),
         const CalculatorKeypad(),
