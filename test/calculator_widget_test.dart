@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:omnitoolkit/modules/calculator/screens/scientific_calculator_tab.dart';
 import 'package:omnitoolkit/modules/calculator/screens/simple_calculator_tab.dart';
+import 'package:omnitoolkit/modules/calculator/widgets/calculator_keypad_grid.dart';
 
 void main() {
   testWidgets('Calculator keypad tap updates input and result', (tester) async {
@@ -68,5 +70,71 @@ void main() {
     await tester.pump();
 
     expect(find.text('0'), findsWidgets);
+  });
+
+  testWidgets('Scientific calculator uses three header rows and preserves actions', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(900, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: ScientificCalculatorTab(),
+          ),
+        ),
+      ),
+    );
+
+    final grids = tester.widgetList<CalculatorKeypadGrid>(find.byType(CalculatorKeypadGrid)).toList();
+    expect(grids, hasLength(2));
+    expect(grids.first.rows, hasLength(3));
+    expect(
+      grids.first.rows
+          .expand((row) => row.map((key) => key.label))
+          .toSet(),
+      containsAll(<String>{
+        'sin',
+        'cos',
+        'tan',
+        '(',
+        ')',
+        'asin',
+        'acos',
+        'atan',
+        'π',
+        'e',
+        'log',
+        'ln',
+        '√',
+        'ⁿ√',
+        'xʸ',
+        'x²',
+        'x³',
+        '1/x',
+        'x!',
+        '|x|',
+        'MC',
+        'MR',
+        'M+',
+        'M-',
+      }),
+    );
+
+    await tester.tap(find.text('3'));
+    await tester.pump();
+    await tester.tap(find.text('0'));
+    await tester.pump();
+    await tester.tap(find.text('sin'));
+    await tester.pumpAndSettle();
+    expect(find.text('0.5'), findsWidgets);
+
+    await tester.tap(find.text('M+'));
+    await tester.pump();
+    await tester.tap(find.text('AC'));
+    await tester.pump();
+    await tester.tap(find.text('MR'));
+    await tester.pump();
+    expect(find.text('0.5'), findsWidgets);
   });
 }
