@@ -59,6 +59,7 @@ class CalculatorKeypadGrid extends StatelessWidget {
                 for (var r = 0; r < rows.length; r++) ...[
                   if (r > 0) SizedBox(height: spacing),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       for (var c = 0; c < rows[r].length; c++) ...[
                         if (c > 0) SizedBox(width: spacing),
