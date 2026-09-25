@@ -3,7 +3,7 @@ name: Build & Deploy Web PWA
 on:
   push:
     branches:
-      - pwa-production
+      - main
 
 permissions:
   contents: write
