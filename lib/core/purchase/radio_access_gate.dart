@@ -205,7 +205,7 @@ class RestorePurchaseFlow {
         ));
         RadioLaunchController.requestOpen();
       } else if (state.hasLifetimeAccess && state.deviceLimitReached) {
-        _showDeviceLimitDialog(context);
+        RadioAccessGate._showDeviceLimitDialog(context);
       } else {
         // Keep listening in case a purchase is completing on another tab or
         // device right now -- this app instance will unlock automatically.
