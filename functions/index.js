@@ -105,13 +105,21 @@ async function registerActiveDevice(email, deviceId, platform) {
     const isExistingActive = existing && existing.removedAt == null;
     const activeCount = activeDevices.length;
 
+    const now = admin.firestore.FieldValue.serverTimestamp();
     if (!isExistingActive && activeCount >= MAX_ACTIVE_DEVICES) {
-      return {
-        deviceLimitReached: true,
-      };
+      const oldestDevice = activeDevices
+        .sort((a, b) => {
+          const aTime = a.lastSeen ? new Date(a.lastSeen).getTime() : 0;
+          const bTime = b.lastSeen ? new Date(b.lastSeen).getTime() : 0;
+          return aTime - bTime;
+        })[0];
+
+      if (oldestDevice && oldestDevice.deviceId) {
+        const oldestDeviceRef = devicesRef.doc(oldestDevice.deviceId);
+        transaction.update(oldestDeviceRef, { removedAt: now });
+      }
     }
 
-    const now = admin.firestore.FieldValue.serverTimestamp();
     if (!deviceSnapshot.exists) {
       transaction.update(entitlementRef, { lastSeenDate: now });
       transaction.set(deviceRef, {
