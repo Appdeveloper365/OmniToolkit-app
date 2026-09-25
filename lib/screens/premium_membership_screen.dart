@@ -7,11 +7,18 @@ class PremiumMembershipScreen extends StatelessWidget {
 
   final String? _signedInEmail;
 
+  String? _currentEmail() {
+    try {
+      return FirebaseAuth.instance.currentUser?.email;
+    } catch (_) {
+      // Firebase not initialized (widget tests, previews): treat as signed out.
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final signedInEmail = (_signedInEmail ??
-            FirebaseAuth.instance.currentUser?.email?.trim().toLowerCase() ??
-            '')
+    final signedInEmail = (_signedInEmail ?? _currentEmail() ?? '')
         .trim()
         .toLowerCase();
     final signedIn = signedInEmail.isNotEmpty;

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:omnitoolkit/modules/calculator/screens/scientific_calculator_tab.dart';
 import 'package:omnitoolkit/modules/calculator/screens/simple_calculator_tab.dart';
-import 'package:omnitoolkit/modules/calculator/widgets/calculator_keypad_grid.dart';
+import 'package:omnitoolkit/modules/calculator/widgets/premium_calculator_button.dart';
 
 void main() {
   testWidgets('Calculator keypad tap updates input and result', (tester) async {
@@ -72,8 +72,8 @@ void main() {
     expect(find.text('0'), findsWidgets);
   });
 
-  testWidgets('Scientific calculator uses three header rows and preserves actions', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(900, 1400));
+  testWidgets('Scientific calculator wraps scientific keys around the number pad', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(900, 1200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
@@ -86,46 +86,44 @@ void main() {
       ),
     );
 
-    final grids = tester.widgetList<CalculatorKeypadGrid>(find.byType(CalculatorKeypadGrid)).toList();
-    expect(grids, hasLength(2));
-    expect(grids.first.rows, hasLength(3));
-    expect(
-      grids.first.rows
-          .expand((row) => row.map((key) => key.label))
-          .toSet(),
-      containsAll(<String>{
-        'sin',
-        'cos',
-        'tan',
-        '(',
-        ')',
-        'asin',
-        'acos',
-        'atan',
-        'π',
-        'e',
-        'log',
-        'ln',
-        '√',
-        'ⁿ√',
-        'xʸ',
-        'x²',
-        'x³',
-        '1/x',
-        'x!',
-        '|x|',
-        'MC',
-        'MR',
-        'M+',
-        'M-',
-      }),
-    );
+    // The scientific tab no longer uses CalculatorKeypadGrid for its frame;
+    // it renders a single 8-column grid directly. Verify every key label is
+    // present and tappable.
+    for (final label in <String>[
+      'sin',
+      'cos',
+      'tan',
+      '(',
+      ')',
+      'asin',
+      'acos',
+      'atan',
+      'π',
+      'e',
+      'log',
+      'ln',
+      '√',
+      'ⁿ√',
+      'xʸ',
+      'x²',
+      'x³',
+      '1/x',
+      'x!',
+      '|x|',
+      'MC',
+      'MR',
+      'M+',
+      'M-',
+    ]) {
+      expect(find.text(label), findsOneWidget, reason: 'missing scientific key $label');
+    }
 
-    await tester.tap(find.text('3'));
+    await tester.tap(find.widgetWithText(PremiumCalculatorButton, '3'));
     await tester.pump();
-    await tester.tap(find.text('0'));
+    // The display can also render "0" (placeholder), so target the key itself.
+    await tester.tap(find.widgetWithText(PremiumCalculatorButton, '0'));
     await tester.pump();
-    await tester.tap(find.text('sin'));
+    await tester.tap(find.widgetWithText(PremiumCalculatorButton, 'sin'));
     await tester.pumpAndSettle();
     expect(find.text('0.5'), findsWidgets);
 
