@@ -156,7 +156,15 @@ class _EntitlementCheckScreenState extends State<EntitlementCheckScreen> {
     if (_verificationLinkSent && !resend) return;
     setState(() => _isSendingLink = true);
     try {
-      await PendingPurchaseActionStore.set(PendingPurchaseAction.unlock);
+      // When this email already owns Lifetime Access, the link's only job is
+      // to activate this device -- resuming with `unlock` would route a
+      // paying customer straight back into the payment flow if the
+      // post-link entitlement check hiccups. Use `restore` instead.
+      await PendingPurchaseActionStore.set(
+        _hasLifetimeAccess
+            ? PendingPurchaseAction.restore
+            : PendingPurchaseAction.unlock,
+      );
       await MembershipService().sendVerificationLink(email);
       EntitlementWatcher.instance.watch(email);
       if (!mounted) return;
