@@ -8,6 +8,7 @@ import '../models/note_model.dart';
 import '../providers/calendar_provider.dart';
 import '../widgets/calendar_clock_widget.dart';
 import '../widgets/calendar_grid.dart';
+import '../widgets/weather_box.dart';
 import '../widgets/note_dialog.dart';
 
 class CalendarScreen extends ConsumerWidget {
@@ -97,6 +98,7 @@ class CalendarScreen extends ConsumerWidget {
           children: [
             // Prominent Live Clock Header
             const CalendarClockWidget(),
+            const WeatherBox(),
             const SizedBox(height: 16),
 
             // Calendar Grid Container
