@@ -113,7 +113,7 @@ class MembershipState {
       activeDevices: ((data['activeDevices'] as List<dynamic>?) ?? [])
           .whereType<Map>()
           .map((entry) => ActiveDevice.fromData(
-              Map<String, dynamic>.from(entry as Map<dynamic, dynamic>)))
+              Map<String, dynamic>.from(entry)))
           .toList(),
     );
   }
@@ -440,7 +440,7 @@ class MembershipService {
     final devices = ((data as List<dynamic>?) ?? [])
         .whereType<Map>()
         .map((entry) => ActiveDevice.fromData(
-            Map<String, dynamic>.from(entry as Map<dynamic, dynamic>)))
+            Map<String, dynamic>.from(entry)))
         .toList();
     devices.sort((a, b) {
       final left = a.lastSeen ?? DateTime.fromMillisecondsSinceEpoch(0);

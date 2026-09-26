@@ -7,9 +7,9 @@ class WeatherBox extends StatefulWidget {
   final VoidCallback? onRefresh;
 
   const WeatherBox({
-    Key? key,
+    super.key,
     this.onRefresh,
-  }) : super(key: key);
+  });
 
   @override
   State<WeatherBox> createState() => _WeatherBoxState();
@@ -65,15 +65,15 @@ class _WeatherBoxState extends State<WeatherBox> {
     return GestureDetector(
       onTap: _isLoading ? null : _loadWeather,
       child: Container(
-        padding: EdgeInsets.all(12),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -99,7 +99,7 @@ class _WeatherBoxState extends State<WeatherBox> {
   }
 
   Widget _buildLoading() {
-    return Row(
+    return const Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
@@ -117,9 +117,9 @@ class _WeatherBoxState extends State<WeatherBox> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.cloud_off, size: 20, color: Colors.grey),
-        SizedBox(width: 10),
-        Text(_error ?? 'Weather unavailable', style: TextStyle(fontSize: 12, color: Colors.grey)),
+        const Icon(Icons.cloud_off, size: 20, color: Colors.grey),
+        const SizedBox(width: 10),
+        Text(_error ?? 'Weather unavailable', style: const TextStyle(fontSize: 12, color: Colors.grey)),
       ],
     );
   }
@@ -133,25 +133,25 @@ class _WeatherBoxState extends State<WeatherBox> {
         Row(
           children: [
             _buildIcon(data.symbolCode),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   '${data.temperature?.round() ?? '--'}°',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                Text(data.condition ?? 'Unknown', style: TextStyle(fontSize: 12)),
+                Text(data.condition ?? 'Unknown', style: const TextStyle(fontSize: 12)),
               ],
             ),
           ],
         ),
-        SizedBox(height: 6),
+        const SizedBox(height: 6),
         if (data.alert != null && data.alert!.isNotEmpty)
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
@@ -159,7 +159,7 @@ class _WeatherBoxState extends State<WeatherBox> {
               style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.primary),
             ),
           ),
-        Align(
+        const Align(
           alignment: Alignment.bottomRight,
           child: Text('MET Norway', style: TextStyle(fontSize: 8, fontStyle: FontStyle.italic, color: Colors.grey)),
         ),

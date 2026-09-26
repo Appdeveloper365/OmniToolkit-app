@@ -9,15 +9,15 @@ class LocationService {
       return null;
     }
 
-    Permission permission = await Geolocator.checkPermission();
-    if (permission == Permission.denied) {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == Permission.denied) {
+      if (permission == LocationPermission.denied) {
         return null;
       }
     }
 
-    if (permission == Permission.deniedForever) {
+    if (permission == LocationPermission.deniedForever) {
       return null;
     }
 
@@ -45,15 +45,13 @@ class LocationService {
   }
 
   static Future<bool> hasPermission() async {
-    Permission permission = await Geolocator.checkPermission();
-    return permission == Permission.whileInUse || permission == Permission.always;
+    LocationPermission permission = await Geolocator.checkPermission();
+    return permission == LocationPermission.whileInUse || permission == LocationPermission.always;
   }
 
   static Future<Position?> getLastKnownPosition() async {
     try {
-      return await Geolocator.getLastKnownPosition(
-        accuracy: LocationAccuracy.high,
-      );
+      return await Geolocator.getLastKnownPosition();
     } catch (e) {
       return null;
     }

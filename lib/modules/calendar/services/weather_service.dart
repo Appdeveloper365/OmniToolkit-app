@@ -25,7 +25,7 @@ class WeatherService {
 
     // Check cache first
     final cached = await _getCachedWeather(lat, lon);
-    if (cached != null && DateTime.now().difference(cached.timestamp) < Duration(milliseconds: _cacheTTL)) {
+    if (cached != null && DateTime.now().difference(cached.timestamp) < const Duration(milliseconds: _cacheTTL)) {
       return cached.data;
     }
 
@@ -44,7 +44,7 @@ class WeatherService {
             'User-Agent': _userAgent,
             'Accept': 'application/json',
           })
-          .timeout(Duration(seconds: 15));
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 403) {
         throw Exception('Access blocked: Check User-Agent');
@@ -244,8 +244,9 @@ class WeatherData {
       final laterTemp = later['data']?['instant']?['details']?['air_temperature'] as double?;
       if (laterTemp != null && temp != null) {
         final delta = laterTemp - temp;
-        if (delta >= 1.5) alerts.add('Temperature rising');
-        else if (delta <= -1.5) alerts.add('Temperature falling');
+        if (delta >= 1.5) {
+          alerts.add('Temperature rising');
+        } else if (delta <= -1.5) alerts.add('Temperature falling');
       }
     }
 
@@ -253,11 +254,11 @@ class WeatherData {
         ?? _getSymbolAtOffset(timeseries, 2);
     if (laterSymbol != null) {
       if (laterSymbol.contains('clearsky') || laterSymbol.contains('fair')) {
-        if (symbol == null || (!symbol!.contains('clearsky') && !symbol!.contains('fair'))) {
+        if (symbol == null || (!symbol.contains('clearsky') && !symbol.contains('fair'))) {
           alerts.add('Sunny conditions ahead');
         }
       } else if (laterSymbol == 'cloudy') {
-        if (symbol == null || !symbol!.contains('cloudy')) {
+        if (symbol == null || !symbol.contains('cloudy')) {
           alerts.add('Cloudier conditions ahead');
         }
       } else if (laterSymbol.contains('rain') || laterSymbol.contains('snow')) {
