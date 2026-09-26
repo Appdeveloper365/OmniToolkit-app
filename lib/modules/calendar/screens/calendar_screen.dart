@@ -9,7 +9,6 @@ import '../providers/calendar_provider.dart';
 import '../widgets/calendar_clock_widget.dart';
 import '../widgets/calendar_grid.dart';
 import '../widgets/note_dialog.dart';
-import '../../weather/widgets/weather_widget.dart';
 
 class CalendarScreen extends ConsumerWidget {
   const CalendarScreen({super.key});
@@ -96,32 +95,8 @@ class CalendarScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Prominent Live Clock + Weather Header
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final sideBySide = constraints.maxWidth >= 720;
-                if (sideBySide) {
-                  // Wide screens: weather box beside the dual-time clock,
-                  // matching the desktop companion layout.
-                  return const Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(child: CalendarClockWidget()),
-                      SizedBox(width: 12),
-                      SizedBox(width: 224, child: WeatherWidget()),
-                    ],
-                  );
-                }
-                // Narrow screens: stack the weather box under the clock.
-                return const Column(
-                  children: [
-                    CalendarClockWidget(),
-                    SizedBox(height: 12),
-                    WeatherWidget(),
-                  ],
-                );
-              },
-            ),
+            // Prominent Live Clock Header
+            const CalendarClockWidget(),
             const SizedBox(height: 16),
 
             // Calendar Grid Container
