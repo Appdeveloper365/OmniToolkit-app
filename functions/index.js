@@ -11,6 +11,10 @@ const db = admin.firestore();
 const stripeSecretKey = defineSecret("STRIPE_SECRET_KEY");
 const stripeWebhookSecret = defineSecret("STRIPE_WEBHOOK_SECRET");
 const stripePriceId = defineSecret("STRIPE_PRICE_ID");
+// WeatherAPI.com key for the calendar's live weather box. Managed like the
+// Stripe secrets (never shipped to the client): set with
+// `firebase functions:secrets:set WEATHERAPI_KEY`.
+const weatherApiKey = defineSecret("WEATHERAPI_KEY");
 
 const APP_BASE_URL =
   process.env.APP_BASE_URL || "https://appdeveloper365.github.io/OmniToolkit-app";
@@ -639,3 +643,92 @@ exports.removeActiveDevice = onCall(async (request) => {
     activeDevices,
   };
 });
+
+/**
+ * CALLABLE FUNCTION: Current-weather lookup for the calendar's live weather
+ * box. The WeatherAPI.com key never ships to the client (this is a public
+ * PWA), so the app calls this proxy with a location query and the secret is
+ * attached server-side.
+ *
+ * `q` accepts either "lat,lon" (browser geolocation) or a city name
+ * (fallback when geolocation is denied/unavailable). Results are cached
+ * in-memory per query for 5 minutes to stay well inside WeatherAPI's free
+ * tier. When WEATHERAPI_KEY has not been set yet, returns
+ * { configured: false } and the client shows its placeholder preview.
+ */
+const WEATHER_QUERY_MAX_LENGTH = 80;
+const WEATHER_CACHE_TTL_MS = 5 * 60 * 1000;
+const weatherCache = new Map(); // q -> { data, fetchedAt }
+
+function normalizeWeatherQuery(value) {
+  if (typeof value !== "string") return "";
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > WEATHER_QUERY_MAX_LENGTH) return "";
+  // Letters, digits, spaces, and the punctuation that legitimately appears in
+  // coordinates and city names. Rejects anything that could be used to
+  // smuggle extra query parameters upstream.
+  return /^[A-Za-z0-9 ,.\-']+$/.test(trimmed) ? trimmed : "";
+}
+
+exports.getWeather = onCall(
+  { secrets: [weatherApiKey] },
+  async (request) => {
+    const q = normalizeWeatherQuery(request.data?.q);
+    if (!q) {
+      throw new HttpsError("invalid-argument", "A location query is required.");
+    }
+
+    let key = "";
+    try {
+      key = weatherApiKey.value();
+    } catch (_) {
+      key = "";
+    }
+    if (!key) {
+      return { configured: false };
+    }
+
+    const cached = weatherCache.get(q);
+    if (cached && Date.now() - cached.fetchedAt < WEATHER_CACHE_TTL_MS) {
+      return { configured: true, ...cached.data };
+    }
+
+    const apiUrl =
+      "https://api.weatherapi.com/v1/current.json" +
+      `?key=${encodeURIComponent(key)}&q=${encodeURIComponent(q)}&aqi=no`;
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      console.error(
+        "[getWeather] upstream failed:",
+        response.status,
+        await response.text().catch(() => "")
+      );
+      throw new HttpsError("unavailable", "The weather service is temporarily unavailable.");
+    }
+
+    const data = await response.json();
+    const trimmed = {
+      location: {
+        name: data.location?.name ?? "",
+        region: data.location?.region ?? "",
+        country: data.location?.country ?? "",
+      },
+      current: {
+        temp_c: typeof data.current?.temp_c === "number" ? data.current.temp_c : null,
+        feelslike_c:
+          typeof data.current?.feelslike_c === "number" ? data.current.feelslike_c : null,
+        humidity: typeof data.current?.humidity === "number" ? data.current.humidity : null,
+        wind_kph: typeof data.current?.wind_kph === "number" ? data.current.wind_kph : null,
+        is_day: data.current?.is_day === 1,
+        condition: {
+          text: data.current?.condition?.text ?? "",
+          icon: data.current?.condition?.icon ?? "",
+          code: typeof data.current?.condition?.code === "number" ? data.current.condition.code : null,
+        },
+      },
+    };
+
+    weatherCache.set(q, { data: trimmed, fetchedAt: Date.now() });
+    return { configured: true, ...trimmed };
+  }
+);
