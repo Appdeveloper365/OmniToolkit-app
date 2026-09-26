@@ -3,7 +3,7 @@ name: Deploy Firebase Functions & Firestore Rules
 on:
   push:
     branches:
-      - pwa-production
+      - main
     paths:
       - "functions/**"
       - "firestore.rules"
