@@ -26,7 +26,7 @@ class ScientificKeypad extends ConsumerWidget {
         s(label, CalcKeyRole.function, onTap);
     CalcKeySpec m(String label, VoidCallback onTap) =>
         s(label, CalcKeyRole.memory, onTap, fontSize: 13);
-    CalcKeySpec num(String label, int padRow, int padCol) => CalcKeySpec(
+    CalcKeySpec numKey(String label, int padRow, int padCol) => CalcKeySpec(
         label: label,
         role: (padRow + padCol).isEven ? CalcKeyRole.numberDark : CalcKeyRole.numberLight,
         onTap: () => notifier.input(label));
@@ -75,19 +75,19 @@ class ScientificKeypad extends ConsumerWidget {
         CalcKeySpec(label: '÷', role: CalcKeyRole.divide, onTap: () => notifier.input('÷')),
       ],
       [
-        num('7', 0, 0), num('8', 0, 1), num('9', 0, 2),
+        numKey('7', 0, 0), numKey('8', 0, 1), numKey('9', 0, 2),
         CalcKeySpec(label: '×', role: CalcKeyRole.multiply, onTap: () => notifier.input('×')),
       ],
       [
-        num('4', 1, 0), num('5', 1, 1), num('6', 1, 2),
+        numKey('4', 1, 0), numKey('5', 1, 1), numKey('6', 1, 2),
         CalcKeySpec(label: '-', role: CalcKeyRole.subtract, onTap: () => notifier.input('-')),
       ],
       [
-        num('1', 2, 0), num('2', 2, 1), num('3', 2, 2),
+        numKey('1', 2, 0), numKey('2', 2, 1), numKey('3', 2, 2),
         CalcKeySpec(label: '+', role: CalcKeyRole.add, onTap: () => notifier.input('+')),
       ],
       [
-        num('0', 3, 0),
+        numKey('0', 3, 0),
         s('.', CalcKeyRole.function, () => notifier.input('.')),
         CalcKeySpec(label: 'DEL', role: CalcKeyRole.delete, fontSize: 15, onTap: notifier.backspace),
         CalcKeySpec(label: '=', role: CalcKeyRole.equals, onTap: notifier.equals),
