@@ -34,8 +34,9 @@ class ScientificKeypad extends ConsumerWidget {
         role: (padRow + padCol).isEven ? CalcKeyRole.numberDark : CalcKeyRole.numberLight,
         onTap: () => notifier.input(label));
 
-    // 8 columns x 6 rows. `null` marks an empty corner cell.
-    // Cols 2-5 hold the number pad (rows 1-5); the rest is the scientific frame.
+    // 4 columns x 11 rows.
+    // Rows 0-5 contain scientific functions, Row 6 contains controls,
+    // and Rows 7-10 contain the standard number pad.
     final rows = <List<CalcKeySpec>>[
       [
         s('sin', CalcKeyRole.scientificTrig, () => notifier.applyUnary('sin', service.sinDeg)),
