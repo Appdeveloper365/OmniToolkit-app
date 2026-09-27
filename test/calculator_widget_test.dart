@@ -72,7 +72,7 @@ void main() {
     expect(find.text('0'), findsWidgets);
   });
 
-  testWidgets('Scientific calculator wraps scientific keys around the number pad', (tester) async {
+  testWidgets('Scientific calculator renders portrait layout and allows calculations', (tester) async {
     await tester.binding.setSurfaceSize(const Size(900, 1200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -86,9 +86,7 @@ void main() {
       ),
     );
 
-    // The scientific tab no longer uses CalculatorKeypadGrid for its frame;
-    // it renders a single 8-column grid directly. Verify every key label is
-    // present and tappable.
+    // Verify that scientific keys are present in the portrait layout.
     for (final label in <String>[
       'sin',
       'cos',
@@ -135,4 +133,5 @@ void main() {
     await tester.pump();
     expect(find.text('0.5'), findsWidgets);
   });
+
 }
