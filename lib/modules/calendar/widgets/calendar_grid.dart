@@ -138,7 +138,7 @@ class CalendarGrid extends ConsumerWidget {
             side: BorderSide(
               color: isSelected
                   ? scheme.primary
-                  : (isSecondary ? scheme.secondary : Colors.grey.withValues(alpha: 0.3)),
+                  : (isSecondary ? scheme.secondary : Colors.grey.withOpacity(0.3)),
               width: isSelected ? 3.0 : 1.5,
             ),
           ),
