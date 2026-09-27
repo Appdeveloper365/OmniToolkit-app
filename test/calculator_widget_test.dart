@@ -116,13 +116,15 @@ void main() {
       expect(find.text(label), findsOneWidget, reason: 'missing scientific key $label');
     }
 
-    await tester.tap(find.widgetWithText(PremiumCalculatorButton, '3'));
+    // Perform calculation: 3 -> 0 -> sin
+    await tester.tap(find.text('3'));
     await tester.pump();
-    // The display can also render "0" (placeholder), so target the key itself.
-    await tester.tap(find.widgetWithText(PremiumCalculatorButton, '0'));
+    await tester.tap(find.text('0'));
     await tester.pump();
-    await tester.tap(find.widgetWithText(PremiumCalculatorButton, 'sin'));
+    await tester.tap(find.text('sin'));
     await tester.pumpAndSettle();
+
+    // Result for sin(30 deg) should be 0.5
     expect(find.text('0.5'), findsWidgets);
 
     await tester.tap(find.text('M+'));
