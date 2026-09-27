@@ -26,17 +26,11 @@ class ScientificKeypad extends ConsumerWidget {
         s(label, CalcKeyRole.function, onTap);
     CalcKeySpec m(String label, VoidCallback onTap) =>
         s(label, CalcKeyRole.memory, onTap, fontSize: 13);
-    // Number keys alternate Dark/Light starting with Dark on the 7-8-9 row,
-    // matching the standard CalculatorKeypad. [padRow]/[padCol] are the key's
-    // position inside the 4x5 number pad.
     CalcKeySpec num(String label, int padRow, int padCol) => CalcKeySpec(
         label: label,
         role: (padRow + padCol).isEven ? CalcKeyRole.numberDark : CalcKeyRole.numberLight,
         onTap: () => notifier.input(label));
 
-    // 4 columns x 11 rows.
-    // Rows 0-5 contain scientific functions, Row 6 contains controls,
-    // and Rows 7-10 contain the standard number pad.
     final rows = <List<CalcKeySpec>>[
       [
         s('sin', CalcKeyRole.scientificTrig, () => notifier.applyUnary('sin', service.sinDeg)),
@@ -100,51 +94,12 @@ class ScientificKeypad extends ConsumerWidget {
       ],
     ];
 
-    const columns = 4;
-    const spacing = 6.0;
-    const maxWidth = 400.0;
-    const minCellSize = 50.0;
-
     return Center(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final width = constraints.maxWidth < maxWidth ? constraints.maxWidth : maxWidth;
-          final cellSize = ((width - spacing * (columns - 1)) / columns)
-              .clamp(minCellSize, double.infinity)
-              .toDouble();
-          final gridWidth = cellSize * columns + spacing * (columns - 1);
-
-          return SizedBox(
-            width: gridWidth,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (var r = 0; r < rows.length; r++) ...[
-                  if (r > 0) const SizedBox(height: spacing),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (var c = 0; c < columns; c++) ...[
-                        if (c > 0) const SizedBox(width: spacing),
-                        SizedBox(
-                          width: cellSize,
-                          height: cellSize,
-                          child: PremiumCalculatorButton(
-                            label: rows[r][c].label,
-                            role: rows[r][c].role,
-                            fontSize: rows[r][c].fontSize,
-                            semanticsLabel: rows[r][c].semanticsLabel,
-                            onTap: rows[r][c].onTap,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          );
-        },
+      child: CalculatorKeypadGrid(
+        rows: rows,
+        maxWidth: 400.0,
+        minCellSize: 50.0,
+        spacing: 6.0,
       ),
     );
   }
