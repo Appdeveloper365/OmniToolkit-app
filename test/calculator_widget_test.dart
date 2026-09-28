@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:omnitoolkit/modules/calculator/screens/scientific_calculator_tab.dart';
 import 'package:omnitoolkit/modules/calculator/screens/simple_calculator_tab.dart';
-import 'package:omnitoolkit/modules/calculator/widgets/premium_calculator_button.dart';
+import 'package:omnitoolkit/modules/calculator/widgets/scientific_keypad.dart';
 
 void main() {
   testWidgets('Calculator keypad tap updates input and result', (tester) async {
@@ -73,7 +73,9 @@ void main() {
   });
 
   testWidgets('Scientific calculator renders portrait layout and allows calculations', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(900, 1200));
+    // The scientific keypad stacks 10 rows above the number pad, so the
+    // surface must be tall enough for the bottom "0" key to stay on-screen.
+    await tester.binding.setSurfaceSize(const Size(900, 1800));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
@@ -117,9 +119,13 @@ void main() {
     }
 
     // Perform calculation: 3 -> 0 -> sin
-    await tester.tap(find.text('3'));
+    // Scope digit lookups to the keypad: the display also renders "0" while
+    // the expression is empty, so a bare find.text('0') matches two widgets.
+    final keypad = find.byType(ScientificKeypad);
+
+    await tester.tap(find.descendant(of: keypad, matching: find.text('3')));
     await tester.pump();
-    await tester.tap(find.text('0'));
+    await tester.tap(find.descendant(of: keypad, matching: find.text('0')));
     await tester.pump();
     await tester.tap(find.text('sin'));
     await tester.pumpAndSettle();

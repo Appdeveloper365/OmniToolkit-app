@@ -22,8 +22,6 @@ class ScientificKeypad extends ConsumerWidget {
 
     CalcKeySpec s(String label, CalcKeyRole role, VoidCallback onTap, {double fontSize = 14}) =>
         CalcKeySpec(label: label, role: role, fontSize: fontSize, onTap: onTap);
-    CalcKeySpec f(String label, VoidCallback onTap) =>
-        s(label, CalcKeyRole.function, onTap);
     CalcKeySpec m(String label, VoidCallback onTap) =>
         s(label, CalcKeyRole.memory, onTap, fontSize: 13);
     CalcKeySpec numKey(String label, int padRow, int padCol) => CalcKeySpec(

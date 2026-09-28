@@ -160,7 +160,6 @@ class WeatherData {
     final temp = instant['air_temperature'] as double?;
     final humidity = instant['relative_humidity'] as int?;
     final windSpeed = instant['wind_speed'] as double?;
-    final cloud = instant['cloud_area_fraction'] as double?;
 
     final symbol = next1h['summary']?['symbol_code'] 
         ?? next6h['summary']?['symbol_code'];
@@ -246,7 +245,9 @@ class WeatherData {
         final delta = laterTemp - temp;
         if (delta >= 1.5) {
           alerts.add('Temperature rising');
-        } else if (delta <= -1.5) alerts.add('Temperature falling');
+        } else if (delta <= -1.5) {
+          alerts.add('Temperature falling');
+        }
       }
     }
 
@@ -277,11 +278,6 @@ class WeatherData {
     }
 
     return alerts.take(2).toList();
-  }
-
-  static double? _getTemperatureAtOffset(List<dynamic> timeseries, int offset) {
-    if (offset >= timeseries.length) return null;
-    return timeseries[offset]['data']?['instant']?['details']?['air_temperature'] as double?;
   }
 
   static Map<String, dynamic>? _getEntryAtOffset(List<dynamic> timeseries, int offset) {

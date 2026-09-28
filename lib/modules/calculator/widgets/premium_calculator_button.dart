@@ -130,25 +130,25 @@ class _PremiumCalculatorButtonState extends State<PremiumCalculatorButton> {
               boxShadow: _pressed
                   ? [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.35),
+                        color: Colors.black.withValues(alpha: 0.35),
                         blurRadius: 2,
                         offset: const Offset(0, 1),
                       ),
                     ]
                   : [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.28),
+                        color: Colors.black.withValues(alpha: 0.28),
                         blurRadius: 6,
                         offset: const Offset(0, 4),
                       ),
                       BoxShadow(
-                        color: Colors.white.withOpacity(0.18),
+                        color: Colors.white.withValues(alpha: 0.18),
                         blurRadius: 1,
                         offset: const Offset(0, -1),
                       ),
                     ],
               border: Border.all(
-                color: Colors.white.withOpacity(_pressed ? 0.08 : 0.22),
+                color: Colors.white.withValues(alpha: _pressed ? 0.08 : 0.22),
                 width: 1,
               ),
             ),

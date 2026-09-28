@@ -109,7 +109,6 @@ class CalendarGrid extends ConsumerWidget {
 
     final isSelected = _isSameDay(date, selectedDate);
     final isSecondary = secondaryDate != null && _isSameDay(date, secondaryDate);
-    final isToday = _isSameDay(date, DateTime.now());
     final hasNote = notedDates.contains(dateKey);
     final holidaysForDay = holidayLabels[dateKey] ?? const <HolidayRecord>[];
     final scheme = Theme.of(context).colorScheme;
@@ -138,7 +137,7 @@ class CalendarGrid extends ConsumerWidget {
             side: BorderSide(
               color: isSelected
                   ? scheme.primary
-                  : (isSecondary ? scheme.secondary : Colors.grey.withOpacity(0.3)),
+                  : (isSecondary ? scheme.secondary : Colors.grey.withValues(alpha: 0.3)),
               width: isSelected ? 3.0 : 1.5,
             ),
           ),
