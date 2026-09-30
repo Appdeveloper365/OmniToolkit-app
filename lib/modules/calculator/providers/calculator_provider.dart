@@ -148,6 +148,10 @@ class CalculatorSessionNotifier extends StateNotifier<CalculatorSessionState> {
   void equals() {
     final expr = state.expression.trim();
     if (expr.isEmpty) return;
+    // An expression the user has not finished typing yet - "1+", "2×(" - is a
+    // normal mid-entry state, not a mistake. Pressing = on it should leave the
+    // display alone rather than stamp "Error" over a calculation in progress.
+    if (_isIncomplete(expr)) return;
     try {
       final value = _service.evaluate(expr);
       final formatted = formatCalculatorResult(value);
@@ -165,6 +169,27 @@ class CalculatorSessionNotifier extends StateNotifier<CalculatorSessionState> {
     } catch (_) {
       state = state.copyWith(result: 'Error');
     }
+  }
+
+  /// True when [expr] ends in a way that clearly means "still typing": a
+  /// trailing operator or decimal point, or an open bracket.
+  static bool _isIncomplete(String expr) {
+    const trailingOperators = '+-×÷^%';
+    final last = expr[expr.length - 1];
+    if (trailingOperators.contains(last)) return true;
+    if (last == '.') return true;
+    // An unclosed bracket is caught by the auto-close in ExpressionService,
+    // but only when the contents are themselves valid; "2×(" is not.
+    var depth = 0;
+    for (var i = 0; i < expr.length; i++) {
+      final c = expr[i];
+      if (c == '(') {
+        depth++;
+      } else if (c == ')') {
+        depth--;
+      }
+    }
+    return depth > 0;
   }
 
   /// Applies a unary scientific function (sin, cos, sqrt, x², x³, 1/x,

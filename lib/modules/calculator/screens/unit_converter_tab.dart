@@ -52,6 +52,7 @@ class _UnitConverterTabState extends ConsumerState<UnitConverterTab> {
       padding: const EdgeInsets.all(16),
       children: [
         DropdownButtonFormField<String>(
+          isExpanded: true,
           initialValue: _category,
           decoration: const InputDecoration(labelText: 'Category'),
           items: service.categories
@@ -80,6 +81,10 @@ class _UnitConverterTabState extends ConsumerState<UnitConverterTab> {
           children: [
             Expanded(
               child: DropdownButtonFormField<String>(
+                // Without isExpanded the field sizes the row to the widest
+                // label ("Square Kilometers") instead of the space it was
+                // given, overflowing the From/To row on every screen width.
+                isExpanded: true,
                 initialValue: _fromUnit,
                 decoration: const InputDecoration(labelText: 'From'),
                 items: units.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
@@ -105,6 +110,7 @@ class _UnitConverterTabState extends ConsumerState<UnitConverterTab> {
             const SizedBox(width: 8),
             Expanded(
               child: DropdownButtonFormField<String>(
+                isExpanded: true,
                 initialValue: _toUnit,
                 decoration: const InputDecoration(labelText: 'To'),
                 items: units.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),

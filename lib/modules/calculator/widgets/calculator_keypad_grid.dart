@@ -11,6 +11,7 @@ class CalcKeySpec {
     this.role = CalcKeyRole.numberLight,
     this.fontSize = 20,
     this.semanticsLabel,
+    this.columnSpan = 1,
   });
 
   final String label;
@@ -18,6 +19,13 @@ class CalcKeySpec {
   final CalcKeyRole role;
   final double fontSize;
   final String? semanticsLabel;
+
+  /// How many grid columns this key occupies. Most keys are 1 (a square).
+  /// Set 2 or more for a key that should stretch across the row — the AC/=
+  /// action row uses this so the two keys anchor to opposite edges instead
+  /// of huddling in the middle. The row's total span should not exceed the
+  /// grid's column count, or the row will overflow.
+  final int columnSpan;
 }
 
 /// Lays out rows of [CalcKeySpec] as a touch-friendly square grid: every key
@@ -46,9 +54,14 @@ class CalculatorKeypadGrid extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth < maxWidth ? constraints.maxWidth : maxWidth;
-          final cellSize = ((width - spacing * (columns - 1)) / columns)
-              .clamp(minCellSize, double.infinity)
-              .toDouble();
+          // Size cells to the available width, but never let the resulting grid
+          // exceed the space actually offered. When the viewport is narrower
+          // than minCellSize * columns the clamp would otherwise push the grid
+          // past the parent and overflow by (minCellSize * columns - width).
+          final available = width - spacing * (columns - 1);
+          final cellSize = (available / columns) < minCellSize
+              ? (available / columns).clamp(0.0, minCellSize).toDouble()
+              : (available / columns).toDouble();
           final gridWidth = cellSize * columns + spacing * (columns - 1);
 
           return SizedBox(
@@ -63,8 +76,14 @@ class CalculatorKeypadGrid extends StatelessWidget {
                     children: [
                       for (var c = 0; c < rows[r].length; c++) ...[
                         if (c > 0) SizedBox(width: spacing),
+                        // A key spanning n columns takes n cells plus the
+                        // spacing that separates them, so the row still totals
+                        // exactly the same width as the square rows below.
                         SizedBox(
-                          width: cellSize,
+                          width: rows[r][c].columnSpan == 1
+                              ? cellSize
+                              : cellSize * rows[r][c].columnSpan +
+                                  spacing * (rows[r][c].columnSpan - 1),
                           height: cellSize,
                           child: PremiumCalculatorButton(
                             label: rows[r][c].label,
