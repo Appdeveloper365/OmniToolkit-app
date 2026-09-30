@@ -18,6 +18,7 @@ class RadioService {
 
   final RadioDbService _radioDbService;
 
+  // HTTPS-only API hosts - enforce secure communication
   static const _hosts = [
     'de1.api.radio-browser.info',
     'fi1.api.radio-browser.info',
@@ -27,119 +28,35 @@ class RadioService {
 
   /// Clean, curated list of top global genres guaranteed to yield playable station streams.
   static const genres = [
-    'News',
-    'Talk',
-    'Sports',
-    'Pop',
-    'Rock',
-    'Jazz',
-    'Classical',
-    'Country',
-    'Electronic',
-    'Dance',
-    'Oldies',
-    'Easy Listening',
-    'Ambient',
-    'Metal',
-    'Blues',
-    'Reggae',
-    'World',
-    '80s',
-    '90s',
-    '2000s',
-    'House',
-    'Techno',
-    'Chillout',
-    'Disco',
-    'Soul',
-    'Funk',
-    'Folk',
-    'Alternative',
-    'Christian',
-    'Gospel',
-    'Lounge',
+    'News', 'Talk', 'Sports', 'Pop', 'Rock', 'Jazz', 'Classical', 'Country',
+    'Electronic', 'Dance', 'Oldies', 'Easy Listening', 'Ambient', 'Metal',
+    'Blues', 'Reggae', 'World', '80s', '90s', '2000s', 'House', 'Techno',
+    'Chillout', 'Disco', 'Soul', 'Funk', 'Folk', 'Alternative', 'Christian',
+    'Gospel', 'Lounge',
   ];
 
   static const categories = genres; // Backward compatibility
 
   /// Blacklist of tags specified by user that yield empty/broken lists or non-genre metadata.
   static const _blacklistedTags = {
-    'estacion',
-    'estación',
-    'mexico',
-    'méxico',
-    'norteamerica',
-    'norteamérica',
-    'moi merino',
-    'musica',
-    'música',
-    'latinoamerica',
-    'latinoamérica',
-    'espanol',
-    'español',
-    'america',
-    'américa',
-    'pop music',
-    'top 40',
-    'top40',
-    'public radio',
-    'pop rock',
-    'classic rock',
-    'classic hits',
-    'adult contemporary',
-    'musica pop',
-    'música pop',
-    'community radio',
-    'local news',
-    'regional mexican',
-    'regional mexicana',
-    'musica popular mexicana',
-    'música popular mexicana',
-    'local radio',
-    'musica regional',
-    'música regional',
-    'mexican music',
-    'musica mexicana',
-    'música mexicana',
-    'music regional mexicana',
-    'musica regional mexicana',
-    'música regional mexicana',
-    'regional music',
-    'regional radio',
-    'entretenimiento',
-    'hits',
-    'information',
-    'juvenil',
-    'grupera',
-    'variety',
-    'programas en vivo',
-    'musica en espanol e ingles',
-    'música en español e inglés',
-    'musica y noticias',
-    'música y noticias',
-    'musica variada',
-    'música variada',
-    'traditional mexican music',
-    'musica del recuerdo',
-    'música del recuerdo',
-    'ciudad de mexico',
-    'ciudad de méxico',
-    'banda',
-    'radio hablada',
-    'valle de mexico',
-    'valle de méxico',
-    'am',
-    'fm',
-    'mexico city',
-    'cdmx',
-    'grupero',
-    'local',
-    'musica tradicional mexicana',
-    'música tradicional mexicana',
-    'full service',
-    'musica en ingles',
-    'música en inglés',
-    'rap',
+    'estacion', 'estación', 'mexico', 'méxico', 'norteamerica', 'norteamérica',
+    'moi merino', 'musica', 'música', 'latinoamerica', 'latinoamérica', 'espanol',
+    'español', 'america', 'américa', 'pop music', 'top 40', 'top40',
+    'public radio', 'pop rock', 'classic rock', 'classic hits',
+    'adult contemporary', 'musica pop', 'música pop', 'community radio',
+    'local news', 'regional mexican', 'regional mexicana',
+    'musica popular mexicana', 'música popular mexicana', 'local radio',
+    'musica regional', 'música regional', 'mexican music', 'musica mexicana',
+    'música mexicana', 'music regional mexicana', 'musica regional mexicana',
+    'música regional mexicana', 'regional music', 'regional radio',
+    'entretenimiento', 'hits', 'information', 'juvenil', 'grupera', 'variety',
+    'programas en vivo', 'musica en espanol e ingles', 'música en español e inglés',
+    'musica y noticias', 'música y noticias', 'musica variada', 'música variada',
+    'traditional mexican music', 'musica del recuerdo', 'música del recuerdo',
+    'ciudad de mexico', 'ciudad de méxico', 'banda', 'radio hablada',
+    'valle de mexico', 'valle de méxico', 'am', 'fm', 'mexico city', 'cdmx',
+    'grupero', 'local', 'musica tradicional mexicana', 'música tradicional mexicana',
+    'full service', 'musica en ingles', 'música en inglés', 'rap',
   };
 
   static const fallbackStations = [
@@ -199,11 +116,11 @@ class RadioService {
   /// Filters out all requested empty, non-genre, or zero-result tags.
   Future<List<String>> fetchCategories({bool forceRefresh = false}) async {
     if (!forceRefresh && _dynamicCategoriesCache != null && _dynamicCategoriesCache!.isNotEmpty) {
-      debugPrint('[RadioCategoryLog] Cache hit. Returning ${_dynamicCategoriesCache!.length} cached categories.');
+      _debugLog('[RadioCategoryLog] Cache hit. Returning ${_dynamicCategoriesCache!.length} cached categories.');
       return List.unmodifiable(_dynamicCategoriesCache!);
     }
 
-    debugPrint('[RadioCategoryLog] Category refresh started. ForceRefresh: $forceRefresh');
+    _debugLog('[RadioCategoryLog] Category refresh started. ForceRefresh: $forceRefresh');
 
     for (final host in _hosts) {
       final uri = Uri.https(host, '/json/tags', {
@@ -221,7 +138,7 @@ class RadioService {
 
         if (response.statusCode == 200) {
           final rawList = jsonDecode(response.body) as List<dynamic>;
-          debugPrint('[RadioCategoryLog] Categories received count from $host: ${rawList.length}');
+          _debugLog('[RadioCategoryLog] Categories received count from $host: ${rawList.length}');
 
           final seen = <String>{};
           final freshCategories = <String>[];
@@ -255,7 +172,7 @@ class RadioService {
             freshCategories.add(formattedName);
           }
 
-          debugPrint('[RadioCategoryLog] Categories after filtering count: ${freshCategories.length}');
+          _debugLog('[RadioCategoryLog] Categories after filtering count: ${freshCategories.length}');
 
           if (freshCategories.isNotEmpty) {
             _dynamicCategoriesCache = freshCategories;
@@ -263,7 +180,7 @@ class RadioService {
           }
         }
       } catch (e) {
-        debugPrint('[RadioCategoryLog] Category fetch error from host $host: $e');
+        _debugLog('[RadioCategoryLog] Category fetch error from host $host: $e');
       }
     }
 
@@ -272,7 +189,7 @@ class RadioService {
   }
 
   Future<List<StationModel>> search(String query) async {
-    final cleanQuery = query.trim();
+    final cleanQuery = _sanitizeInput(query.trim());
     if (cleanQuery.isEmpty) return topStations();
     return _fetchWithFallback('/stations/search', {
       'name': cleanQuery,
@@ -282,13 +199,18 @@ class RadioService {
   }
 
   Future<List<StationModel>> byCategory(String category) async {
-    final cleanCat = category.trim().toLowerCase();
+    final cleanCat = _sanitizeInput(category.trim().toLowerCase());
     final path = '/stations/bytag/${Uri.encodeComponent(cleanCat)}';
     return _fetchWithFallback(path, {'limit': '50', 'hidebroken': 'true'}, filterType: _FilterType.category, filterVal: cleanCat);
   }
 
   Future<List<StationModel>> byCountry(String countryCode) async {
-    final cleanCode = countryCode.trim().toUpperCase();
+    final cleanCode = _sanitizeInput(countryCode.trim().toUpperCase());
+    // Validate country code format (2-3 letters)
+    if (!RegExp(r'^[A-Z]{2,3}$').hasMatch(cleanCode)) {
+      _debugLog('[RadioService] Invalid country code format: $cleanCode');
+      return [];
+    }
     final path = '/stations/bycodeexact/${cleanCode.toLowerCase()}';
     return _fetchWithFallback(path, {'limit': '50', 'hidebroken': 'true'}, filterType: _FilterType.country, filterVal: cleanCode);
   }
@@ -312,6 +234,12 @@ class RadioService {
         }).timeout(const Duration(seconds: 6));
 
         if (response.statusCode == 200) {
+          // Validate response is JSON and not excessively large
+          if (response.body.length > 1024 * 1024) { // 1MB limit
+            _debugLog('[RadioService] Response too large from $host, skipping');
+            continue;
+          }
+
           final list = jsonDecode(response.body) as List<dynamic>;
           final stations = list
               .map((e) => StationModel.fromJson(e as Map<String, dynamic>))
@@ -381,6 +309,19 @@ class RadioService {
     final text = '${station.name} ${station.category}'.toLowerCase();
     const blockedTerms = ['premium', 'paid', 'commercial license', 'subscription', 'paywall'];
     return !blockedTerms.any(text.contains);
+  }
+
+  /// Sanitize user input to prevent injection attacks
+  String _sanitizeInput(String input) {
+    // Remove control characters, limit length
+    return input.replaceAll(RegExp(r'[\x00-\x1F\x7F]'), '').substring(0, input.length.clamp(0, 100));
+  }
+
+  /// Debug logging only in debug mode
+  void _debugLog(String message) {
+    if (kDebugMode) {
+      debugPrint(message);
+    }
   }
 }
 

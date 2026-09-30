@@ -14,12 +14,17 @@ class LookupService {
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
 
+  // Security: Limits to prevent DoS via malformed data
+  static const int _maxCsvRows = 50000;
+  static const int _maxCsvLineLength = 500;
+  static const int _maxJsonRecords = 10000;
+
   Future<void> ensureInitialized() async {
     if (_isInitialized) return;
     try {
       await loadFromLocalAssets().timeout(const Duration(seconds: 5));
     } catch (e) {
-      debugPrint('[LookupService] Asset load timeout or error: $e');
+      _debugLog('[LookupService] Asset load timeout or error: $e');
       _loadFallbackSeedData();
     }
     _isInitialized = true;
@@ -32,20 +37,20 @@ class LookupService {
       try {
         csvContent = await rootBundle.loadString('assets/data/curated_us_zips.csv');
       } catch (e1) {
-        debugPrint('[LookupService] Primary asset path load error: $e1');
+        _debugLog('[LookupService] Primary asset path load error: $e1');
         try {
           csvContent = await rootBundle.loadString('curated_us_zips.csv');
         } catch (e2) {
-          debugPrint('[LookupService] Secondary asset path load error: $e2');
+          _debugLog('[LookupService] Secondary asset path load error: $e2');
         }
       }
 
       if (csvContent != null && csvContent.isNotEmpty) {
         parseZipCsv(csvContent);
-        debugPrint('[LookupService] Successfully loaded ${zipData.length} ZIP records from CSV');
+        _debugLog('[LookupService] Successfully loaded ${zipData.length} ZIP records from CSV');
       }
     } catch (e) {
-      debugPrint('[LookupService] Error loading curated_us_zips.csv: $e');
+      _debugLog('[LookupService] Error loading curated_us_zips.csv: $e');
     }
 
     // 2. Try loading lookup_data.json
@@ -64,7 +69,7 @@ class LookupService {
         parseAreaCodesJson(decoded);
       }
     } catch (e) {
-      debugPrint('[LookupService] Error loading lookup_data.json: $e');
+      _debugLog('[LookupService] Error loading lookup_data.json: $e');
     }
 
     if (zipData.isEmpty) {
@@ -76,21 +81,44 @@ class LookupService {
     final lines = csvContent.split('\n');
     if (lines.isEmpty) return;
 
+    // Security: Limit total rows to prevent memory exhaustion
+    int processedRows = 0;
     final startIdx = lines.first.startsWith('zip,') ? 1 : 0;
-    for (var i = startIdx; i < lines.length; i++) {
+    for (var i = startIdx; i < lines.length && processedRows < _maxCsvRows; i++) {
       final line = lines[i].trim();
       if (line.isEmpty) continue;
+
+      // Security: Limit line length to prevent ReDoS
+      if (line.length > _maxCsvLineLength) {
+        _debugLog('[LookupService] Skipping oversized CSV line (${line.length} chars)');
+        continue;
+      }
+
       final parts = _parseCsvLine(line);
       if (parts.length >= 3) {
         final rawZip = parts[0].replaceAll('"', '').trim();
         if (rawZip.isEmpty) continue;
+        // Validate ZIP format (5 digits)
+        if (!RegExp(r'^\d{5}$').hasMatch(rawZip)) {
+          continue;
+        }
         final cleanZip = rawZip.padLeft(5, '0');
-        final city = parts[1].replaceAll('"', '').trim();
-        final state = parts[2].replaceAll('"', '').trim();
-        final county = parts.length > 3 ? parts[3].replaceAll('"', '').trim() : null;
-        final timezone = parts.length > 4 ? parts[4].replaceAll('"', '').trim() : null;
+        final city = _sanitizeField(parts[1].replaceAll('"', '').trim());
+        final state = _sanitizeField(parts[2].replaceAll('"', '').trim());
+
+        // Validate state code (2 letters)
+        if (!RegExp(r'^[A-Z]{2}$').hasMatch(state)) {
+          continue;
+        }
+
+        final county = parts.length > 3 ? _sanitizeField(parts[3].replaceAll('"', '').trim()) : null;
+        final timezone = parts.length > 4 ? _sanitizeField(parts[4].replaceAll('"', '').trim()) : null;
         final lat = parts.length > 5 ? double.tryParse(parts[5].replaceAll('"', '')) : null;
         final lng = parts.length > 6 ? double.tryParse(parts[6].replaceAll('"', '')) : null;
+
+        // Validate coordinates
+        if (lat != null && (lat < -90 || lat > 90)) continue;
+        if (lng != null && (lng < -180 || lng > 180)) continue;
 
         addZipRecord(ZipRecord(
           zip: cleanZip,
@@ -101,7 +129,12 @@ class LookupService {
           lat: lat,
           lng: lng,
         ));
+        processedRows++;
       }
+    }
+
+    if (processedRows >= _maxCsvRows) {
+      _debugLog('[LookupService] CSV row limit reached ($_maxCsvRows), remaining lines ignored');
     }
   }
 
@@ -113,7 +146,10 @@ class LookupService {
       records = decoded;
     }
 
+    // Security: Limit total records
+    int processedRecords = 0;
     for (final item in records) {
+      if (processedRecords >= _maxJsonRecords) break;
       if (item is! Map) continue;
       final fields = (item.containsKey('fields') && item['fields'] is Map)
           ? item['fields'] as Map<String, dynamic>
@@ -124,16 +160,35 @@ class LookupService {
       final state = (fields['state'] ?? fields['state_code'])?.toString() ?? '';
 
       if (rawCode.isNotEmpty && city.isNotEmpty && state.isNotEmpty) {
+        // Validate area code format (3 digits)
+        final cleanCode = rawCode.trim();
+        if (!RegExp(r'^\d{3}$').hasMatch(cleanCode)) continue;
+
+        // Validate state
+        final cleanState = _sanitizeField(state.trim());
+        if (!RegExp(r'^[A-Z]{2}$').hasMatch(cleanState)) continue;
+
+        final cleanCity = _sanitizeField(city.trim());
         final rec = AreaCodeRecord(
-          areaCode: rawCode.trim(),
-          city: city.trim(),
-          state: state.trim(),
+          areaCode: cleanCode,
+          city: cleanCity,
+          state: cleanState,
           country: fields['country']?.toString(),
           lat: double.tryParse(fields['lat']?.toString() ?? ''),
           lng: double.tryParse(fields['lng']?.toString() ?? ''),
         );
+
+        // Validate coordinates if present
+        if (rec.lat != null && (rec.lat! < -90 || rec.lat! > 90)) continue;
+        if (rec.lng != null && (rec.lng! < -180 || rec.lng! > 180)) continue;
+
         addAreaCodeRecord(rec);
+        processedRecords++;
       }
+    }
+
+    if (processedRecords >= _maxJsonRecords) {
+      _debugLog('[LookupService] JSON record limit reached ($_maxJsonRecords), remaining records ignored');
     }
   }
 
@@ -159,7 +214,7 @@ class LookupService {
       if (entry.areaCode.isNotEmpty) {
         for (final code in entry.areaCode.split(',')) {
           final trimmed = code.trim();
-          if (trimmed.isNotEmpty) {
+          if (trimmed.isNotEmpty && RegExp(r'^\d{3}$').hasMatch(trimmed)) {
             addAreaCodeRecord(AreaCodeRecord(
               areaCode: trimmed,
               city: entry.city,
@@ -174,7 +229,8 @@ class LookupService {
   }
 
   List<String> lookupAreaCodesFromZip(String zip) {
-    final cleanZip = zip.trim().padLeft(5, '0');
+    final cleanZip = _sanitizeZip(zip);
+    if (cleanZip == null) return [];
     final rec = zipData[cleanZip] ?? zipData[zip.trim()];
     if (rec == null) return [];
     final matches = <String>{};
@@ -187,7 +243,9 @@ class LookupService {
   }
 
   List<String> lookupZipsFromAreaCode(String areaCode) {
-    final list = areaCodeData[areaCode.trim()] ?? [];
+    final cleanCode = _sanitizeAreaCode(areaCode);
+    if (cleanCode == null) return [];
+    final list = areaCodeData[cleanCode] ?? [];
     final zips = <String>{};
     for (final ac in list) {
       zipData.forEach((z, rec) {
@@ -200,15 +258,18 @@ class LookupService {
   }
 
   String? lookupCityFromZip(String zip) {
-    final cleanZip = zip.trim().padLeft(5, '0');
+    final cleanZip = _sanitizeZip(zip);
+    if (cleanZip == null) return null;
     final rec = zipData[cleanZip] ?? zipData[zip.trim()];
     return rec != null ? '${rec.city}, ${rec.state}' : null;
   }
 
   List<String> lookupZipsFromCity(String cityAndState) {
     final parts = cityAndState.split(',');
-    final cityPart = parts[0].trim().toLowerCase();
-    final statePart = parts.length > 1 ? parts[1].trim().toLowerCase() : '';
+    final cityPart = _sanitizeField(parts[0].trim().toLowerCase());
+    final statePart = parts.length > 1 ? _sanitizeField(parts[1].trim().toLowerCase()) : '';
+
+    if (cityPart.isEmpty) return [];
 
     final zips = <String>[];
     zipData.forEach((z, rec) {
@@ -222,7 +283,9 @@ class LookupService {
   }
 
   String? lookupCityFromAreaCode(String areaCode) {
-    final list = areaCodeData[areaCode.trim()];
+    final cleanCode = _sanitizeAreaCode(areaCode);
+    if (cleanCode == null) return null;
+    final list = areaCodeData[cleanCode];
     if (list == null || list.isEmpty) return null;
     final first = list.first;
     return '${first.city}, ${first.state}';
@@ -230,8 +293,10 @@ class LookupService {
 
   List<String> lookupAreaCodesFromCity(String cityAndState) {
     final parts = cityAndState.split(',');
-    final cityPart = parts[0].trim().toLowerCase();
-    final statePart = parts.length > 1 ? parts[1].trim().toLowerCase() : '';
+    final cityPart = _sanitizeField(parts[0].trim().toLowerCase());
+    final statePart = parts.length > 1 ? _sanitizeField(parts[1].trim().toLowerCase()) : '';
+
+    if (cityPart.isEmpty) return [];
 
     final codes = <String>{};
     areaCodeData.forEach((code, list) {
@@ -244,6 +309,32 @@ class LookupService {
       }
     });
     return codes.toList()..sort();
+  }
+
+  /// Sanitize ZIP code input - must be 5 digits
+  String? _sanitizeZip(String zip) {
+    final trimmed = zip.trim();
+    final clean = trimmed.padLeft(5, '0');
+    if (RegExp(r'^\d{5}$').hasMatch(clean)) {
+      return clean;
+    }
+    return null;
+  }
+
+  /// Sanitize area code input - must be 3 digits
+  String? _sanitizeAreaCode(String areaCode) {
+    final trimmed = areaCode.trim();
+    if (RegExp(r'^\d{3}$').hasMatch(trimmed)) {
+      return trimmed;
+    }
+    return null;
+  }
+
+  /// Sanitize text fields - remove control chars, limit length
+  String _sanitizeField(String input) {
+    return input
+        .replaceAll(RegExp(r'[\x00-\x1F\x7F]'), '')
+        .substring(0, input.length.clamp(0, 100));
   }
 
   List<String> _parseCsvLine(String line) {
@@ -263,5 +354,11 @@ class LookupService {
     }
     result.add(current.toString().trim());
     return result;
+  }
+
+  void _debugLog(String message) {
+    if (kDebugMode) {
+      debugPrint(message);
+    }
   }
 }

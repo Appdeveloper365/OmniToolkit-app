@@ -1,4 +1,4 @@
-const CACHE_NAME = 'omnitoolkit-v2';
+const CACHE_NAME = 'omnitoolkit-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -7,6 +7,19 @@ const ASSETS_TO_CACHE = [
   './icons/Icon-192.png',
   './icons/Icon-512.png'
 ];
+
+function addSecurityHeaders(response) {
+  const headers = new Headers(response.headers);
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('X-Frame-Options', 'DENY');
+  headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  headers.set('Permissions-Policy', 'accelerometer=(), camera=(), geolocation=(self), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()');
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: headers,
+  });
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -52,7 +65,12 @@ self.addEventListener('fetch', (event) => {
       }
 
       const networkRequest = fetch(event.request);
-      return networkRequest.catch((error) => {
+      return networkRequest.then((response) => {
+        if (response.ok) {
+          return addSecurityHeaders(response);
+        }
+        return response;
+      }).catch((error) => {
         if (isNavigationRequest) {
           return caches.match('./index.html');
         }

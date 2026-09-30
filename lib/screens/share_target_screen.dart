@@ -17,9 +17,10 @@ class ShareTargetScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleVal = (title != null && title!.trim().isNotEmpty) ? title!.trim() : null;
-    final textVal = (text != null && text!.trim().isNotEmpty) ? text!.trim() : null;
-    final urlVal = (url != null && url!.trim().isNotEmpty) ? url!.trim() : null;
+    // Sanitize all inputs before display
+    final titleVal = _sanitizeDisplayString(title);
+    final textVal = _sanitizeDisplayString(text);
+    final urlVal = _sanitizeUrl(url);
 
     // Log received share target payload to browser console / developer log
     if (kIsWeb) {
@@ -27,7 +28,7 @@ class ShareTargetScreen extends StatelessWidget {
         'PWA Share Target Received -> title: ${titleVal ?? "(none)"}, text: ${textVal ?? "(none)"}, url: ${urlVal ?? "(none)"}',
         name: 'OmniToolkit.ShareTarget',
       );
-      debugPrint('PWA Share Target Received -> title: $titleVal, text: $textVal, url: $urlVal');
+      _debugPrint('PWA Share Target Received -> title: $titleVal, text: $textVal, url: $urlVal');
     }
 
     final hasContent = titleVal != null || textVal != null || urlVal != null;
@@ -98,6 +99,53 @@ class ShareTargetScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Sanitize string for safe display - remove control chars, limit length
+  String? _sanitizeDisplayString(String? input) {
+    if (input == null) return null;
+    final trimmed = input.trim();
+    if (trimmed.isEmpty) return null;
+    // Remove control characters except newlines/tabs
+    final sanitized = trimmed.replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]'), '');
+    // Limit length to prevent UI issues
+    return sanitized.length > 500 ? '${sanitized.substring(0, 500)}…' : sanitized;
+  }
+
+  /// Sanitize and validate URL - only allow http/https, block javascript: and data: URIs
+  String? _sanitizeUrl(String? input) {
+    if (input == null) return null;
+    final trimmed = input.trim();
+    if (trimmed.isEmpty) return null;
+
+    // Block dangerous protocols
+    final lower = trimmed.toLowerCase();
+    if (lower.startsWith('javascript:') ||
+        lower.startsWith('data:') ||
+        lower.startsWith('vbscript:') ||
+        lower.startsWith('file:') ||
+        lower.startsWith('ftp:')) {
+      _debugPrint('ShareTarget: Blocked dangerous URL protocol: $lower');
+      return 'Blocked: unsafe URL protocol';
+    }
+
+    // Validate URL format
+    try {
+      final uri = Uri.parse(trimmed);
+      if (!uri.hasScheme || (!uri.scheme.startsWith('http'))) {
+        return 'Blocked: invalid URL scheme';
+      }
+      // Limit URL length
+      return trimmed.length > 2048 ? '${trimmed.substring(0, 2048)}…' : trimmed;
+    } catch (_) {
+      return 'Blocked: malformed URL';
+    }
+  }
+
+  void _debugPrint(String message) {
+    if (kDebugMode) {
+      debugPrint(message);
+    }
   }
 }
 

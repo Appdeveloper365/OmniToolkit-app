@@ -151,7 +151,7 @@ class MembershipService {
 
   final diagnostics = EmailLinkDiagnostics();
 
-  void _log(String message) => debugPrint('[EmailLinkDiagnostics] $message');
+  void _log(String message) => _debugPrint('[EmailLinkDiagnostics] $message');
 
   void _fail(String stage, Object error) {
     if (diagnostics.firstFailure == 'none recorded') {
@@ -466,5 +466,12 @@ class MembershipService {
       return 'Enter a valid email address.';
     }
     return null;
+  }
+
+  /// Debug logging only in debug mode - prevents info leakage in production
+  void _debugPrint(String message) {
+    if (kDebugMode) {
+      debugPrint(message);
+    }
   }
 }
