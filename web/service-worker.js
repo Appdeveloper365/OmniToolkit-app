@@ -1,4 +1,4 @@
-const CACHE_NAME = 'omnitoolkit-pwa-v4';
+const CACHE_NAME = 'omnitoolkit-pwa-v5';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
@@ -51,7 +51,8 @@ self.addEventListener('fetch', (event) => {
         const shell = await cache.match('./');
         if (shell) return shell;
       }
-      throw error;
+      // Never throw - return a network error response instead
+      return new Response('', { status: 504, statusText: 'Gateway Timeout' });
     }
   })());
 });

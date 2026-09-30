@@ -1,4 +1,4 @@
-const CACHE_NAME = 'omnitoolkit-v3';
+const CACHE_NAME = 'omnitoolkit-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -74,7 +74,8 @@ self.addEventListener('fetch', (event) => {
         if (isNavigationRequest) {
           return caches.match('./index.html');
         }
-        throw error;
+        // Never throw - return a network error response
+        return new Response('', { status: 504, statusText: 'Gateway Timeout' });
       });
     })
   );
