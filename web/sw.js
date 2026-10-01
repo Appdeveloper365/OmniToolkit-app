@@ -1,4 +1,4 @@
-const CACHE_NAME = 'omnitoolkit-v5';
+const CACHE_NAME = 'omnitoolkit-v6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -14,9 +14,9 @@ function addSecurityHeaders(response) {
   headers.set('X-Frame-Options', 'DENY');
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   headers.set('Permissions-Policy', 'accelerometer=(), camera=(), geolocation=(self), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()');
-  // Cross-Origin isolation headers (required for Flutter multi-threaded WASM on Windows)
+  // COOP only (no COEP) - COEP: require-corp breaks cross-origin resources like
+  // gstatic.com, fonts.googleapis.com, api.met.no, radio-browser.info, Firebase
   headers.set('Cross-Origin-Opener-Policy', 'same-origin');
-  headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
