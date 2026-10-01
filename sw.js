@@ -21,7 +21,7 @@ function addSecurityHeaders(response) {
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   headers.set('Permissions-Policy', 'accelerometer=(), camera=(), geolocation=(self), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()');
   // COOP only (no COEP) - COEP: require-corp breaks cross-origin resources like
-  // gstatic.com, fonts.googleapis.com, api.met.no, radio-browser.info, Firebase
+  // gstatic.com, fonts.googleapis.com, api.met.no, radio-browser.info
   headers.set('Cross-Origin-Opener-Policy', 'same-origin');
   return new Response(response.body, {
     status: response.status,
