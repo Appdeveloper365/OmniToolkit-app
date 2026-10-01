@@ -32,9 +32,35 @@ class StreamResolverService {
     }
   }
 
+  /// Validates URL format and scheme - only allows http/https
+  static bool isValidStreamUrl(String url) {
+    if (url.trim().isEmpty) return false;
+    try {
+      final uri = Uri.parse(url.trim());
+      if (!uri.hasScheme) return false;
+      final scheme = uri.scheme.toLowerCase();
+      if (scheme != 'http' && scheme != 'https') return false;
+      if (uri.host.isEmpty) return false;
+      // Block localhost/private IPs in production
+      if (kReleaseMode) {
+        final host = uri.host.toLowerCase();
+        if (host == 'localhost' || host == '127.0.0.1' || host == '::1') return false;
+        // Block private IP ranges
+        if (RegExp(r'^10\.').hasMatch(host) ||
+            RegExp(r'^192\.168\.').hasMatch(host) ||
+            RegExp(r'^172\.(1[6-9]|2[0-9]|3[0-1])\.').hasMatch(host)) {
+          return false;
+        }
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Resolve playlists, redirects, mixed content, and codec format.
   Future<StreamValidationResult> resolveAndValidate(String initialUrl) async {
-    debugPrint('[RadioResolver] Validating stream URL: $initialUrl');
+    _debugLog('[RadioResolver] Validating stream URL: $initialUrl');
 
     if (initialUrl.trim().isEmpty) {
       return const StreamValidationResult(
@@ -44,18 +70,28 @@ class StreamResolverService {
       );
     }
 
+    // Validate URL before processing
+    if (!isValidStreamUrl(initialUrl)) {
+      _debugLog('[RadioResolver] Invalid stream URL format: $initialUrl');
+      return const StreamValidationResult(
+        isValid: false,
+        resolvedUrl: '',
+        errorMessage: 'Invalid stream URL format.',
+      );
+    }
+
     String currentUrl = initialUrl.trim();
 
-    // 1. Web HTTPS Mixed Content Check (Step 6)
+    // 1. Web HTTPS Mixed Content Check
     if (isInsecureWebStream(currentUrl)) {
       final upgraded = currentUrl.replaceFirst('http://', 'https://');
-      debugPrint('[RadioResolver] Attempting HTTPS upgrade: $upgraded');
+      _debugLog('[RadioResolver] Attempting HTTPS upgrade: $upgraded');
       final isUpgradedOk = await _probeUrl(upgraded);
       if (isUpgradedOk) {
         currentUrl = upgraded;
-        debugPrint('[RadioResolver] Stream upgraded to HTTPS successfully.');
+        _debugLog('[RadioResolver] Stream upgraded to HTTPS successfully.');
       } else {
-        debugPrint('[RadioResolver] HTTPS upgrade failed. Insecure HTTP blocked by browser.');
+        _debugLog('[RadioResolver] HTTPS upgrade failed. Insecure HTTP blocked by browser.');
         return StreamValidationResult(
           isValid: false,
           resolvedUrl: currentUrl,
@@ -65,18 +101,27 @@ class StreamResolverService {
       }
     }
 
-    // 2. Resolve Playlist or Redirect (Step 7 & Step 8)
+    // 2. Resolve Playlist or Redirect (with depth limit)
     try {
       final resolved = await _resolvePlaylistsAndRedirects(currentUrl);
+      // Validate resolved URL too
+      if (!isValidStreamUrl(resolved)) {
+        _debugLog('[RadioResolver] Resolved URL failed validation: $resolved');
+        return StreamValidationResult(
+          isValid: false,
+          resolvedUrl: resolved,
+          errorMessage: 'Resolved stream URL is invalid.',
+        );
+      }
       currentUrl = resolved;
     } catch (e) {
-      debugPrint('[RadioResolver] Warning during redirect resolution: $e');
+      _debugLog('[RadioResolver] Warning during redirect resolution: $e');
     }
 
-    // 3. Detect Format / Codec (Step 7)
+    // 3. Detect Format / Codec
     final format = _detectFormat(currentUrl);
     if (format == 'UNSUPPORTED') {
-      debugPrint('[RadioResolver] Unsupported audio format detected for: $currentUrl');
+      _debugLog('[RadioResolver] Unsupported audio format detected for: $currentUrl');
       return StreamValidationResult(
         isValid: false,
         resolvedUrl: currentUrl,
@@ -85,7 +130,7 @@ class StreamResolverService {
       );
     }
 
-    debugPrint('[RadioResolver] Validated stream URL: $currentUrl (Format: $format)');
+    _debugLog('[RadioResolver] Validated stream URL: $currentUrl (Format: $format)');
     return StreamValidationResult(
       isValid: true,
       resolvedUrl: currentUrl,
@@ -94,18 +139,23 @@ class StreamResolverService {
   }
 
   Future<bool> _probeUrl(String url) async {
+    if (!isValidStreamUrl(url)) return false;
     try {
       final uri = Uri.parse(url);
       final response = await http.head(uri).timeout(const Duration(seconds: 3));
-      if (response.statusCode >= 200 && response.statusCode < 400) {
-        return true;
-      }
+      return response.statusCode >= 200 && response.statusCode < 400;
     } catch (_) {}
     return false;
   }
 
   Future<String> _resolvePlaylistsAndRedirects(String url, {int depth = 0}) async {
-    if (depth > 5) return url;
+    // Security: Limit redirect depth to prevent infinite loops
+    if (depth > 5) {
+      _debugLog('[RadioResolver] Max redirect depth reached for: $url');
+      return url;
+    }
+
+    if (!isValidStreamUrl(url)) return url;
 
     final lower = url.toLowerCase();
     final isPlaylistExt = lower.endsWith('.m3u') || lower.endsWith('.pls') || lower.endsWith('.m3u8');
@@ -130,17 +180,23 @@ class StreamResolverService {
 
       if (isPlaylistExt || isPlaylistHeader) {
         final bodyBytes = await streamedResponse.stream.toBytes();
+        // Security: Limit playlist size to prevent memory exhaustion
+        if (bodyBytes.length > 64 * 1024) { // 64KB limit
+          _debugLog('[RadioResolver] Playlist too large, skipping extraction');
+          return finalUrl;
+        }
         final bodyText = utf8.decode(bodyBytes, allowMalformed: true);
         final extracted = _extractUrlFromPlaylist(bodyText);
-        if (extracted != null && extracted.isNotEmpty && extracted != url) {
-          debugPrint('[RadioResolver] Extracted playlist target: $extracted');
+        if (extracted != null && extracted.isNotEmpty && extracted != url && isValidStreamUrl(extracted)) {
+          _debugLog('[RadioResolver] Extracted playlist target: $extracted');
           return await _resolvePlaylistsAndRedirects(extracted, depth: depth + 1);
         }
       }
 
-      return finalUrl;
+      // Validate final URL before returning
+      return isValidStreamUrl(finalUrl) ? finalUrl : url;
     } catch (e) {
-      debugPrint('[RadioResolver] Error resolving URL $url: $e');
+      _debugLog('[RadioResolver] Error resolving URL $url: $e');
     }
 
     return url;
@@ -152,10 +208,11 @@ class StreamResolverService {
       if (line.isEmpty || line.startsWith('#')) continue;
 
       if (line.startsWith('File1=') || line.startsWith('File2=')) {
-        return line.split('=').last.trim();
+        final extracted = line.split('=').last.trim();
+        if (isValidStreamUrl(extracted)) return extracted;
       }
 
-      if (line.startsWith('http://') || line.startsWith('https://')) {
+      if ((line.startsWith('http://') || line.startsWith('https://')) && isValidStreamUrl(line)) {
         return line;
       }
     }
@@ -175,5 +232,10 @@ class StreamResolverService {
 
     return 'MP3';
   }
-}
 
+  void _debugLog(String message) {
+    if (kDebugMode) {
+      debugPrint(message);
+    }
+  }
+}

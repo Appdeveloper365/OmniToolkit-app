@@ -63,8 +63,12 @@ class DeviceIdentityService {
     }
   }
 
+  /// Generate a cryptographically secure device ID with high entropy
+  /// Uses platform secure random (Random.secure()) with expanded alphabet
+  /// to provide ~128 bits of entropy (24 chars from 64-char alphabet)
   String _generateDeviceId() {
-    const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    // Use URL-safe base64 alphabet for compact representation
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
     final random = Random.secure();
     final codeUnits = List<int>.generate(
       24,

@@ -217,6 +217,44 @@ class _MainNavigationState extends State<MainNavigation> {
         // confirmation dialog and land directly on the payment screen
         // instead of asking them to tap through another dialog or
         // re-enter their email.
+        //
+        // But first: never pitch payment to someone who already paid.
+        // The startOrRestore call above can miss a purchase whose Stripe
+        // webhook was still in flight; checkEntitlementByEmail runs the
+        // same self-healing check (Firestore + Stripe search) and, if it
+        // finds the purchase, the follow-up startOrRestore registers this
+        // device and unlocks Radio Explorer instead of opening checkout.
+        var alreadyOwned = false;
+        final checkEmail = verifiedEmail?.trim().toLowerCase() ?? '';
+        if (checkEmail.isNotEmpty) {
+          try {
+            final recheck = await service.lookupEntitlementByEmail(checkEmail);
+            alreadyOwned = recheck.hasLifetimeAccess;
+          } catch (_) {
+            alreadyOwned = false;
+          }
+        }
+        if (!mounted) return;
+        if (alreadyOwned) {
+          try {
+            final activated = await service.startOrRestore();
+            if (!mounted) return;
+            if (activated.hasLifetimeAccess) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text(
+                  'Lifetime Membership Activated. World Radio Explorer is unlocked.',
+                ),
+              ));
+              _openRadioTab();
+              return;
+            }
+          } catch (_) {
+            // Fall through to the dialog below.
+          }
+          if (!mounted) return;
+          _showNoLifetimeMembershipFoundDialog();
+          return;
+        }
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Email verified. Continue with your purchase below.'),
         ));

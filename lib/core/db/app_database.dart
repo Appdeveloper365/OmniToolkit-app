@@ -35,7 +35,7 @@ class AppDatabase {
     final path = join(dbPath, 'omnitoolkit.db');
     return openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE calendar_notes (
@@ -115,7 +115,7 @@ class AppDatabase {
           ''');
         }
         if (oldVersion < 3) {
-          // Schema for holidays/radio_streams/zip_lookup changed shape; these
+          // Schema for holidays/radio_streams changed shape; these
           // tables only hold re-importable seed data, so recreate them fresh.
           await db.execute('DROP TABLE IF EXISTS holidays');
           await db.execute('DROP TABLE IF EXISTS radio_streams');
@@ -136,9 +136,28 @@ class AppDatabase {
             )
           ''');
           await db.execute('CREATE INDEX idx_holiday_date ON holidays(date)');
-          if (!(await _columnExists(db, 'zip_lookup', 'region'))) {
-            await db.execute('ALTER TABLE zip_lookup ADD COLUMN region TEXT');
-          }
+        }
+        if (oldVersion < 4) {
+          // Merged dataset adds county/timezone/lat/lng and renames the
+          // table; re-importable seed data, so drop and recreate fresh.
+          await db.execute('DROP TABLE IF EXISTS zip_lookup');
+          await db.execute('''
+            CREATE TABLE IF NOT EXISTS lookup (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              zip TEXT NOT NULL,
+              city TEXT NOT NULL,
+              state TEXT NOT NULL,
+              county TEXT,
+              areaCode TEXT,
+              region TEXT,
+              timezone TEXT,
+              lat REAL,
+              lng REAL
+            )
+          ''');
+          await db.execute('CREATE INDEX IF NOT EXISTS idx_zip ON lookup(zip)');
+          await db.execute('CREATE INDEX IF NOT EXISTS idx_city ON lookup(city)');
+          await db.execute('CREATE INDEX IF NOT EXISTS idx_area ON lookup(areaCode)');
         }
         if (oldVersion < 5) {
           final hasOldTable = (await db.rawQuery(
@@ -183,40 +202,25 @@ class AppDatabase {
           }
           await db.execute('CREATE INDEX IF NOT EXISTS idx_notes_date ON calendar_notes(note_date)');
         }
-                if (oldVersion < 4) {
-          // Merged dataset adds county/timezone/lat/lng and renames the
-          // table; re-importable seed data, so drop and recreate fresh.
-          await db.execute('DROP TABLE IF EXISTS zip_lookup');
+        if (oldVersion < 6) {
+          // radio_streams was missing the columns AssetImporter writes on
+          // every launch, and the pre-v3 shape used different names
+          // (streamUrl/category instead of url/codec). The insert threw
+          // (caught in main.dart), leaving the offline radio directory
+          // permanently empty. Rebuild into the current shape so existing
+          // installs self-heal; rows are re-importable seed data, so the
+          // old table can be replaced outright.
+          await db.execute('DROP TABLE IF EXISTS radio_streams');
           await db.execute('''
-            CREATE TABLE IF NOT EXISTS lookup (
+            CREATE TABLE IF NOT EXISTS radio_streams (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
-              zip TEXT NOT NULL,
-              city TEXT NOT NULL,
-              state TEXT NOT NULL,
-              county TEXT,
-              areaCode TEXT,
-              region TEXT,
-              timezone TEXT,
-              lat REAL,
-              lng REAL
+              name TEXT NOT NULL,
+              url TEXT NOT NULL,
+              codec TEXT,
+              country TEXT,
+              countrycode TEXT
             )
           ''');
-          await db.execute('CREATE INDEX IF NOT EXISTS idx_zip ON lookup(zip)');
-          await db.execute('CREATE INDEX IF NOT EXISTS idx_city ON lookup(city)');
-          await db.execute('CREATE INDEX IF NOT EXISTS idx_area ON lookup(areaCode)');
-        }
-        if (oldVersion < 6) {
-          // radio_streams was missing country/countrycode columns that
-          // AssetImporter writes on every launch; the insert silently
-          // failed (caught in main.dart) leaving the offline radio
-          // directory permanently empty. Add the missing columns so
-          // existing installs self-heal without losing other data.
-          if (!(await _columnExists(db, 'radio_streams', 'country'))) {
-            await db.execute('ALTER TABLE radio_streams ADD COLUMN country TEXT');
-          }
-          if (!(await _columnExists(db, 'radio_streams', 'countrycode'))) {
-            await db.execute('ALTER TABLE radio_streams ADD COLUMN countrycode TEXT');
-          }
         }
       },
     );

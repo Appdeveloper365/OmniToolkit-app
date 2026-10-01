@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:omnitoolkit/modules/calculator/screens/scientific_calculator_tab.dart';
 import 'package:omnitoolkit/modules/calculator/screens/simple_calculator_tab.dart';
-import 'package:omnitoolkit/modules/calculator/widgets/premium_calculator_button.dart';
+import 'package:omnitoolkit/modules/calculator/widgets/scientific_keypad.dart';
 
 void main() {
   testWidgets('Calculator keypad tap updates input and result', (tester) async {
@@ -72,8 +72,10 @@ void main() {
     expect(find.text('0'), findsWidgets);
   });
 
-  testWidgets('Scientific calculator wraps scientific keys around the number pad', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(900, 1200));
+  testWidgets('Scientific calculator renders portrait layout and allows calculations', (tester) async {
+    // The scientific keypad stacks 10 rows above the number pad, so the
+    // surface must be tall enough for the bottom "0" key to stay on-screen.
+    await tester.binding.setSurfaceSize(const Size(900, 1800));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
@@ -86,9 +88,7 @@ void main() {
       ),
     );
 
-    // The scientific tab no longer uses CalculatorKeypadGrid for its frame;
-    // it renders a single 8-column grid directly. Verify every key label is
-    // present and tappable.
+    // Verify that scientific keys are present in the portrait layout.
     for (final label in <String>[
       'sin',
       'cos',
@@ -118,13 +118,19 @@ void main() {
       expect(find.text(label), findsOneWidget, reason: 'missing scientific key $label');
     }
 
-    await tester.tap(find.widgetWithText(PremiumCalculatorButton, '3'));
+    // Perform calculation: 3 -> 0 -> sin
+    // Scope digit lookups to the keypad: the display also renders "0" while
+    // the expression is empty, so a bare find.text('0') matches two widgets.
+    final keypad = find.byType(ScientificKeypad);
+
+    await tester.tap(find.descendant(of: keypad, matching: find.text('3')));
     await tester.pump();
-    // The display can also render "0" (placeholder), so target the key itself.
-    await tester.tap(find.widgetWithText(PremiumCalculatorButton, '0'));
+    await tester.tap(find.descendant(of: keypad, matching: find.text('0')));
     await tester.pump();
-    await tester.tap(find.widgetWithText(PremiumCalculatorButton, 'sin'));
+    await tester.tap(find.text('sin'));
     await tester.pumpAndSettle();
+
+    // Result for sin(30 deg) should be 0.5
     expect(find.text('0.5'), findsWidgets);
 
     await tester.tap(find.text('M+'));
@@ -135,4 +141,5 @@ void main() {
     await tester.pump();
     expect(find.text('0.5'), findsWidgets);
   });
+
 }

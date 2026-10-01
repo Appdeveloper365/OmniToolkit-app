@@ -1,4 +1,4 @@
-const CACHE_NAME = 'omnitoolkit-pwa-v3';
+const CACHE_NAME = 'omnitoolkit-pwa-v6';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
@@ -16,6 +16,22 @@ self.addEventListener('activate', (event) => {
   })());
 });
 
+function addSecurityHeaders(response) {
+  const headers = new Headers(response.headers);
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('X-Frame-Options', 'DENY');
+  headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  headers.set('Permissions-Policy', 'accelerometer=(), camera=(), geolocation=(self), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()');
+  // Cross-Origin isolation headers (required for Flutter multi-threaded WASM on Windows)
+  headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: headers,
+  });
+}
+
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const requestUrl = new URL(event.request.url);
@@ -26,8 +42,11 @@ self.addEventListener('fetch', (event) => {
     const cache = await caches.open(CACHE_NAME);
     try {
       const response = await fetch(event.request, { cache: 'no-store' });
-      if (response.ok) await cache.put(event.request, response.clone());
-      return response;
+      if (response.ok) {
+        const securedResponse = addSecurityHeaders(response);
+        await cache.put(event.request, securedResponse.clone());
+      }
+      return addSecurityHeaders(response);
     } catch (error) {
       const cached = await cache.match(event.request);
       if (cached) return cached;
@@ -35,7 +54,8 @@ self.addEventListener('fetch', (event) => {
         const shell = await cache.match('./');
         if (shell) return shell;
       }
-      throw error;
+      // Never throw - return a network error response instead
+      return new Response('', { status: 504, statusText: 'Gateway Timeout' });
     }
   })());
 });

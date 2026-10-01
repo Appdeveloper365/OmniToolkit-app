@@ -26,10 +26,14 @@ dependencies:
 
   # Local storage
   shared_preferences: ^2.3.2
+  geolocator: ^12.0.0
   sqflite: ^2.4.1
   sqflite_common_ffi: ^2.3.3
   path: ^1.9.0
   path_provider: ^2.1.4
+
+  # Encryption for sensitive SharedPreferences data
+  encrypt: ^5.0.3
 
   # Audio streaming (Windows/Linux via media_kit)
   just_audio: ^0.9.42
@@ -58,4 +62,3 @@ flutter:
     - assets/data/curated_us_zips.csv
     - assets/data/radio_streams.json
     - assets/data/area_codes.json
-

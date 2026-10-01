@@ -8,6 +8,7 @@ import '../models/note_model.dart';
 import '../providers/calendar_provider.dart';
 import '../widgets/calendar_clock_widget.dart';
 import '../widgets/calendar_grid.dart';
+import '../widgets/weather_box.dart';
 import '../widgets/note_dialog.dart';
 
 class CalendarScreen extends ConsumerWidget {
@@ -62,6 +63,11 @@ class CalendarScreen extends ConsumerWidget {
         title: const Text('Calendar & Clock'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.add_comment_rounded),
+            tooltip: 'Add note',
+            onPressed: () => _openNoteDialog(context, ref),
+          ),
+          IconButton(
             icon: const Icon(Icons.info_outline_rounded),
             tooltip: 'Holidays & Observance Days',
             onPressed: () async {
@@ -84,12 +90,6 @@ class CalendarScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openNoteDialog(context, ref),
-        tooltip: 'Add note',
-        icon: const Icon(Icons.add_comment_rounded),
-        label: const Text('Add Note'),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -97,7 +97,41 @@ class CalendarScreen extends ConsumerWidget {
           children: [
             // Prominent Live Clock Header
             const CalendarClockWidget(),
+            const WeatherBox(),
             const SizedBox(height: 16),
+
+            // Note Reminder Banner for Selected Date
+            notesAsync.when(
+              data: (notes) {
+                if (notes.isEmpty) return const SizedBox.shrink();
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.amber[100],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.amber[800]!),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.notification_important, color: Colors.amber),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'You have ${notes.length} note(s) for this date!',
+                          style: TextStyle(
+                            color: Colors.amber[900],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+            ),
 
             // Calendar Grid Container
             Card(
@@ -109,6 +143,7 @@ class CalendarScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
+
 
             // Selected Date Header Panel
             Container(

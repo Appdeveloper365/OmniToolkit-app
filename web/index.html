@@ -20,6 +20,44 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="OmniToolkit - Offline utilities: Weather, Calendar, Calculator, Radio, Lookup, Clipper">
 
+  <!-- Security: Content Security Policy - allows Flutter runtime (eval for dart2js, wasm, inline styles/scripts) -->
+  <meta http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://www.gstatic.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com data:;
+      img-src 'self' data: https: blob:;
+      connect-src 'self' https://api.met.no https://*.radio-browser.info wss: https://firebaseinstallations.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://firebaseremoteconfig.googleapis.com;
+      media-src 'self' https: blob:;
+      frame-src 'self';
+      frame-ancestors 'none';
+      base-uri 'self';
+      form-action 'self';
+      object-src 'none';
+      manifest-src 'self';
+      worker-src 'self' blob:;
+    ">
+
+  <!-- Security: Permissions Policy (Feature Policy) -->
+  <meta http-equiv="Permissions-Policy"
+    content="
+      accelerometer=(),
+      camera=(),
+      geolocation=(self),
+      gyroscope=(),
+      magnetometer=(),
+      microphone=(),
+      payment=(),
+      usb=(),
+      interest-cohort=()
+    ">
+
+  <!-- Security: Additional headers -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -56,6 +94,21 @@
         console.log('[Service Worker] Registration failed:', err);
       });
     }
+  </script>
+
+  <!-- Flutter loader configuration - force single-threaded on Windows to avoid COOP/COEP requirement -->
+  <script>
+    (function() {
+      // Configure Flutter loader before it runs
+      window._flutter = window._flutter || {};
+      window._flutter.loaderConfig = {
+        // Suppress multi-threading warning and force single-threaded on Windows
+        suppressMultithreadingWarning: true,
+        // Force single-threaded mode for compatibility with hosting without COOP/COEP
+        forceSingleThreadedSkwasm: navigator.userAgent.includes('Windows')
+      };
+      console.log('[Flutter Config]', window._flutter.loaderConfig);
+    })();
   </script>
 </body>
 </html>

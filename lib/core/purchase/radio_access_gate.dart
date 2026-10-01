@@ -15,8 +15,19 @@ class RadioAccessGate {
   static Future<MembershipState?> _latestState() async {
     final service = MembershipService();
     final verifiedUser = service.verifiedUser;
-    if (verifiedUser == null) return null;
-    return service.startOrRestore();
+    if (verifiedUser != null) {
+      return service.startOrRestore();
+    }
+    // No signed-in verified account: fall back to the entitlement cached by
+    // the email-based Verify Purchase lookup (lookupEntitlementByEmail
+    // persists it via _save). Without this, a returning customer who just
+    // confirmed ownership by email gets the upgrade dialog again even
+    // though the dialog said "Lifetime Membership Verified".
+    try {
+      return await service.cached();
+    } catch (_) {
+      return null;
+    }
   }
 
   static Future<bool> hasAccess() async {

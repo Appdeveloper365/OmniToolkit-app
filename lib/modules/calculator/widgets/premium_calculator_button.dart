@@ -15,6 +15,10 @@ enum CalcKeyRole {
   delete,
   function,
   memory,
+  scientificTrig,
+  scientificLog,
+  scientificPower,
+  scientificOther,
 }
 
 /// A single premium, touch-friendly calculator key: gradient fill, top
@@ -68,6 +72,14 @@ class _PremiumCalculatorButtonState extends State<PremiumCalculatorButton> {
         return isDark ? const [Color(0xFF565660), Color(0xFF3F3F48)] : const [Color(0xFFD8DCE6), Color(0xFFBEC4D2)];
       case CalcKeyRole.memory:
         return isDark ? const [Color(0xFF4A5568), Color(0xFF374151)] : const [Color(0xFFCBD5E1), Color(0xFFA9B4C4)];
+      case CalcKeyRole.scientificTrig:
+        return isDark ? const [Color(0xFF3D5A80), Color(0xFF293241)] : const [Color(0xFFB0C4DE), Color(0xFF8FAADC)];
+      case CalcKeyRole.scientificLog:
+        return isDark ? const [Color(0xFF5E548E), Color(0xFF483D67)] : const [Color(0xFFDCD6F7), Color(0xFFBDB2F2)];
+      case CalcKeyRole.scientificPower:
+        return isDark ? const [Color(0xFF386641), Color(0xFF2F5233)] : const [Color(0xFFC7E9C0), Color(0xFFB2D8AA)];
+      case CalcKeyRole.scientificOther:
+        return isDark ? const [Color(0xFF8B5E3C), Color(0xFF6F4A30)] : const [Color(0xFFF5DEB3), Color(0xFFE3C9A1)];
     }
   }
 
@@ -77,6 +89,10 @@ class _PremiumCalculatorButtonState extends State<PremiumCalculatorButton> {
       case CalcKeyRole.numberLight:
       case CalcKeyRole.function:
       case CalcKeyRole.memory:
+      case CalcKeyRole.scientificTrig:
+      case CalcKeyRole.scientificLog:
+      case CalcKeyRole.scientificPower:
+      case CalcKeyRole.scientificOther:
         return Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87;
       default:
         return Colors.white;

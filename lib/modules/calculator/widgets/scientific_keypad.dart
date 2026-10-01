@@ -6,14 +6,12 @@ import '../providers/calculator_provider.dart';
 import 'calculator_keypad_grid.dart';
 import 'premium_calculator_button.dart';
 
-/// Scientific controls wrap around the standard 4x5 number pad as a frame:
-/// a top row above the pad and two columns down each side, all in a single
-/// 8-column grid of equally sized keys so the whole calculator reads as one
-/// square block with the number pad at its center.
+/// Scientific controls are arranged as a portrait-oriented keypad.
+/// The layout consists of 6 rows of scientific functions above a standard 4x5
+/// number pad, resulting in a 4-column grid that fits mobile screens.
 ///
-/// The 24 scientific keys tile exactly as: 4 top + 10 left (2 cols x 5) +
-/// 10 right (2 cols x 5). The four top corner cells are left empty, keeping
-/// the frame symmetric.
+/// Scientific keys are color-coded by category (trigonometry, logarithms,
+/// powers, etc.) to be more distinctive.
 class ScientificKeypad extends ConsumerWidget {
   const ScientificKeypad({super.key});
 
@@ -22,122 +20,120 @@ class ScientificKeypad extends ConsumerWidget {
     final notifier = ref.read(calculatorSessionProvider.notifier);
     final service = ref.read(expressionServiceProvider);
 
-    CalcKeySpec f(String label, VoidCallback onTap, {double fontSize = 14}) =>
-        CalcKeySpec(label: label, role: CalcKeyRole.function, fontSize: fontSize, onTap: onTap);
+    CalcKeySpec s(String label, CalcKeyRole role, VoidCallback onTap, {double fontSize = 14}) =>
+        CalcKeySpec(label: label, role: role, fontSize: fontSize, onTap: onTap);
     CalcKeySpec m(String label, VoidCallback onTap) =>
-        CalcKeySpec(label: label, role: CalcKeyRole.memory, fontSize: 13, onTap: onTap);
-    // Number keys alternate Dark/Light starting with Dark on the 7-8-9 row,
-    // matching the standard CalculatorKeypad. [padRow]/[padCol] are the key's
-    // position inside the 4x5 number pad.
-    CalcKeySpec num(String label, int padRow, int padCol) => CalcKeySpec(
+        s(label, CalcKeyRole.memory, onTap, fontSize: 13);
+    CalcKeySpec numKey(String label, int padRow, int padCol) => CalcKeySpec(
         label: label,
         role: (padRow + padCol).isEven ? CalcKeyRole.numberDark : CalcKeyRole.numberLight,
         onTap: () => notifier.input(label));
 
-    // 8 columns x 6 rows. `null` marks an empty corner cell.
-    // Cols 2-5 hold the number pad (rows 1-5); the rest is the scientific frame.
-    final rows = <List<CalcKeySpec?>>[
+    // A two-key action row on top, then seven full rows of six.
+    // 2 + (7 x 6) = 44, so every key is placed and no row is ragged. The
+    // longer run of the grid is vertical, so the keypad is taller than it is
+    // wide — the orientation a portrait phone actually has room for. Fewer
+    // columns also means larger keys (~58px on a 390px screen rather than
+    // ~49px), which suits fingertip input. Cell width derives from the space
+    // available, so the keypad fits any screen without clipping or scrolling.
+    //
+    // Column discipline, so the eye can find things by position alone:
+    //   * the scientific/alpha keys stack down the rows above the pad in
+    //     reading order;
+    //   * MC MR M+ M- share one line by themselves, with DEL next to them;
+    //   * ÷ x - + hold the right-hand column of every row that has one, so the
+    //     four operators line up vertically and never sit on a row edge alone;
+    //   * digits keep the familiar 789 / 456 / 123 / 0 adjacency.
+    final rows = <List<CalcKeySpec>>[
+      // --- top: the two keys needed most, always in reach. Each spans half
+      //     the row so AC anchors to the far left and = to the far right,
+      //     matching the width of the six-column rows below. ---
       [
-        null, null,
-        f('sin', () => notifier.applyUnary('sin', service.sinDeg)),
-        f('cos', () => notifier.applyUnary('cos', service.cosDeg)),
-        f('tan', () => notifier.applyUnary('tan', service.tanDeg)),
-        f('asin', () => notifier.applyUnary('asin', service.asinDeg)),
-        null, null,
+        CalcKeySpec(
+          label: 'AC',
+          role: CalcKeyRole.clear,
+          fontSize: 18,
+          columnSpan: 3,
+          onTap: notifier.clearAll,
+        ),
+        CalcKeySpec(
+          label: '=',
+          role: CalcKeyRole.equals,
+          columnSpan: 3,
+          onTap: notifier.equals,
+        ),
+      ],
+      // --- scientific functions ---
+      [
+        s('sin', CalcKeyRole.scientificTrig, () => notifier.applyUnary('sin', service.sinDeg)),
+        s('cos', CalcKeyRole.scientificTrig, () => notifier.applyUnary('cos', service.cosDeg)),
+        s('tan', CalcKeyRole.scientificTrig, () => notifier.applyUnary('tan', service.tanDeg)),
+        s('asin', CalcKeyRole.scientificTrig, () => notifier.applyUnary('asin', service.asinDeg)),
+        s('acos', CalcKeyRole.scientificTrig, () => notifier.applyUnary('acos', service.acosDeg)),
+        s('atan', CalcKeyRole.scientificTrig, () => notifier.applyUnary('atan', service.atanDeg)),
       ],
       [
-        f('acos', () => notifier.applyUnary('acos', service.acosDeg)),
+        s('log', CalcKeyRole.scientificLog, () => notifier.applyUnary('log', service.log10)),
+        s('ln', CalcKeyRole.scientificLog, () => notifier.applyUnary('ln', service.ln)),
+        s('√', CalcKeyRole.scientificPower, () => notifier.applyUnary('√', service.sqrtOf)),
+        s('ⁿ√', CalcKeyRole.scientificPower, () => notifier.input('^(1/')),
+        s('xʸ', CalcKeyRole.scientificPower, () => notifier.input('^')),
+        s('x²', CalcKeyRole.scientificPower, () => notifier.applyUnary('x²', service.square)),
+      ],
+      [
+        s('x³', CalcKeyRole.scientificPower, () => notifier.applyUnary('x³', service.cube)),
+        s('1/x', CalcKeyRole.scientificPower, () => notifier.applyUnary('1/x', service.reciprocal)),
+        s('x!', CalcKeyRole.scientificPower, () => notifier.applyUnary('x!', service.factorial)),
+        s('|x|', CalcKeyRole.scientificPower, () => notifier.applyUnary('|x|', service.absoluteValue)),
+        s('π', CalcKeyRole.scientificOther, () => notifier.input('π')),
+        s('e', CalcKeyRole.scientificLog, () => notifier.input('e')),
+      ],
+      // --- memory: all four together on one line, sitting directly above
+      //     the number pad, with DEL alongside them ---
+      [
         m('MC', notifier.memoryClear),
-        CalcKeySpec(label: 'AC', role: CalcKeyRole.clear, fontSize: 18, onTap: notifier.clearAll),
-        CalcKeySpec(label: '±', role: CalcKeyRole.function, onTap: notifier.toggleSign),
-        f('%', () => notifier.input('%')),
-        CalcKeySpec(label: '÷', role: CalcKeyRole.divide, onTap: () => notifier.input('÷')),
-        f(')', () => notifier.input(')')),
-        f('log', () => notifier.applyUnary('log', service.log10)),
-      ],
-      [
-        f('atan', () => notifier.applyUnary('atan', service.atanDeg)),
         m('MR', notifier.memoryRecall),
-        num('7', 0, 0), num('8', 0, 1), num('9', 0, 2),
-        CalcKeySpec(label: '×', role: CalcKeyRole.multiply, onTap: () => notifier.input('×')),
-        f('ln', () => notifier.applyUnary('ln', service.ln)),
-        f('√', () => notifier.applyUnary('√', service.sqrtOf)),
-      ],
-      [
-        f('π', () => notifier.input('π')),
         m('M+', notifier.memoryAdd),
-        num('4', 1, 0), num('5', 1, 1), num('6', 1, 2),
-        CalcKeySpec(label: '-', role: CalcKeyRole.subtract, onTap: () => notifier.input('-')),
-        f('ⁿ√', () => notifier.input('^(1/')),
-        f('xʸ', () => notifier.input('^')),
-      ],
-      [
-        f('e', () => notifier.input('e')),
         m('M-', notifier.memorySubtract),
-        num('1', 2, 0), num('2', 2, 1), num('3', 2, 2),
-        CalcKeySpec(label: '+', role: CalcKeyRole.add, onTap: () => notifier.input('+')),
-        f('x²', () => notifier.applyUnary('x²', service.square)),
-        f('x³', () => notifier.applyUnary('x³', service.cube)),
+        CalcKeySpec(label: 'DEL', role: CalcKeyRole.delete, fontSize: 15, onTap: notifier.backspace),
+        CalcKeySpec(label: '÷', role: CalcKeyRole.divide, onTap: () => notifier.input('÷')),
+      ],
+      // --- number pad. Digits hold the usual 789 / 456 / 123 adjacency in
+      //     the left three columns; the operator column never moves. ---
+      [
+        numKey('7', 0, 0),
+        numKey('8', 0, 1),
+        numKey('9', 0, 2),
+        s('%', CalcKeyRole.function, () => notifier.input('%')),
+        // Must invoke toggleSign: passing the tear-off bare would only
+        // evaluate the method reference and never run the sign flip.
+        s('±', CalcKeyRole.function, () => notifier.toggleSign()),
+        CalcKeySpec(label: '×', role: CalcKeyRole.multiply, onTap: () => notifier.input('×')),
       ],
       [
-        f('(', () => notifier.input('(')),
-        f('|x|', () => notifier.applyUnary('|x|', service.absoluteValue)),
-        num('0', 3, 0),
-        f('.', () => notifier.input('.')),
-        CalcKeySpec(label: 'DEL', role: CalcKeyRole.delete, fontSize: 15, onTap: notifier.backspace),
-        CalcKeySpec(label: '=', role: CalcKeyRole.equals, onTap: notifier.equals),
-        f('1/x', () => notifier.applyUnary('1/x', service.reciprocal)),
-        f('x!', () => notifier.applyUnary('x!', service.factorial)),
+        numKey('4', 1, 0),
+        numKey('5', 1, 1),
+        numKey('6', 1, 2),
+        s('(', CalcKeyRole.scientificOther, () => notifier.input('(')),
+        s(')', CalcKeyRole.scientificOther, () => notifier.input(')')),
+        CalcKeySpec(label: '-', role: CalcKeyRole.subtract, onTap: () => notifier.input('-')),
+      ],
+      [
+        numKey('1', 2, 0),
+        numKey('2', 2, 1),
+        numKey('3', 2, 2),
+        numKey('0', 3, 0),
+        s('.', CalcKeyRole.function, () => notifier.input('.')),
+        CalcKeySpec(label: '+', role: CalcKeyRole.add, onTap: () => notifier.input('+')),
       ],
     ];
 
-    const columns = 8;
-    const spacing = 6.0;
-    const maxWidth = 560.0;
-    const minCellSize = 38.0;
-
     return Center(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final width = constraints.maxWidth < maxWidth ? constraints.maxWidth : maxWidth;
-          final cellSize = ((width - spacing * (columns - 1)) / columns)
-              .clamp(minCellSize, double.infinity)
-              .toDouble();
-          final gridWidth = cellSize * columns + spacing * (columns - 1);
-
-          return SizedBox(
-            width: gridWidth,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (var r = 0; r < rows.length; r++) ...[
-                  if (r > 0) const SizedBox(height: spacing),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (var c = 0; c < columns; c++) ...[
-                        if (c > 0) const SizedBox(width: spacing),
-                        SizedBox(
-                          width: cellSize,
-                          height: cellSize,
-                          child: rows[r][c] == null
-                              ? null
-                              : PremiumCalculatorButton(
-                                  label: rows[r][c]!.label,
-                                  role: rows[r][c]!.role,
-                                  fontSize: rows[r][c]!.fontSize,
-                                  semanticsLabel: rows[r][c]!.semanticsLabel,
-                                  onTap: rows[r][c]!.onTap,
-                                ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          );
-        },
+      child: CalculatorKeypadGrid(
+        rows: rows,
+        maxWidth: 400.0,
+        minCellSize: 50.0,
+        spacing: 6.0,
       ),
     );
   }

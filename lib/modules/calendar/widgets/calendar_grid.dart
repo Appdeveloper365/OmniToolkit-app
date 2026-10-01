@@ -109,7 +109,6 @@ class CalendarGrid extends ConsumerWidget {
 
     final isSelected = _isSameDay(date, selectedDate);
     final isSecondary = secondaryDate != null && _isSameDay(date, secondaryDate);
-    final isToday = _isSameDay(date, DateTime.now());
     final hasNote = notedDates.contains(dateKey);
     final holidaysForDay = holidayLabels[dateKey] ?? const <HolidayRecord>[];
     final scheme = Theme.of(context).colorScheme;
@@ -130,18 +129,17 @@ class CalendarGrid extends ConsumerWidget {
     return AspectRatio(
       aspectRatio: 1,
       child: Padding(
-        padding: const EdgeInsets.all(2),
+        padding: const EdgeInsets.all(1),
         child: Material(
           color: backgroundColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
-            side: isSelected
-                ? BorderSide(color: scheme.primary, width: 2.5)
-                : (isSecondary
-                    ? BorderSide(color: scheme.secondary, width: 2)
-                    : (isToday
-                        ? BorderSide(color: scheme.primary, width: 1.5)
-                        : BorderSide.none)),
+            side: BorderSide(
+              color: isSelected
+                  ? scheme.primary
+                  : (isSecondary ? scheme.secondary : Colors.grey.withValues(alpha: 0.3)),
+              width: isSelected ? 3.0 : 1.5,
+            ),
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(8),
@@ -162,8 +160,8 @@ class CalendarGrid extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: foregroundColor,
-                          fontWeight: (hasNote || isSelected || isSecondary) ? FontWeight.bold : FontWeight.normal,
-                          fontSize: hasNote ? 10 : null,
+                          fontWeight: FontWeight.bold,
+                          fontSize: hasNote ? 10 : 16,
                         ),
                       ),
                       if (holidaysForDay.isNotEmpty)
