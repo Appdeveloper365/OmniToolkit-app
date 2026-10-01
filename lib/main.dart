@@ -1,7 +1,6 @@
 /// FILE: lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 
 import 'core/data/asset_importer.dart';
@@ -17,11 +16,18 @@ import 'screens/share_target_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   _initializeLocalServices();
-  try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.web);
-  } catch (error, stackTrace) {
+  if (DefaultFirebaseOptions.isConfigured) {
+    try {
+      await DefaultFirebaseOptions.initializeFirebaseApp();
+    } catch (error, stackTrace) {
+      debugPrint(
+          '[Firebase] ${DefaultFirebaseOptions.describeInitializationFailure(error)}\n'
+          'The local-first dashboard remains available.\n$error\n$stackTrace');
+    }
+  } else {
     debugPrint(
-        '[Firebase] Initialization failed; dashboard remains available: $error\n$stackTrace');
+        '[Firebase] No Firebase options are configured for this build; '
+        'cloud billing and entitlement features are disabled.');
   }
   try {
     await AssetImporter.importFirstLaunch();

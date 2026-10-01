@@ -9,6 +9,12 @@ const ASSETS_TO_CACHE = [
 ];
 
 function addSecurityHeaders(response) {
+  // Only body-bearing 2xx responses can be re-wrapped. Opaque responses
+  // (status 0) and null-body statuses (101/204/205/304) throw a TypeError
+  // when passed to the Response constructor.
+  if (response.status === 0 || [101, 204, 205, 304].includes(response.status)) {
+    return response;
+  }
   const headers = new Headers(response.headers);
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('X-Frame-Options', 'DENY');

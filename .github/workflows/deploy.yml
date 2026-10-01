@@ -39,7 +39,13 @@ jobs:
         run: flutter test --concurrency=1
 
       - name: Build Web PWA
-        run: flutter build web --release --base-href "/OmniToolkit-app/"
+        # --no-web-resources-cdn bundles CanvasKit into build/web/canvaskit
+        # instead of loading it from https://www.gstatic.com. That keeps the
+        # Content-Security-Policy tight (no third-party script/fetch origin),
+        # makes the PWA work offline on a cold start (the service worker only
+        # caches same-origin requests), and avoids the GitHub Pages origin
+        # never sending the COOP/COEP headers cross-origin isolation needs.
+        run: flutter build web --release --no-web-resources-cdn --base-href "/OmniToolkit-app/"
 
       - name: Preserve Static Legal Docs
         run: |

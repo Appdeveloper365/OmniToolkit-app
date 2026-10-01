@@ -17,6 +17,12 @@ self.addEventListener('activate', (event) => {
 });
 
 function addSecurityHeaders(response) {
+  // Only body-bearing 2xx responses can be re-wrapped. Opaque responses
+  // (status 0) and null-body statuses (101/204/205/304) throw a TypeError
+  // when passed to the Response constructor.
+  if (response.status === 0 || [101, 204, 205, 304].includes(response.status)) {
+    return response;
+  }
   const headers = new Headers(response.headers);
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('X-Frame-Options', 'DENY');
@@ -46,11 +52,14 @@ self.addEventListener('fetch', (event) => {
     const cache = await caches.open(CACHE_NAME);
     try {
       const response = await fetch(event.request, { cache: 'no-store' });
-      if (response.ok) {
-        const securedResponse = addSecurityHeaders(response);
-        await cache.put(event.request, securedResponse.clone());
+      if (!response.ok) {
+        // Return non-OK (redirects, 404s, opaque) responses untouched: they
+        // cannot always be re-wrapped with new Response(...).
+        return response;
       }
-      return addSecurityHeaders(response);
+      const securedResponse = addSecurityHeaders(response);
+      await cache.put(event.request, securedResponse.clone());
+      return securedResponse;
     } catch (error) {
       const cached = await cache.match(event.request);
       if (cached) return cached;
