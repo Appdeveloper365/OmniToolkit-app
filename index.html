@@ -20,7 +20,11 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="OmniToolkit - Offline utilities: Weather, Calendar, Calculator, Radio, Lookup, Clipper">
 
-  <!-- Security: Content Security Policy - allows Flutter runtime (eval for dart2js, wasm, inline styles/scripts) -->
+  <!-- Security: Content Security Policy - allows Flutter runtime (eval for dart2js, wasm, inline styles/scripts)
+       NOTE: 'frame-ancestors' and X-Frame-Options are ignored by browsers when delivered via
+       <meta>; they can only be sent as real HTTP response headers. GitHub Pages cannot send
+       custom headers, so clickjacking protection is applied by service-worker.js instead
+       (for the same-origin responses it serves). -->
   <meta http-equiv="Content-Security-Policy"
     content="
       default-src 'self';
@@ -28,10 +32,9 @@
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com data:;
       img-src 'self' data: https: blob:;
-      connect-src 'self' https://api.met.no https://*.radio-browser.info wss: https://firebaseinstallations.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://firebaseremoteconfig.googleapis.com;
+      connect-src 'self' https://www.gstatic.com https://fonts.gstatic.com https://api.met.no https://*.radio-browser.info wss: https://firebaseinstallations.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://firebaseremoteconfig.googleapis.com https://us-central1-omnitoolkit-b7de8.cloudfunctions.net;
       media-src 'self' https: blob:;
       frame-src 'self';
-      frame-ancestors 'none';
       base-uri 'self';
       form-action 'self';
       object-src 'none';
@@ -53,9 +56,8 @@
       interest-cohort=()
     ">
 
-  <!-- Security: Additional headers -->
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="X-Frame-Options" content="DENY">
+  <!-- Security: Additional headers (Referrer-Policy is valid in <meta>; the
+       other header-only protections are set by service-worker.js) -->
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 
   <!-- iOS meta tags & icons -->
@@ -96,19 +98,9 @@
     }
   </script>
 
-  <!-- Flutter loader configuration - force single-threaded on Windows to avoid COOP/COEP requirement -->
-  <script>
-    (function() {
-      // Configure Flutter loader before it runs
-      window._flutter = window._flutter || {};
-      window._flutter.loaderConfig = {
-        // Suppress multi-threading warning and force single-threaded on Windows
-        suppressMultithreadingWarning: true,
-        // Force single-threaded mode for compatibility with hosting without COOP/COEP
-        forceSingleThreadedSkwasm: navigator.userAgent.includes('Windows')
-      };
-      console.log('[Flutter Config]', window._flutter.loaderConfig);
-    })();
-  </script>
+  <!-- Flutter loader configuration now lives in flutter_bootstrap.js, where
+       _flutter.loader.load({ config: {...} }) is called. Do not re-add an
+       inline `window._flutter.loaderConfig` block here: flutter.js does not
+       read that key. -->
 </body>
 </html>
