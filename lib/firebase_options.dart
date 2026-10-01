@@ -3,30 +3,30 @@ import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb, visibleForTesting;
 
 class DefaultFirebaseOptions {
-  /// Firebase web/desktop configuration for the OmniToolkit project.
+  /// Firebase configuration is supplied at **build time only** - no Firebase
+  /// identifier is embedded in this source file.
   ///
-  /// These values are *public client identifiers*, not secrets: Firebase ships
-  /// them inside every web bundle by design, and access control is enforced by
-  /// Firebase Security Rules (see firestore.rules) rather than by hiding the
-  /// config. Keeping working defaults here means a plain
-  /// `flutter build web --release` produces a functional app.
-  ///
-  /// Any of the values may still be overridden at build time for another
-  /// environment, e.g.:
+  /// Provide the values either per flag:
   ///   flutter build web --release \
   ///     --dart-define=FIREBASE_WEB_API_KEY=... \
   ///     --dart-define=FIREBASE_WEB_PROJECT_ID=...
-  static const String _defaultWebApiKey =
-      'AIzaSyDIPSQcYjNQA1lvig3yLcBRVrMCL-vTJE0';
-  static const String _defaultWebAuthDomain =
-      'omnitoolkit-b7de8.firebaseapp.com';
-  static const String _defaultWebProjectId = 'omnitoolkit-b7de8';
-  static const String _defaultWebStorageBucket =
-      'omnitoolkit-b7de8.firebasestorage.app';
-  static const String _defaultWebMessagingSenderId = '56339667385';
-  static const String _defaultWebAppId =
-      '1:56339667385:web:0bdb26c2f157b9f9c2be68';
-
+  ///
+  /// or, preferably, from a local (git-ignored) config file:
+  ///   flutter build web --release \
+  ///     --dart-define-from-file=tool/firebase_defines.json
+  ///
+  /// See `tool/firebase_defines.example.json` for the required keys and
+  /// `tool/build_web.sh` for the helper used by local builds. CI does the same
+  /// thing from repository variables/secrets (see .github/workflows/deploy.yml).
+  ///
+  /// A build without these values still runs: `main()` checks [isConfigured]
+  /// and skips Firebase initialization, leaving the local-first dashboard,
+  /// calendar, calculator, lookup and password modules fully functional while
+  /// billing/entitlement features report themselves as unavailable.
+  ///
+  /// Access control never depends on these values being secret - it is enforced
+  /// by Firebase Security Rules (see firestore.rules) and by Cloud Functions.
+  ///
   @visibleForTesting
   static bool shouldUseNativeAndroidInitialization({
     required bool isWeb,
@@ -57,37 +57,22 @@ class DefaultFirebaseOptions {
     }
   }
 
+  /// Web/desktop options. Every value is empty unless supplied at build time
+  /// via --dart-define / --dart-define-from-file (see class docs above).
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: String.fromEnvironment(
-      'FIREBASE_WEB_API_KEY',
-      defaultValue: _defaultWebApiKey,
-    ),
-    authDomain: String.fromEnvironment(
-      'FIREBASE_WEB_AUTH_DOMAIN',
-      defaultValue: _defaultWebAuthDomain,
-    ),
-    projectId: String.fromEnvironment(
-      'FIREBASE_WEB_PROJECT_ID',
-      defaultValue: _defaultWebProjectId,
-    ),
-    storageBucket: String.fromEnvironment(
-      'FIREBASE_WEB_STORAGE_BUCKET',
-      defaultValue: _defaultWebStorageBucket,
-    ),
-    messagingSenderId: String.fromEnvironment(
-      'FIREBASE_WEB_MESSAGING_SENDER_ID',
-      defaultValue: _defaultWebMessagingSenderId,
-    ),
-    appId: String.fromEnvironment(
-      'FIREBASE_WEB_APP_ID',
-      defaultValue: _defaultWebAppId,
-    ),
+    apiKey: String.fromEnvironment('FIREBASE_WEB_API_KEY'),
+    authDomain: String.fromEnvironment('FIREBASE_WEB_AUTH_DOMAIN'),
+    projectId: String.fromEnvironment('FIREBASE_WEB_PROJECT_ID'),
+    storageBucket: String.fromEnvironment('FIREBASE_WEB_STORAGE_BUCKET'),
+    messagingSenderId: String.fromEnvironment('FIREBASE_WEB_MESSAGING_SENDER_ID'),
+    appId: String.fromEnvironment('FIREBASE_WEB_APP_ID'),
     measurementId: String.fromEnvironment('FIREBASE_WEB_MEASUREMENT_ID'),
   );
 
-  /// Android builds are no longer shipped from this repository, so the Android
-  /// options intentionally have no baked-in defaults; supply them with
-  /// --dart-define (or google-services.json) if Android support is revived.
+  /// Android builds are no longer shipped from this repository. The Android
+  /// options use the same build-time mechanism as [web] and have no baked-in
+  /// defaults; supply them with --dart-define (or google-services.json) if
+  /// Android support is revived.
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: String.fromEnvironment('FIREBASE_ANDROID_API_KEY'),
     appId: String.fromEnvironment('FIREBASE_ANDROID_APP_ID'),

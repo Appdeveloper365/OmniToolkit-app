@@ -62,3 +62,8 @@ android/key.properties
 android/app/*.jks
 android/app/*.keystore
 android/app/google-services.json
+
+# Build-time Firebase client config (git-ignored; see the committed
+# tool/firebase_defines.example.json template)
+tool/firebase_defines.json
+tool/firebase_defines.env

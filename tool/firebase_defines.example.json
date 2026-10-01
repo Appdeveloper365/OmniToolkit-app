@@ -1,0 +1,26 @@
+{
+  "_comment": [
+    "Template for the build-time Firebase configuration.",
+    "Copy to tool/firebase_defines.json (git-ignored) and fill in the real",
+    "values, then build with:",
+    "  flutter build web --release --dart-define-from-file=tool/firebase_defines.json",
+    "or simply:",
+    "  ./tool/build_web.sh",
+    "",
+    "These values are NOT secrets - they are public client identifiers that",
+    "Firebase ships in every web bundle. Access control lives in",
+    "firestore.rules and in the Cloud Functions, not in this file. It is kept",
+    "out of version control only so each environment supplies its own values",
+    "without editing Dart source.",
+    "",
+    "Find them in the Firebase console: Project settings > General >",
+    "Your apps > Web app > SDK setup and configuration."
+  ],
+  "FIREBASE_WEB_API_KEY": "AIzaSyREPLACE_ME",
+  "FIREBASE_WEB_AUTH_DOMAIN": "REPLACE_ME.firebaseapp.com",
+  "FIREBASE_WEB_PROJECT_ID": "REPLACE_ME",
+  "FIREBASE_WEB_STORAGE_BUCKET": "REPLACE_ME.firebasestorage.app",
+  "FIREBASE_WEB_MESSAGING_SENDER_ID": "000000000000",
+  "FIREBASE_WEB_APP_ID": "0:000000000000:web:REPLACE_ME",
+  "FIREBASE_WEB_MEASUREMENT_ID": ""
+}

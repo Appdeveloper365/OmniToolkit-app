@@ -38,6 +38,39 @@ jobs:
       - name: Run Test Suite
         run: flutter test --concurrency=1
 
+      - name: Materialize Firebase build-time config
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tool
+          # No Firebase identifier is committed to this repository. Each
+          # environment supplies its own values through repository variables
+          # (or secrets); they are baked into the bundle at build time.
+          API_KEY="${{ vars.FIREBASE_WEB_API_KEY || secrets.FIREBASE_WEB_API_KEY }}"
+          AUTH_DOMAIN="${{ vars.FIREBASE_WEB_AUTH_DOMAIN || secrets.FIREBASE_WEB_AUTH_DOMAIN }}"
+          PROJECT_ID="${{ vars.FIREBASE_WEB_PROJECT_ID || secrets.FIREBASE_WEB_PROJECT_ID }}"
+          STORAGE_BUCKET="${{ vars.FIREBASE_WEB_STORAGE_BUCKET || secrets.FIREBASE_WEB_STORAGE_BUCKET }}"
+          SENDER_ID="${{ vars.FIREBASE_WEB_MESSAGING_SENDER_ID || secrets.FIREBASE_WEB_MESSAGING_SENDER_ID }}"
+          APP_ID="${{ vars.FIREBASE_WEB_APP_ID || secrets.FIREBASE_WEB_APP_ID }}"
+          MEASUREMENT_ID="${{ vars.FIREBASE_WEB_MEASUREMENT_ID || secrets.FIREBASE_WEB_MEASUREMENT_ID }}"
+          if [ -z "$PROJECT_ID" ] || [ -z "$API_KEY" ] || [ -z "$APP_ID" ]; then
+            echo "::warning::No Firebase build-time config supplied. Deploying a build with the local-first modules only (cloud billing/entitlement unavailable)."
+            echo '{}' > tool/firebase_defines.json
+          else
+            cat > tool/firebase_defines.json <<EOF
+          {
+            "FIREBASE_WEB_API_KEY": "$API_KEY",
+            "FIREBASE_WEB_AUTH_DOMAIN": "$AUTH_DOMAIN",
+            "FIREBASE_WEB_PROJECT_ID": "$PROJECT_ID",
+            "FIREBASE_WEB_STORAGE_BUCKET": "$STORAGE_BUCKET",
+            "FIREBASE_WEB_MESSAGING_SENDER_ID": "$SENDER_ID",
+            "FIREBASE_WEB_APP_ID": "$APP_ID",
+            "FIREBASE_WEB_MEASUREMENT_ID": "$MEASUREMENT_ID"
+          }
+          EOF
+            echo "Firebase build-time config written from repository variables."
+          fi
+
       - name: Build Web PWA
         # --no-web-resources-cdn bundles CanvasKit into build/web/canvaskit
         # instead of loading it from https://www.gstatic.com. That keeps the
@@ -45,7 +78,7 @@ jobs:
         # makes the PWA work offline on a cold start (the service worker only
         # caches same-origin requests), and avoids the GitHub Pages origin
         # never sending the COOP/COEP headers cross-origin isolation needs.
-        run: flutter build web --release --no-web-resources-cdn --base-href "/OmniToolkit-app/"
+        run: flutter build web --release --no-web-resources-cdn --base-href "/OmniToolkit-app/" --dart-define-from-file=tool/firebase_defines.json
 
       - name: Preserve Static Legal Docs
         run: |
