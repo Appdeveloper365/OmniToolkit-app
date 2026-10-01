@@ -95,5 +95,20 @@
       });
     }
   </script>
+
+  <!-- Flutter loader configuration - force single-threaded on Windows to avoid COOP/COEP requirement -->
+  <script>
+    (function() {
+      // Configure Flutter loader before it runs
+      window._flutter = window._flutter || {};
+      window._flutter.loaderConfig = {
+        // Suppress multi-threading warning and force single-threaded on Windows
+        suppressMultithreadingWarning: true,
+        // Force single-threaded mode for compatibility with hosting without COOP/COEP
+        forceSingleThreadedSkwasm: navigator.userAgent.includes('Windows')
+      };
+      console.log('[Flutter Config]', window._flutter.loaderConfig);
+    })();
+  </script>
 </body>
 </html>
