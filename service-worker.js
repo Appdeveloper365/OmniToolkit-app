@@ -1,4 +1,4 @@
-const CACHE_NAME = 'omnitoolkit-pwa-v6';
+const CACHE_NAME = 'omnitoolkit-pwa-v7';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
@@ -22,9 +22,9 @@ function addSecurityHeaders(response) {
   headers.set('X-Frame-Options', 'DENY');
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   headers.set('Permissions-Policy', 'accelerometer=(), camera=(), geolocation=(self), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()');
-  // Cross-Origin isolation headers (required for Flutter multi-threaded WASM on Windows)
+  // COOP only (no COEP) - COEP: require-corp breaks cross-origin resources like
+  // gstatic.com, fonts.googleapis.com, api.met.no, radio-browser.info, Firebase
   headers.set('Cross-Origin-Opener-Policy', 'same-origin');
-  headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
