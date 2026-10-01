@@ -1,5 +1,14 @@
 # OmniToolkit Security Audit Report
 
+> **Status note (superseded):** this report is kept as the historical record of
+> the September 2026 audit. The Firebase and Stripe payment surfaces it covers
+> (`lib/firebase_options.dart`, `lib/core/membership/`, `lib/core/purchase/`,
+> `lib/screens/*membership*`, `functions/`, `firestore.rules`) were subsequently
+> **removed from the application**; OmniToolkit is now fully offline-first with
+> no backend, no account and no payment system. The web findings (CSP,
+> service-worker headers, input validation, HTTPS enforcement) still apply and
+> remain in effect.
+
 **Date:** September 30, 2026  
 **Auditor:** AI Security Agent  
 **Version:** 1.0.0+1

@@ -39,45 +39,20 @@ flutter run -d windows
 ## Build
 
 `ash
-# Web PWA (recommended: bundles CanvasKit locally and picks up
-# tool/firebase_defines.json automatically)
+# Web PWA (recommended: bundles CanvasKit locally)
 ./tool/build_web.sh
 
 # Windows MSIX
 flutter pub run msix:create
 `
 
-### Firebase configuration (build-time only)
-
-No Firebase identifier is committed to this repository. The web/desktop options
-are read from `--dart-define` environment values, so each environment supplies
-its own:
-
-```bash
-cp tool/firebase_defines.example.json tool/firebase_defines.json
-# fill in the values from Firebase console > Project settings > General > Your apps
-./tool/build_web.sh
-```
-
-- `tool/firebase_defines.json` is **git-ignored**; only the `.example.json`
-  template is tracked.
-- CI does the same thing from repository variables/secrets
-  (`FIREBASE_WEB_API_KEY`, `FIREBASE_WEB_AUTH_DOMAIN`,
-  `FIREBASE_WEB_PROJECT_ID`, `FIREBASE_WEB_STORAGE_BUCKET`,
-  `FIREBASE_WEB_MESSAGING_SENDER_ID`, `FIREBASE_WEB_APP_ID`,
-  `FIREBASE_WEB_MEASUREMENT_ID`) — see `.github/workflows/deploy.yml`.
-- A build **without** this config still runs: the local-first modules (calendar,
-  calculator, lookup, password) work fully and the cloud billing/entitlement
-  features report themselves as unavailable.
-- These values are not secrets. Access is enforced by Firebase Security Rules
-  (`firestore.rules`) and by the Cloud Functions in `functions/`.
+No build-time configuration is required: OmniToolkit is fully offline-first.
 
 ## Privacy & Security
 
 - All local data stored in SQLite on your device
-- Optional Firebase authentication for cloud sync
-- No telemetry or user tracking
-- No Firebase identifiers in source (see Firebase configuration above)
+- No account, no backend, no cloud sync
+- No analytics or user tracking
 - See privacy policy in docs/privacy-policy.html
 
 ## Support

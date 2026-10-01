@@ -32,17 +32,10 @@ dependencies:
   path: ^1.9.0
   path_provider: ^2.1.4
 
-  # Encryption for sensitive SharedPreferences data
-  encrypt: ^5.0.3
-
   # Audio streaming (Windows/Linux via media_kit)
   just_audio: ^0.9.42
 
-  # Firebase-backed Stripe checkout (no sign-in UI or startup auth gate)
-  firebase_core: ^3.6.0
-  firebase_auth: ^5.3.1
-  cloud_functions: ^5.1.3
-  web: ^1.1.1
+  # Opens the external legal documents (privacy / terms) from Settings
   url_launcher: ^6.3.0
 
   # Calculator expression parsing

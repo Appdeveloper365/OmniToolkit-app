@@ -48,6 +48,14 @@ class StationLogoWidget extends StatelessWidget {
         width: size,
         height: size,
         fit: BoxFit.cover,
+        // On the web, render station logos through a real <img> element instead
+        // of fetching the bytes via XHR. Flutter's default path fetches remote
+        // images with `fetch`, which the Content-Security-Policy governs through
+        // `connect-src`; station logos come from arbitrary third-party hosts
+        // (CDNs, broadcaster sites) that cannot be enumerated in the policy.
+        // Using the HTML element strategy makes them obey `img-src`, which
+        // already permits https: images. This is a no-op on native platforms.
+        webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
         errorBuilder: (context, error, stackTrace) => fallback,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;

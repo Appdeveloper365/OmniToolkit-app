@@ -6,29 +6,11 @@ import 'package:timezone/data/latest.dart' as tz_data;
 import 'core/data/asset_importer.dart';
 import 'core/navigation/main_navigation.dart';
 import 'core/theme/app_theme.dart';
-import 'firebase_options.dart';
-import 'screens/billing_notice_screen.dart';
-import 'screens/active_devices_screen.dart';
-import 'screens/entitlement_check_screen.dart';
-import 'screens/premium_membership_screen.dart';
 import 'screens/share_target_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   _initializeLocalServices();
-  if (DefaultFirebaseOptions.isConfigured) {
-    try {
-      await DefaultFirebaseOptions.initializeFirebaseApp();
-    } catch (error, stackTrace) {
-      debugPrint(
-          '[Firebase] ${DefaultFirebaseOptions.describeInitializationFailure(error)}\n'
-          'The local-first dashboard remains available.\n$error\n$stackTrace');
-    }
-  } else {
-    debugPrint(
-        '[Firebase] No Firebase options are configured for this build; '
-        'cloud billing and entitlement features are disabled.');
-  }
   try {
     await AssetImporter.importFirstLaunch();
   } catch (error, stackTrace) {
@@ -58,31 +40,6 @@ class OmniToolkitApp extends ConsumerWidget {
       themeMode: ThemeMode.system,
       onGenerateRoute: (settings) {
         final uri = Uri.parse(settings.name ?? '/');
-        if (uri.path == '/billing-notice' || uri.path == '/account') {
-          return MaterialPageRoute(
-            settings: settings,
-            builder: (_) => const BillingNoticeScreen(),
-          );
-        }
-        if (uri.path == '/membership-status' ||
-            uri.path == '/payment-success') {
-          return MaterialPageRoute(
-            settings: settings,
-            builder: (_) => const EntitlementCheckScreen(),
-          );
-        }
-        if (uri.path == '/premium-membership') {
-          return MaterialPageRoute(
-            settings: settings,
-            builder: (_) => const PremiumMembershipScreen(),
-          );
-        }
-        if (uri.path == '/active-devices') {
-          return MaterialPageRoute(
-            settings: settings,
-            builder: (_) => const ActiveDevicesScreen(),
-          );
-        }
         if (uri.path == '/share') {
           return MaterialPageRoute(
             settings: settings,

@@ -1,5 +1,5 @@
-// Basic smoke test verifying OmniToolkit boots directly into the app (no
-// startup email gate) and only gates World Radio Explorer behind purchase.
+// Basic smoke test verifying OmniToolkit boots directly into the app with no
+// startup gate and no account or payment flow.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
