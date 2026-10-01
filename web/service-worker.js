@@ -37,7 +37,11 @@ self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
   if (requestUrl.origin !== self.location.origin || requestUrl.pathname.includes('/downloads/')) return;
 
-  const isNavigation = event.request.mode === 'navigate';
+  // Don't intercept Flutter navigation requests - let Flutter handle routing
+  const isFlutterNavigation = event.request.mode === 'navigate' || 
+    (event.request.headers.get('Accept') || '').includes('text/html');
+  if (isFlutterNavigation) return;
+
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
     try {
@@ -50,11 +54,6 @@ self.addEventListener('fetch', (event) => {
     } catch (error) {
       const cached = await cache.match(event.request);
       if (cached) return cached;
-      if (isNavigation) {
-        const shell = await cache.match('./');
-        if (shell) return shell;
-      }
-      // Never throw - return a network error response instead
       return new Response('', { status: 504, statusText: 'Gateway Timeout' });
     }
   })());
