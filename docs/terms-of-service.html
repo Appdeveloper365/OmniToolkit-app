@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OmniToolkit & Radio Explorer - Privacy Policy & Legal Terms</title>
+  <title>OmniToolkit - Terms of Use</title>
   <style>
     :root {
       --bg-color: #0F172A;
@@ -69,6 +69,30 @@
     ul {
       padding-left: 20px;
     }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.92rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+      color: #CBD5E1;
+    }
+    th {
+      color: var(--accent-glow);
+      font-weight: 600;
+      border-bottom: 1px solid var(--accent-color);
+    }
+    code {
+      background-color: #0B1220;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
     .highlight-box {
       background-color: var(--warning-bg);
       border: 1px solid var(--warning-border);
@@ -100,26 +124,56 @@
 <body>
   <div class="container">
     <header>
-      <h1>Privacy Policy & Legal Terms</h1>
-      <p class="meta-info">OmniToolkit & Radio Explorer &bull; Effective Date: September 5, 2026 &bull; Applies to Web PWA, Android, Microsoft Store, and iOS applications.</p>
+      <h1>Terms of Use</h1>
+      <p class="meta-info">OmniToolkit &bull; Last updated: October 2, 2026 &bull; Version 2.0 &bull; Applies to OmniToolkit on Windows, the Web (PWA), and any other platform where it is published.</p>
     </header>
 
-    <!-- SECTION 1: OVERVIEW -->
-    <section id="overview">
-      <h2>1. Overview & Platform Scope</h2>
-      <p>This Privacy Policy and Legal Notice governs the <strong>OmniToolkit</strong> software application suite (including the <strong>Radio Explorer</strong> directory, <strong>US Location Lookup</strong>, <strong>Calendar & Live Clock</strong>, <strong>3D Calculator & Unit Converter</strong>, and <strong>Password Generator</strong> modules).</p>
-      <p>This policy applies universally across all distribution platforms and operational environments, including:</p>
+    <!-- SECTION 1: ACCEPTANCE -->
+    <section id="acceptance">
+      <h2>1. Acceptance of These Terms</h2>
+      <p>These Terms of Use ("Terms") govern your use of the <strong>OmniToolkit</strong> application and any related website or build we publish ("the App"). By downloading, installing, opening, or continuing to use the App, you agree to these Terms and to our <a href="privacy.html">Privacy Policy</a>. If you do not agree, do not use the App.</p>
+    </section>
+
+    <!-- SECTION 2: ELIGIBILITY -->
+    <section id="eligibility">
+      <h2>2. Eligibility</h2>
+      <p>You must be at least 18 years old, or the age of legal majority in your jurisdiction, to accept these Terms. If you are below that age, you may use the App only with the consent of a parent or guardian who accepts these Terms for you.</p>
+    </section>
+
+    <!-- SECTION 3: THE SERVICE -->
+    <section id="service">
+      <h2>3. The Service</h2>
+      <p>OmniToolkit is an offline-first daily utility suite. Features work without an account and without any connection to servers of ours. The App is currently offered for <strong>Windows</strong> and as a <strong>Web Progressive Web App</strong>; other platform versions may be added or withdrawn at any time. Certain features depend on third-party data and streams (weather forecasts, radio station directories and audio) whose availability we do not control.</p>
+    </section>
+
+    <!-- SECTION 4: LICENSE & OWNERSHIP -->
+    <section id="license">
+      <h2>4. License &amp; Ownership</h2>
       <ul>
-        <li><strong>Web Version:</strong> Progressive Web App (PWA) hosted on GitHub Pages.</li>
-        <li><strong>Android Version:</strong> Google Play Store distribution.</li>
-        <li><strong>Microsoft Windows Version:</strong> Microsoft Store (MSIX) and standalone desktop executables.</li>
-        <li><strong>iOS Version:</strong> Future Apple App Store releases.</li>
+        <li><strong>The App is licensed, not sold.</strong> We grant you a personal, limited, revocable, non-exclusive, non-transferable licence to install and use the App for personal or internal business purposes, in accordance with these Terms.</li>
+        <li>All rights in the App &mdash; including source code, design, logos and branding &mdash; remain with the Publisher. No rights are granted by implication except as stated here.</li>
+        <li>Open-source components shipped with the App remain licensed under their own licences, which accompany the App or the published repository.</li>
+        <li>Except where applicable law allows otherwise, you may not copy, modify, redistribute, sell, or create derivative works from the App.</li>
       </ul>
     </section>
 
-    <!-- SECTION 2: LEGAL POSITION & RADIO DISCLAIMER -->
+    <!-- SECTION 5: ACCEPTABLE USE -->
+    <section id="acceptable-use">
+      <h2>5. Acceptable Use</h2>
+      <p>You agree not to use the App to:</p>
+      <ul>
+        <li>violate any applicable law, regulation, or third-party right;</li>
+        <li>re-broadcast, re-stream, resell, or otherwise commercially exploit station streams or directory content;</li>
+        <li>scrape, hammer, or overload the Radio Browser API or other services the App relies on, or circumvent their rate limits;</li>
+        <li>attempt to gain unauthorized access, interfere with the App's security, or introduce malware;</li>
+        <li>reverse engineer or decompile the App except to the extent such a restriction is prohibited by law;</li>
+        <li>use the bundled ZIP/area-code or holiday datasets as the basis for unlawful, misleading, or safety-critical decisions.</li>
+      </ul>
+    </section>
+
+    <!-- SECTION 6: RADIO EXPLORER LEGAL POSITION -->
     <section id="radio-disclaimer">
-      <h2>2. Radio Explorer & Directory Legal Position</h2>
+      <h2>6. Radio Explorer &amp; Third-Party Content</h2>
       <div class="highlight-box">
         <h3>IMPORTANT LEGAL POSITION</h3>
         <p><strong>Radio Explorer</strong> is an aggregator and index of publicly available internet radio streams. Radio Explorer:</p>
@@ -133,60 +187,102 @@
           <li><strong>Does NOT guarantee</strong> stream availability, uptime, or broadcasting schedule.</li>
         </ul>
       </div>
-      <p>Radio Explorer purely aggregates publicly available station metadata and stream URLs obtained from public directories (including Radio Browser). When a user initiates audio playback for any station, the audio stream is requested and delivered <strong>directly from the station owner's server or stream provider to the user's local device</strong>.</p>
-      <p>Users may alternatively copy or export stream URLs to compatible third-party media players where permitted by local regulations.</p>
+      <p>Radio Explorer aggregates publicly available station metadata and stream URLs obtained from bundled datasets and public directories (including <strong>Radio Browser</strong>). When you start playback, the audio stream is requested and delivered <strong>directly from the station owner's server or stream provider to your device</strong>; the station (or its provider) then processes your IP address under its own policies. You may alternatively copy or export stream URLs to a compatible third-party media player where local law permits.</p>
+      <p>All station names, logos, trademarks, and streams remain the intellectual property of their respective owners. Station logos shown in the App are hot-linked from the station's own servers and are not stored by us.</p>
+      <p>If you are a rights holder or station operator and wish to update metadata, change or disable a stream URL, or request removal of a listing, see section 14.</p>
     </section>
 
-    <!-- SECTION 3: PRIVACY & DATA COLLECTION -->
-    <section id="privacy-policy">
-      <h2>3. Privacy Policy & Data Collection</h2>
-      <p>OmniToolkit is designed with strict privacy-first principles. We operate a zero-telemetry, zero-tracking architecture:</p>
+    <!-- SECTION 7: DATA & FEATURE DISCLAIMERS -->
+    <section id="accuracy">
+      <h2>7. Data &amp; Feature Disclaimers</h2>
+      <p>The App is provided for convenience. Third-party and bundled data may be inaccurate, incomplete, or out of date:</p>
       <ul>
-        <li><strong>No Account Required:</strong> You do not need to register, log in, or provide personal information to use OmniToolkit.</li>
-        <li><strong>No Analytics or Tracking:</strong> We do not track user behavior, usage patterns, session durations, or module interaction history.</li>
-        <li><strong>No Advertisements:</strong> OmniToolkit contains zero commercial advertising networks, SDKs, or promotional tracking scripts.</li>
-        <li><strong>No Cloud Storage:</strong> All user-generated data (such as Calendar notes, saved station Favorites, and customized settings) is stored 100% locally on your device via SQLite and local storage.</li>
+        <li><strong>Weather</strong> is supplied by MET Norway, depends on your device's location, and is a prediction &mdash; not a guarantee.</li>
+        <li><strong>ZIP / area-code lookup and holiday data</strong> are static offline snapshots that may be outdated.</li>
+        <li><strong>Calculator and unit-conversion results</strong> should be verified before any consequential use.</li>
+        <li><strong>Password Generator</strong> creates strong passwords but does not store, sync, or manage them &mdash; it is not a password manager.</li>
+      </ul>
+      <p>Do not rely on the App for medical, legal, financial, emergency, navigation, or other safety-critical decisions.</p>
+    </section>
+
+    <!-- SECTION 8: YOUR NOTES & LOCAL DATA -->
+    <section id="user-data">
+      <h2>8. Your Notes &amp; Local Data</h2>
+      <p>Calendar notes, favorites, settings and similar content are created by you and stored only on your device. You retain all rights to that content; we never receive it and cannot recover it for you. You are responsible for any export or backup you make, and for deleting that data when you no longer want it (see section 8 of the Privacy Policy).</p>
+    </section>
+
+    <!-- SECTION 9: NO WARRANTIES -->
+    <section id="no-warranty">
+      <h2>9. No Warranties</h2>
+      <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE APP IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED, OR STATUTORY, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE APP WILL BE UNINTERRUPTED, ERROR-FREE, OR SECURE, OR THAT ANY STREAM, FEATURE, OR SET OF DATA WILL BE ACCURATE OR AVAILABLE.</p>
+    </section>
+
+    <!-- SECTION 10: LIMITATION OF LIABILITY -->
+    <section id="liability">
+      <h2>10. Limitation of Liability</h2>
+      <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, NEITHER THE PUBLISHER NOR ITS CONTRIBUTORS WILL BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR FOR ANY LOSS OF DATA, PROFITS, GOODWILL, OR DEVICE DAMAGE, ARISING OUT OF OR RELATED TO YOUR USE OF THE APP, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</p>
+      <p>OUR TOTAL AGGREGATE LIABILITY FOR ANY CLAIM ARISING FROM THE APP WILL NOT EXCEED THE GREATER OF (A) THE AMOUNT YOU PAID US IN THE 12 MONTHS BEFORE THE CLAIM, OR (B) ONE HUNDRED US DOLLARS (US$100.00) &mdash; WHICH IS ZERO FOR THE FREE VERSION OF THE APP.</p>
+      <p>Some jurisdictions do not allow certain limitations; in those jurisdictions our liability is limited to the fullest extent permitted by law.</p>
+    </section>
+
+    <!-- SECTION 11: INDEMNITY -->
+    <section id="indemnity">
+      <h2>11. Indemnification</h2>
+      <p>You agree to defend and indemnify the Publisher and its contributors against claims, damages, and expenses (including reasonable legal fees) arising from your misuse of the App, your violation of these Terms, or your violation of any third-party right or law.</p>
+    </section>
+
+    <!-- SECTION 12: CHANGES & TERMINATION -->
+    <section id="termination">
+      <h2>12. Changes to the App &amp; Termination</h2>
+      <ul>
+        <li>We may add, change, or remove features &mdash; including the bundled station directory, weather, or individual streams &mdash; at any time and without notice.</li>
+        <li>We may update these Terms; the "Last updated" date at the top will change whenever we do. Continued use of the App after an update means you accept the revised Terms.</li>
+        <li>This licence ends automatically if you breach these Terms. On termination you must stop using the App; sections 4, 6&ndash;11 and 13&ndash;17 survive.</li>
       </ul>
     </section>
 
-    <!-- SECTION 4: LOCATION SERVICES & LOOKUP MODULE -->
-    <section id="lookup-policy">
-      <h2>4. Location Services & Lookup Modules</h2>
-      <h3>4.1 Location Services</h3>
-      <p>OmniToolkit does <strong>NOT require, request, or track browser or device GPS location permissions</strong>. Station playback and location lookup features operate completely independent of device geolocation APIs.</p>
-
-      <h3>4.2 US ZIP, City, County, & Area Code Lookup</h3>
-      <p>The US Location & Area Code Lookup module operates 100% offline using bundled local datasets (curated US ZIP records and NANPA area code data). Searches for ZIP codes, ZIP+4 inputs, city names, counties, and area codes are executed locally against an offline in-memory/SQLite database with zero external HTTP API calls, third-party requests, or location tracking.</p>
+    <!-- SECTION 13: THIRD-PARTY LINKS -->
+    <section id="third-party">
+      <h2>13. Third-Party Links &amp; Services</h2>
+      <p>The App links to or loads content from third parties (individual stations, Radio Browser, MET Norway, GitHub Pages). Their terms and policies govern your interactions with them, and we are not responsible for their content or practices.</p>
     </section>
 
-    <!-- SECTION 5: DIAGNOSTICS & SESSION MEMORY -->
-    <section id="diagnostics">
-      <h2>5. Diagnostics & Session Memory</h2>
+    <!-- SECTION 14: COMPLAINTS, TAKEDOWN & IP NOTICES -->
+    <section id="takedown">
+      <h2>14. Complaints, Takedown &amp; IP Notices</h2>
+      <p>If you are a station operator, copyright holder, or other rights holder and wish to correct station metadata, change or disable a stream URL, or request removal of a listing or other content from the App, contact <a href="mailto:support@omnitoolkit.app?subject=Takedown%20Request">support@omnitoolkit.app</a> with your name and role, the content concerned (station name and URL), the basis of your request, and a way to verify ownership. We review legitimate requests promptly.</p>
+    </section>
+
+    <!-- SECTION 15: GOVERNING LAW & DISPUTE RESOLUTION -->
+    <section id="law">
+      <h2>15. Governing Law &amp; Dispute Resolution</h2>
+      <p>Before filing any claim, you and we agree to try to resolve the dispute informally by emailing <a href="mailto:support@omnitoolkit.app">support@omnitoolkit.app</a>. We will attempt in good faith to resolve it within 30 days of receiving your notice.</p>
+      <p>These Terms are governed by the laws of the <strong>United States</strong>, without regard to conflict-of-law principles. To the extent a formal proceeding is nevertheless required, the parties submit to the exclusive jurisdiction of the federal and state courts located in the United States. Where mandatory consumer-protection laws of your country of residence grant you rights that cannot be waived, those laws continue to apply to you.</p>
+    </section>
+
+    <!-- SECTION 16: GENERAL PROVISIONS -->
+    <section id="general">
+      <h2>16. General Provisions</h2>
       <ul>
-        <li><strong>Local Diagnostics:</strong> Console logs and error messages generated during runtime (such as audio buffering timeouts or stream format checks) remain local to your browser/device for troubleshooting purposes and are never transmitted to external servers.</li>
-        <li><strong>Password Generator:</strong> Password generation runs locally using cryptographically secure random number generators (`Random.secure()`). Password history is stored strictly in volatile session memory (RAM) and is immediately wiped when the module is closed or reloaded. Passwords are never saved to persistent storage or external servers.</li>
-        <li><strong>Calculator Session Memory:</strong> Calculation history is stored in session RAM during active use and is wiped upon pressing clear (AC) or re-launching the application.</li>
+        <li><strong>Severability:</strong> if any provision of these Terms is found unenforceable, the remaining provisions stay in effect.</li>
+        <li><strong>Entire agreement:</strong> these Terms, together with the Privacy Policy, are the whole agreement between you and us about the App.</li>
+        <li><strong>No waiver:</strong> our failure to enforce a provision is not a waiver of it.</li>
+        <li><strong>Assignment:</strong> you may not transfer these Terms; we may assign them in connection with the App.</li>
+        <li><strong>Headings:</strong> are for convenience only and do not affect interpretation.</li>
       </ul>
     </section>
 
-    <!-- SECTION 6: THIRD-PARTY CONTENT & INTELLECTUAL PROPERTY -->
-    <section id="intellectual-property">
-      <h2>6. Third-Party Content & Intellectual Property Notice</h2>
-      <p>All station names, logos, trademarks, and audio streams accessible through Radio Explorer remain the intellectual property of their respective station owners and broadcasting networks.</p>
-      <p>If you are a copyright holder or radio station broadcaster and wish to update station metadata, modify a stream URL, or request the removal of a station listing from public directory indexing, please contact us at the contact address below.</p>
-    </section>
-
-    <!-- SECTION 7: CONTACT INFORMATION -->
+    <!-- SECTION 17: CONTACT -->
     <section id="contact">
-      <h2>7. Contact Information</h2>
-      <p>For legal inquiries, copyright notices, stream directory requests, or privacy questions regarding OmniToolkit and Radio Explorer, please reach out to:</p>
+      <h2>17. Contact</h2>
+      <p>For questions about these Terms:</p>
       <p><strong>BTIM Development Team / OmniToolkit</strong><br>
       Email: <a href="mailto:support@omnitoolkit.app">support@omnitoolkit.app</a><br>
       GitHub: <a href="https://github.com/Appdeveloper365/OmniToolkit-app" target="_blank" rel="noopener">https://github.com/Appdeveloper365/OmniToolkit-app</a></p>
     </section>
 
     <footer>
-      <p>&copy; 2026 OmniToolkit &bull; <a href="index.html">Legal Hub</a> &bull; <a href="privacy-policy.html">Privacy Policy</a></p>
+      <p>&copy; 2026 OmniToolkit &bull; <a href="index.html">Legal Hub</a> &bull; <a href="privacy.html">Privacy Policy</a></p>
     </footer>
   </div>
 </body>
