@@ -36,6 +36,12 @@ flutter test
 flutter run -d windows
 `
 
+## Universal Local AI Coding Setup
+
+If you want a repository-agnostic setup to avoid cloud-agent credit usage, see:
+
+- [UNIVERSAL_LOCAL_AI_SETUP.md](UNIVERSAL_LOCAL_AI_SETUP.md)
+
 ## Build
 
 `ash
