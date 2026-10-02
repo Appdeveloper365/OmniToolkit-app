@@ -7,8 +7,9 @@ import '../models/holiday_record.dart';
 import '../models/note_model.dart';
 import '../providers/calendar_provider.dart';
 
-/// Brown/Orange highlight used for calendar cells that contain at least one note.
-const Color _notedCellColor = Color(0xFF8B4513); // SaddleBrown / Orange-Brown
+/// Orange highlight used for calendar cells that contain at least one note.
+// Using primaryContainer with orange tint for better theme integration and accessibility.
+const Color _notedCellColor = Color(0xFFFFB74D); // Orange tint of primaryContainer
 
 class CalendarGrid extends ConsumerWidget {
   const CalendarGrid({super.key});
@@ -113,18 +114,15 @@ class CalendarGrid extends ConsumerWidget {
     final holidaysForDay = holidayLabels[dateKey] ?? const <HolidayRecord>[];
     final scheme = Theme.of(context).colorScheme;
 
-    // Styling logic: Note dates are Brown/Orange with white readable text.
-    final backgroundColor = hasNote
-        ? _notedCellColor
-        : (isSelected
-            ? scheme.primary
-            : (isSecondary ? scheme.secondaryContainer : Colors.transparent));
+    // Priority: selected day > secondary selection > noted cell > empty
+    final backgroundColor = isSelected
+        ? scheme.primary
+        : (isSecondary ? scheme.secondaryContainer : (hasNote ? _notedCellColor : Colors.transparent));
 
-    final foregroundColor = hasNote
-        ? Colors.white
-        : (isSelected
-            ? scheme.onPrimary
-            : (isSecondary ? scheme.onSecondaryContainer : null));
+    // Text color based on background for readability
+    final foregroundColor = isSelected
+        ? scheme.onPrimary
+        : (isSecondary ? scheme.onSecondaryContainer : (hasNote ? scheme.onPrimary : null));
 
     return AspectRatio(
       aspectRatio: 1,
@@ -144,7 +142,18 @@ class CalendarGrid extends ConsumerWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(8),
             onTap: () {
-              ref.read(selectedDateProvider.notifier).state = date;
+              // If date has notes, show note options
+              if (hasNote) {
+                _showNoteOptions(context, dateKey, ref);
+              } else {
+                // Only select if not already selected and no secondary date
+                if (!isSelected && secondaryDate == null) {
+                  ref.read(selectedDateProvider.notifier).state = date;
+                } else if (isSelected && !hasNote) {
+                  // Deselect if currently selected and has note
+                  ref.read(selectedDateProvider.notifier).state = null;
+                }
+              }
             },
             child: Stack(
               children: [
