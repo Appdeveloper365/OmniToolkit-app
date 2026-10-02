@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../models/holiday_record.dart';
 import '../models/note_model.dart';
 import '../providers/calendar_provider.dart';
+import 'note_dialog.dart';
 
 /// Orange highlight used for calendar cells that contain at least one note.
 // Using primaryContainer with orange tint for better theme integration and accessibility.
@@ -142,17 +143,11 @@ class CalendarGrid extends ConsumerWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(8),
             onTap: () {
-              // If date has notes, show note options
+              // If date has notes, show note options instead of just selecting.
               if (hasNote) {
-                _showNoteOptions(context, dateKey, ref);
+                _showNoteOptions(context, date, ref);
               } else {
-                // Only select if not already selected and no secondary date
-                if (!isSelected && secondaryDate == null) {
-                  ref.read(selectedDateProvider.notifier).state = date;
-                } else if (isSelected && !hasNote) {
-                  // Deselect if currently selected and has note
-                  ref.read(selectedDateProvider.notifier).state = null;
-                }
+                ref.read(selectedDateProvider.notifier).state = date;
               }
             },
             child: Stack(
@@ -214,5 +209,144 @@ class CalendarGrid extends ConsumerWidget {
       'July', 'August', 'September', 'October', 'November', 'December',
     ];
     return '${months[date.month - 1]} ${date.year}';
+  }
+
+  void _showNoteOptions(BuildContext context, DateTime date, WidgetRef ref) {
+    ref.read(selectedDateProvider.notifier).state = date;
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (_) => _NoteOptionsSheet(date: date),
+    );
+  }
+}
+
+/// Bottom sheet shown when tapping a day that has notes: lets the user
+/// add a new note, or edit/delete existing ones for that day.
+class _NoteOptionsSheet extends ConsumerWidget {
+  const _NoteOptionsSheet({required this.date});
+
+  static final _timeFormat = DateFormat('hh:mm a');
+  final DateTime date;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notesAsync = ref.watch(notesForSelectedDateProvider);
+    final controller = ref.read(notesControllerProvider);
+    final theme = Theme.of(context);
+
+    Future<void> openDialog({NoteModel? existing}) async {
+      final result = await showDialog<NoteModel>(
+        context: context,
+        builder: (_) => NoteDialog(date: date, existing: existing),
+      );
+      if (result == null) return;
+      if (existing != null) {
+        await controller.updateNote(result);
+      } else {
+        await controller.addNote(result);
+      }
+    }
+
+    Future<void> confirmDelete(int id) async {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Delete note?'),
+          content: const Text('This note will be permanently removed.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Delete'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed == true) await controller.deleteNote(id);
+    }
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Notes for ${CalendarGrid._cellDateFormat.format(date)}',
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                FilledButton.tonalIcon(
+                  onPressed: () => openDialog(),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add Note'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            notesAsync.when(
+              data: (notes) {
+                if (notes.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('No notes for this date yet.'),
+                  );
+                }
+                return Column(
+                  children: notes
+                      .map((note) => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(
+                              note.noteText,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            subtitle: note.createdAt != null
+                                ? Text(
+                                    'Saved at ${_timeFormat.format(note.createdAt!)}',
+                                  )
+                                : null,
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit_outlined),
+                                  tooltip: 'Edit',
+                                  onPressed: () => openDialog(existing: note),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline),
+                                  tooltip: 'Delete',
+                                  onPressed: note.id != null
+                                      ? () => confirmDelete(note.id!)
+                                      : null,
+                                ),
+                              ],
+                            ),
+                          ))
+                      .toList(),
+                );
+              },
+              loading: () => const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (err, _) => Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text('Failed to load notes: $err'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
