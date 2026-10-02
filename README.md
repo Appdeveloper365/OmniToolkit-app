@@ -53,7 +53,9 @@ No build-time configuration is required: OmniToolkit is fully offline-first.
 - All local data stored in SQLite on your device
 - No account, no backend, no cloud sync
 - No analytics or user tracking
-- See privacy policy in docs/privacy-policy.html
+- Weather is opt-in (tap "Show weather"): coordinates go directly to MET Norway; Radio fetches its directory and streams from third parties
+- Privacy Policy: `docs/privacy.html` &middot; Terms of Use: `docs/terms.html`
+  (live at https://appdeveloper365.github.io/OmniToolkit-app/)
 
 ## Support
 
@@ -62,7 +64,8 @@ https://github.com/Appdeveloper365/OmniToolkit-app
 
 ## License
 
-See LICENSE file in repository
+If no `LICENSE` file is present in the repository, all rights are reserved.
+Use of the app is governed by the Terms of Use in `docs/terms.html`.
 
 ---
 

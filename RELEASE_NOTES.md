@@ -56,7 +56,7 @@ OmniToolkit is an offline-first daily utility suite for Windows and Web, featuri
 
 ### ⚙️ Settings
 - Theme selection (Light/Dark/System)
-- Firebase Authentication (for data sync)
+- Privacy Policy, Terms of Use & Legal Notices links
 - User preferences storage
 
 ## Platform Support
@@ -96,7 +96,7 @@ OmniToolkit is an offline-first daily utility suite for Windows and Web, featuri
 - **Framework**: Flutter 3.0+
 - **State Management**: Riverpod
 - **Database**: SQLite (sqflite)
-- **Backend**: Firebase (Auth, Firestore, Cloud Functions)
+- **Backend**: None - fully offline / local-first (no accounts, no cloud sync)
 - **Audio**: just_audio + media_kit (Windows/Linux)
 - **UI**: Material Design 3
 
@@ -122,8 +122,8 @@ flutter build web --release --base-href "/OmniToolkit-app/"
 ## Privacy & Security
 
 - All local data stored in SQLite on your device
-- Optional Firebase authentication for cloud sync
-- See privacy policy in docs/privacy-policy.html
+- No account, no backend, no cloud sync
+- Privacy Policy: docs/privacy-policy.html &middot; Terms of Use: docs/terms-of-service.html
 - No telemetry or user tracking
 
 ## Support
@@ -133,7 +133,8 @@ https://github.com/Appdeveloper365/OmniToolkit-app
 
 ## License
 
-See LICENSE file in repository
+If no `LICENSE` file is present in the repository, all rights are reserved.
+Use of the app is governed by the Terms of Use in `docs/terms.html`.
 
 ---
 

@@ -8,7 +8,7 @@ class WeatherService {
   
   /// User-Agent header - required by MET Norway
   /// Replace with your actual app details
-  static const String _userAgent = 'OmniToolkit/1.0 (https://yourcalendar.app; support@yourcalendar.app)';
+  static const String _userAgent = 'OmniToolkit/1.0 (https://github.com/Appdeveloper365/OmniToolkit-app; support@omnitoolkit.app)';
   
   static const int _cacheTTL = 45 * 60 * 1000; // 45 minutes
   static const String _cacheKey = 'weather_cache';

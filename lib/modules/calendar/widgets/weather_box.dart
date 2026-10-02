@@ -20,13 +20,14 @@ class _WeatherBoxState extends State<WeatherBox> {
   bool _isLoading = false;
   String? _error;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadWeather();
-  }
+  // Weather - and with it the device-location request - is opt-in: nothing is
+  // fetched until the user taps "Show weather". This keeps the privacy-policy
+  // promise that location permission is never requested automatically at
+  // startup.
+  bool _weatherEnabled = false;
 
   Future<void> _loadWeather() async {
+    _weatherEnabled = true;
     setState(() {
       _isLoading = true;
       _error = null;
@@ -63,7 +64,7 @@ class _WeatherBoxState extends State<WeatherBox> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _isLoading ? null : _loadWeather,
+      onTap: (_isLoading || !_weatherEnabled) ? null : _loadWeather,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -83,6 +84,10 @@ class _WeatherBoxState extends State<WeatherBox> {
   }
 
   Widget _buildContent() {
+    if (!_weatherEnabled) {
+      return _buildLocationPrompt();
+    }
+
     if (_isLoading) {
       return _buildLoading();
     }
@@ -96,6 +101,26 @@ class _WeatherBoxState extends State<WeatherBox> {
     }
 
     return _buildWeatherInfo();
+  }
+
+  /// Opt-in card shown until the user consents to a location request.
+  Widget _buildLocationPrompt() {
+    return Row(
+      children: [
+        const Icon(Icons.location_on_outlined, size: 20, color: Colors.grey),
+        const SizedBox(width: 10),
+        const Expanded(
+          child: Text(
+            'Weather uses your device location',
+            style: TextStyle(fontSize: 12),
+          ),
+        ),
+        TextButton(
+          onPressed: _isLoading ? null : _loadWeather,
+          child: const Text('Show weather', style: TextStyle(fontSize: 12)),
+        ),
+      ],
+    );
   }
 
   Widget _buildLoading() {

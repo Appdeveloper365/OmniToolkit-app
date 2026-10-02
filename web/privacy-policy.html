@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OmniToolkit & Radio Explorer - Privacy Policy & Legal Terms</title>
+  <title>OmniToolkit - Privacy Policy</title>
   <style>
     :root {
       --bg-color: #0F172A;
@@ -69,6 +69,30 @@
     ul {
       padding-left: 20px;
     }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.92rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+      color: #CBD5E1;
+    }
+    th {
+      color: var(--accent-glow);
+      font-weight: 600;
+      border-bottom: 1px solid var(--accent-color);
+    }
+    code {
+      background-color: #0B1220;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
     .highlight-box {
       background-color: var(--warning-bg);
       border: 1px solid var(--warning-border);
@@ -100,93 +124,225 @@
 <body>
   <div class="container">
     <header>
-      <h1>Privacy Policy & Legal Terms</h1>
-      <p class="meta-info">OmniToolkit & Radio Explorer &bull; Effective Date: September 5, 2026 &bull; Applies to Web PWA, Android, Microsoft Store, and iOS applications.</p>
+      <h1>Privacy Policy</h1>
+      <p class="meta-info">OmniToolkit &bull; Last updated: October 2, 2026 &bull; Version 2.0 &bull; Applies to OmniToolkit on Windows, the Web (PWA), and any other platform where it is published.</p>
     </header>
 
     <!-- SECTION 1: OVERVIEW -->
     <section id="overview">
-      <h2>1. Overview & Platform Scope</h2>
-      <p>This Privacy Policy and Legal Notice governs the <strong>OmniToolkit</strong> software application suite (including the <strong>Radio Explorer</strong> directory, <strong>US Location Lookup</strong>, <strong>Calendar & Live Clock</strong>, <strong>3D Calculator & Unit Converter</strong>, and <strong>Password Generator</strong> modules).</p>
-      <p>This policy applies universally across all distribution platforms and operational environments, including:</p>
-      <ul>
-        <li><strong>Web Version:</strong> Progressive Web App (PWA) hosted on GitHub Pages.</li>
-        <li><strong>Android Version:</strong> Google Play Store distribution.</li>
-        <li><strong>Microsoft Windows Version:</strong> Microsoft Store (MSIX) and standalone desktop executables.</li>
-        <li><strong>iOS Version:</strong> Future Apple App Store releases.</li>
-      </ul>
-    </section>
-
-    <!-- SECTION 2: LEGAL POSITION & RADIO DISCLAIMER -->
-    <section id="radio-disclaimer">
-      <h2>2. Radio Explorer & Directory Legal Position</h2>
+      <h2>1. Who We Are &amp; What This Covers</h2>
+      <p>This Privacy Policy explains how the <strong>OmniToolkit</strong> application ("OmniToolkit", "we", "us") handles information when you use our daily utility suite: <strong>Calendar &amp; Live Clock (including the optional Weather card)</strong>, <strong>3D Calculator &amp; Unit Converter</strong>, <strong>Radio/TV Explorer</strong>, <strong>US Location &amp; Area Code Lookup</strong>, and <strong>Password Generator</strong>.</p>
       <div class="highlight-box">
-        <h3>IMPORTANT LEGAL POSITION</h3>
-        <p><strong>Radio Explorer</strong> is an aggregator and index of publicly available internet radio streams. Radio Explorer:</p>
+        <h3>Summary</h3>
         <ul>
-          <li><strong>Does NOT host</strong> radio audio streams or media files.</li>
-          <li><strong>Does NOT relay</strong> or re-transmit broadcast streams.</li>
-          <li><strong>Does NOT rebroadcast</strong> content.</li>
-          <li><strong>Does NOT operate</strong> media servers, streaming servers, or content delivery networks (CDNs).</li>
-          <li><strong>Does NOT alter or modify</strong> station audio broadcasts or stream payloads.</li>
-          <li><strong>Does NOT own</strong> or claim copyright over station content, logos, or broadcasts.</li>
-          <li><strong>Does NOT guarantee</strong> stream availability, uptime, or broadcasting schedule.</li>
+          <li><strong>No account, and no servers of ours:</strong> OmniToolkit has no backend. Your notes, favorites, settings and generated passwords never leave your device unless you contact us yourself.</li>
+          <li><strong>No analytics, no advertising, no tracking, and no sale of data.</strong></li>
+          <li><strong>A few third-party network requests do happen</strong> &mdash; only when you use Weather (your coordinates go to MET Norway), browse or play Radio (station directory and stream servers), or the web app loads its static assets. All of them are listed in section 4.</li>
+          <li><strong>Location is only requested when you tap "Show weather"</strong> &mdash; never automatically at startup.</li>
         </ul>
       </div>
-      <p>Radio Explorer purely aggregates publicly available station metadata and stream URLs obtained from public directories (including Radio Browser). When a user initiates audio playback for any station, the audio stream is requested and delivered <strong>directly from the station owner's server or stream provider to the user's local device</strong>.</p>
-      <p>Users may alternatively copy or export stream URLs to compatible third-party media players where permitted by local regulations.</p>
+      <p><strong>Publisher / contact:</strong> BTIM Development Team / OmniToolkit &mdash; <a href="mailto:support@omnitoolkit.app">support@omnitoolkit.app</a>. Your use of the app is also governed by our <a href="terms.html">Terms of Use</a>.</p>
     </section>
 
-    <!-- SECTION 3: PRIVACY & DATA COLLECTION -->
-    <section id="privacy-policy">
-      <h2>3. Privacy Policy & Data Collection</h2>
-      <p>OmniToolkit is designed with strict privacy-first principles. We operate a zero-telemetry, zero-tracking architecture:</p>
+    <!-- SECTION 2: LOCAL DATA -->
+    <section id="local-data">
+      <h2>2. Information Stored on Your Device</h2>
+      <p>OmniToolkit is offline-first. The following information is created by you or generated locally and stays on your device:</p>
       <ul>
-        <li><strong>No Account Required:</strong> You do not need to register, log in, or provide personal information to use OmniToolkit.</li>
-        <li><strong>No Analytics or Tracking:</strong> We do not track user behavior, usage patterns, session durations, or module interaction history.</li>
-        <li><strong>No Advertisements:</strong> OmniToolkit contains zero commercial advertising networks, SDKs, or promotional tracking scripts.</li>
-        <li><strong>No Cloud Storage:</strong> All user-generated data (such as Calendar notes, saved station Favorites, and customized settings) is stored 100% locally on your device via SQLite and local storage.</li>
+        <li><strong>Calendar notes</strong> &mdash; stored in a local SQLite database.</li>
+        <li><strong>App settings</strong> (theme, 24-hour clock, and a temporary weather cache) &mdash; stored in local app preferences.</li>
+        <li><strong>Radio favorites</strong> &mdash; stored locally in SQLite / local preferences.</li>
+        <li><strong>ZIP / area code lookups, holiday calendar, bundled station directory</strong> &mdash; imported from datasets shipped with the app into local SQLite; searches run entirely on-device.</li>
+        <li><strong>Password Generator</strong> &mdash; generated passwords and history exist only in memory (RAM) for the current session and are discarded when you close the module or the app. Nothing is written to disk and nothing is synced.</li>
+        <li><strong>Calculator history</strong> &mdash; session memory only; cleared when you press AC or restart the app.</li>
+      </ul>
+      <p>There is <strong>no cloud sync and no cloud backup</strong>. Deleting your notes, favorites or settings in the app, clearing site data (web version), or uninstalling the app permanently removes this information.</p>
+    </section>
+
+    <!-- SECTION 3: LOCATION & WEATHER -->
+    <section id="location-weather">
+      <h2>3. Location &amp; Weather</h2>
+      <p>The Calendar screen contains an optional <strong>Weather</strong> card. Weather is <strong>off until you turn it on</strong>:</p>
+      <ul>
+        <li>Nothing happens on startup. Only when you tap <strong>"Show weather"</strong> does the app ask your operating system or browser for location permission.</li>
+        <li>If you grant it, your <strong>coordinates (rounded to 4 decimal places) and altitude</strong> are sent directly from your device over HTTPS to the <strong>Met Norwegian Meteorological Institute (MET Norway)</strong> locationforecast API, together with an identifying <code>OmniToolkit/1.0</code> User-Agent and your IP address (inherent to any HTTP request).</li>
+        <li>The response (temperature, conditions, alerts) is <strong>cached locally for about 45 minutes</strong> under a key containing the same rounded coordinates.</li>
+        <li>If you deny permission, or never tap the button, <strong>no location is requested and no coordinates are sent</strong> &mdash; the rest of the app works exactly the same.</li>
+        <li>OmniToolkit <strong>never receives your coordinates</strong>: the app is fully client-side, so the request goes from your device to MET Norway only. We operate no server that could observe it.</li>
+      </ul>
+      <p>You can revoke location permission at any time in your OS or browser settings. For the web version, geolocation access is restricted to OmniToolkit's own origin through the <code>Permissions-Policy</code> header, so no other site or embed can trigger it.</p>
+    </section>
+
+    <!-- SECTION 4: NETWORK REQUESTS & THIRD PARTIES -->
+    <section id="network">
+      <h2>4. Network Requests &amp; Third Parties</h2>
+      <p>OmniToolkit sends no data to us and contains no analytics. It does, however, talk to the following third-party services <strong>directly from your device</strong> when the related feature is used:</p>
+      <table>
+        <thead>
+          <tr><th>Recipient</th><th>When</th><th>Information sent</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>api.met.no<br>(MET Norway)</td>
+            <td>Only after you tap "Show weather"</td>
+            <td>Coordinates (4 dp), altitude, IP address, app User-Agent</td>
+            <td>Retrieving the weather forecast</td>
+          </tr>
+          <tr>
+            <td>*.radio-browser.info<br>(Radio Browser, community directory)</td>
+            <td>Searching or browsing stations</td>
+            <td>Search query, IP address, app User-Agent</td>
+            <td>Fetching the public internet radio directory</td>
+          </tr>
+          <tr>
+            <td>Individual radio &amp; TV station servers</td>
+            <td>Playing a stream</td>
+            <td>Standard stream request (IP address, no identifiers)</td>
+            <td>Direct audio/video delivery from the station to you</td>
+          </tr>
+          <tr>
+            <td>Station logo / image hosts</td>
+            <td>Viewing station lists</td>
+            <td>Standard image request (IP address)</td>
+            <td>Displaying station artwork hot-linked from the station</td>
+          </tr>
+          <tr>
+            <td>Google-hosted static web assets<br>(fonts.googleapis.com, fonts.gstatic.com, www.gstatic.com)</td>
+            <td>Web version only, as permitted by the app's Content-Security-Policy</td>
+            <td>Standard asset request (IP address)</td>
+            <td>Serving static font/runtime files; no Google analytics or advertising scripts are present</td>
+          </tr>
+          <tr>
+            <td>GitHub Pages<br>(GitHub, Inc.)</td>
+            <td>Whenever you open the web app</td>
+            <td>Standard web-server request logs (IP, user agent, time)</td>
+            <td>Hosting the static app, under <a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener">GitHub's Privacy Statement</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>These third parties act as independent controllers of the data they receive and are governed by their own privacy policies. <strong>We never receive any of this information</strong> &mdash; there is no OmniToolkit server in the path.</p>
+    </section>
+
+    <!-- SECTION 5: WHAT WE DO NOT COLLECT -->
+    <section id="not-collected">
+      <h2>5. What We Do Not Collect</h2>
+      <ul>
+        <li><strong>No account / registration:</strong> no name, email, phone or payment information is gathered inside the app (authentication, cloud sync and payment features have been removed from OmniToolkit).</li>
+        <li><strong>No analytics or telemetry:</strong> no usage tracking, session recording, crash reporting, or profiling.</li>
+        <li><strong>No advertising:</strong> no ad networks, advertising IDs, or promotional SDKs.</li>
+        <li><strong>No tracking cookies</strong> and no device fingerprinting.</li>
+        <li><strong>No sale or sharing of personal information</strong> &mdash; we do not sell, rent, or trade data with anyone.</li>
+        <li><strong>No contact details</strong> unless you choose to email us.</li>
       </ul>
     </section>
 
-    <!-- SECTION 4: LOCATION SERVICES & LOOKUP MODULE -->
+    <!-- SECTION 6: OFFLINE LOOKUP -->
     <section id="lookup-policy">
-      <h2>4. Location Services & Lookup Modules</h2>
-      <h3>4.1 Location Services</h3>
-      <p>OmniToolkit does <strong>NOT require, request, or track browser or device GPS location permissions</strong>. Station playback and location lookup features operate completely independent of device geolocation APIs.</p>
-
-      <h3>4.2 US ZIP, City, County, & Area Code Lookup</h3>
-      <p>The US Location & Area Code Lookup module operates 100% offline using bundled local datasets (curated US ZIP records and NANPA area code data). Searches for ZIP codes, ZIP+4 inputs, city names, counties, and area codes are executed locally against an offline in-memory/SQLite database with zero external HTTP API calls, third-party requests, or location tracking.</p>
+      <h2>6. US ZIP, City, County &amp; Area Code Lookup</h2>
+      <p>The US Location &amp; Area Code Lookup module operates 100% offline using bundled local datasets (curated US ZIP records and NANPA area code data). Searches for ZIP codes, ZIP+4 inputs, city names, counties, and area codes are executed locally against an offline in-memory/SQLite database with <strong>zero external API calls, third-party requests, or location tracking</strong>.</p>
+      <p>The bundled dataset is a static snapshot provided for convenience; it may be incomplete or out of date and must not be relied upon for emergency, legal, or navigation purposes.</p>
     </section>
 
-    <!-- SECTION 5: DIAGNOSTICS & SESSION MEMORY -->
-    <section id="diagnostics">
-      <h2>5. Diagnostics & Session Memory</h2>
+    <!-- SECTION 7: LOCAL STORAGE, COOKIES, SERVICE WORKER -->
+    <section id="storage">
+      <h2>7. Local Storage, Cookies &amp; Service Worker (Web Version)</h2>
       <ul>
-        <li><strong>Local Diagnostics:</strong> Console logs and error messages generated during runtime (such as audio buffering timeouts or stream format checks) remain local to your browser/device for troubleshooting purposes and are never transmitted to external servers.</li>
-        <li><strong>Password Generator:</strong> Password generation runs locally using cryptographically secure random number generators (`Random.secure()`). Password history is stored strictly in volatile session memory (RAM) and is immediately wiped when the module is closed or reloaded. Passwords are never saved to persistent storage or external servers.</li>
-        <li><strong>Calculator Session Memory:</strong> Calculation history is stored in session RAM during active use and is wiped upon pressing clear (AC) or re-launching the application.</li>
+        <li>OmniToolkit sets <strong>no tracking cookies</strong>.</li>
+        <li>The web version keeps your data in <strong>localStorage, IndexedDB (SQLite), and local app preferences</strong> inside your browser.</li>
+        <li>A <strong>service worker</strong> caches the app's own same-origin files so it starts and works offline. It only handles files served from the OmniToolkit origin and never intercepts or caches third-party traffic.</li>
+        <li>The app shell is hosted on GitHub Pages, so GitHub processes standard web-server request logs when you load it (see section 4).</li>
+      </ul>
+      <p><strong>To erase everything:</strong> use your browser's "Clear site data" for the OmniToolkit site, or clear the app's local data / uninstall it on desktop.</p>
+    </section>
+
+    <!-- SECTION 8: RETENTION & DELETION -->
+    <section id="retention">
+      <h2>8. Data Retention &amp; Deletion</h2>
+      <ul>
+        <li><strong>On-device data</strong> (notes, favorites, settings): kept until you delete it in the app or remove the app/site data. There are no server-side copies.</li>
+        <li><strong>Weather cache:</strong> expires automatically after about 45 minutes.</li>
+        <li><strong>Passwords and calculator history:</strong> not retained beyond the current session.</li>
+        <li><strong>Email you send us:</strong> kept only as long as needed to answer you and to document your request.</li>
       </ul>
     </section>
 
-    <!-- SECTION 6: THIRD-PARTY CONTENT & INTELLECTUAL PROPERTY -->
-    <section id="intellectual-property">
-      <h2>6. Third-Party Content & Intellectual Property Notice</h2>
-      <p>All station names, logos, trademarks, and audio streams accessible through Radio Explorer remain the intellectual property of their respective station owners and broadcasting networks.</p>
-      <p>If you are a copyright holder or radio station broadcaster and wish to update station metadata, modify a stream URL, or request the removal of a station listing from public directory indexing, please contact us at the contact address below.</p>
+    <!-- SECTION 9: YOUR RIGHTS -->
+    <section id="rights">
+      <h2>9. Your Privacy Rights</h2>
+      <p>Where applicable law gives you rights over personal data (for example the GDPR/UK GDPR or the California CCPA/CPRA), you may request:</p>
+      <ul>
+        <li>access to, or a copy of, the personal data we hold about you,</li>
+        <li>correction or deletion of that data,</li>
+        <li>portability, restriction of, or objection to processing,</li>
+        <li>withdrawal of consent (location permission can be revoked in system settings at any time).</li>
+      </ul>
+      <p>Because OmniToolkit processes your data on your own device, most of these rights can be exercised directly by deleting the data in the app or clearing site data. For anything else, email <a href="mailto:support@omnitoolkit.app?subject=Privacy%20Request">support@omnitoolkit.app</a> with the subject "Privacy Request". We respond within the time required by law and free of charge. You also have the right to lodge a complaint with your local data-protection authority.</p>
     </section>
 
-    <!-- SECTION 7: CONTACT INFORMATION -->
+    <!-- SECTION 10: CHILDREN'S PRIVACY -->
+    <section id="children">
+      <h2>10. Children's Privacy</h2>
+      <p>OmniToolkit is a general-purpose utility app and is <strong>not directed at children under 13</strong> (or the higher minimum age set by your country). We do not knowingly collect personal information from children. If you believe a child has sent personal information to us by email, contact us and we will delete it.</p>
+    </section>
+
+    <!-- SECTION 11: SECURITY -->
+    <section id="security">
+      <h2>11. Security</h2>
+      <ul>
+        <li>Local-only architecture: the most sensitive data (calendar notes, generated passwords) never leaves your device.</li>
+        <li>HTTPS-only connections; Content-Security-Policy, Permissions-Policy, Referrer-Policy, and service-worker hardening on the web build.</li>
+        <li>Radio stream URLs are validated (HTTP/HTTPS only, with localhost and private IP addresses blocked in release builds).</li>
+        <li>Passwords are generated with cryptographically secure randomness (<code>Random.secure()</code>).</li>
+      </ul>
+      <p>No method of transmission or storage is 100% secure, and we cannot guarantee absolute security.</p>
+    </section>
+
+    <!-- SECTION 12: HOSTING & INTERNATIONAL TRANSFERS -->
+    <section id="international">
+      <h2>12. Hosting &amp; International Transfers</h2>
+      <p>The web app is a static site served by <strong>GitHub Pages (GitHub, Inc., United States)</strong>. GitHub and the third parties listed in section 4 may process data in countries other than your own. Where personal data is transferred internationally, transfers rely on the safeguards those providers offer (such as Standard Contractual Clauses) and their own terms.</p>
+    </section>
+
+    <!-- SECTION 13: THIRD-PARTY LINKS -->
+    <section id="third-party-links">
+      <h2>13. Third-Party Links &amp; Content</h2>
+      <p>Radio streams, station logos, and any links you open outside the app are provided by third parties. OmniToolkit does not control their privacy practices and is not responsible for them. When you play a stream, the station's server is contacted directly and the station's own privacy policy applies to that connection.</p>
+    </section>
+
+    <!-- SECTION 14: CHANGES TO THIS POLICY -->
+    <section id="changes">
+      <h2>14. Changes to This Policy</h2>
+      <p>We may update this policy as the app changes. The "Last updated" date at the top always reflects the current version, and material changes are recorded here.</p>
+      <table>
+        <thead>
+          <tr><th>Version</th><th>Date</th><th>Summary of changes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1.0</td>
+            <td>September 5, 2026</td>
+            <td>Initial combined Privacy Policy &amp; Legal Terms.</td>
+          </tr>
+          <tr>
+            <td>2.0</td>
+            <td>October 2, 2026</td>
+            <td>Documented the opt-in location &amp; weather data flow; added the network/third-party table, local storage &amp; cookies, retention, your rights, children's privacy, security and international transfers; Terms of Use split into a separate document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SECTION 15: CONTACT -->
     <section id="contact">
-      <h2>7. Contact Information</h2>
-      <p>For legal inquiries, copyright notices, stream directory requests, or privacy questions regarding OmniToolkit and Radio Explorer, please reach out to:</p>
+      <h2>15. Contact</h2>
+      <p>For privacy questions or data requests regarding OmniToolkit:</p>
       <p><strong>BTIM Development Team / OmniToolkit</strong><br>
-      Email: <a href="mailto:support@omnitoolkit.app">support@omnitoolkit.app</a><br>
+      Email: <a href="mailto:support@omnitoolkit.app?subject=Privacy%20Request">support@omnitoolkit.app</a><br>
       GitHub: <a href="https://github.com/Appdeveloper365/OmniToolkit-app" target="_blank" rel="noopener">https://github.com/Appdeveloper365/OmniToolkit-app</a></p>
     </section>
 
     <footer>
-      <p>&copy; 2026 OmniToolkit &bull; <a href="index.html">Legal Hub</a> &bull; <a href="privacy-policy.html">Privacy Policy</a></p>
+      <p>&copy; 2026 OmniToolkit &bull; <a href="index.html">Legal Hub</a> &bull; <a href="terms.html">Terms of Use</a></p>
     </footer>
   </div>
 </body>

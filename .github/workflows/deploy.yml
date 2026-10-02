@@ -47,6 +47,25 @@ jobs:
         # never sending the COOP/COEP headers cross-origin isolation needs.
         run: flutter build web --release --no-web-resources-cdn --base-href "/OmniToolkit-app/"
 
+      - name: Verify Legal Documents Are In Sync
+        run: |
+          set -euo pipefail
+          # docs/ is the source of truth that gets deployed. The alias filenames
+          # (privacy-policy.html, terms-of-service.html) and the web/ copies must
+          # stay byte-identical to their canonical documents so the in-app links
+          # (privacy.html / terms.html), store listings, and deep links can never
+          # serve different content. Fail the build on any drift.
+          fail() { echo "::error::$1 and $2 differ - keep both copies of the legal document identical."; exit 1; }
+          cmp -s docs/privacy.html docs/privacy-policy.html || fail docs/privacy.html docs/privacy-policy.html
+          cmp -s docs/privacy.html web/privacy.html         || fail docs/privacy.html web/privacy.html
+          cmp -s docs/privacy.html web/privacy-policy.html  || fail docs/privacy.html web/privacy-policy.html
+          cmp -s docs/terms.html docs/terms-of-service.html || fail docs/terms.html docs/terms-of-service.html
+          cmp -s docs/terms.html web/terms.html             || fail docs/terms.html web/terms.html
+          cmp -s docs/terms.html web/terms-of-service.html  || fail docs/terms.html web/terms-of-service.html
+          # Deep-link anchors used by the legal hub must keep existing.
+          grep -q 'id="lookup-policy"' docs/privacy.html
+          grep -q 'id="radio-disclaimer"' docs/terms.html
+
       - name: Preserve Static Legal Docs
         run: |
           # IMPORTANT: Only copy the named legal document files. Never copy
